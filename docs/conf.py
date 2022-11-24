@@ -20,7 +20,7 @@ import os
 import sys
 
 curdir = os.path.dirname(__file__)
-sys.path.append(os.path.abspath(os.path.join(curdir, "sphinxext")))
+sys.path.insert(0, os.path.abspath("../.."))
 
 # -- General configuration ------------------------------------------------
 
@@ -32,6 +32,7 @@ sys.path.append(os.path.abspath(os.path.join(curdir, "sphinxext")))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "autoclasstoc",
     "sphinx-prompt",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
@@ -42,6 +43,14 @@ extensions = [
     "numpydoc",
 ]
 
+autodoc_default_options = {
+    "members": True,
+    "special-members": False,
+    "private-members": False,
+    "inherited-members": False,
+    "undoc-members": False,
+    "exclude-members": "__weakref__",
+}
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
 
@@ -67,7 +76,7 @@ author = u"Contributors"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -104,7 +113,7 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["navbar-nav"],
-    "navbar_end": ["navbar-icon-links"],
+    "navbar_end": ["navbar-icon-links", "theme-switcher"],
     "navbar_align": "content",
     "navbar_persistent": ["search-button"],
 }
@@ -190,7 +199,3 @@ sphinx_gallery_conf = {
     "backreferences_dir": "generated",
     "examples_dirs": "../examples",
 }
-
-
-# def setup(app):
-#     app.add_css_file("style.css")
