@@ -166,8 +166,16 @@ class WAUM_redundant(CrowdModel):
         pij = torch.tensor(self.pi).type(torch.FloatTensor).to(self.DEVICE)
         self.model.to(self.DEVICE)
         self.model.train()
-        for epoch in range(self.n_epoch):
-            for batch in self.tasks:
+        for epoch in (
+            tqdm(range(self.n_epoch), desc="epoch")
+            if self.verbose
+            else range(self.n_epoch)
+        ):
+            for batch in (
+                tqdm(self.tasks, total=len(self.tasks), desc="batch")
+                if self.verbose
+                else self.tasks
+            ):
                 len_, out, y, ww, dd, idx = self.make_step(batch)
                 if len_ is None:
                     continue
