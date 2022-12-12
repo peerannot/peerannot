@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PeerAnnot",
-    version="0.0.1-2",
+    version="0.0.1-3",
     description="Crowdsourcing library",
     author="Contributors",
     author_email="tanguy.lefort@umontpellier.fr",
