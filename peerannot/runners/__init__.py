@@ -2,8 +2,9 @@ import click
 
 from peerannot import __version__
 from peerannot.runners.run import run
+from peerannot.runners.datasets import datasets
 
-SOURCES = [run]
+SOURCES = [run, datasets]
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 

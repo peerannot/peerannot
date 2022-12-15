@@ -166,3 +166,16 @@ docs/generated/*
 
 *.json
 *.npy
+
+# images
+*.png
+*.jpg
+*.jpeg
+
+# compress
+*.tar.gz
+*.zip
+*.tar
+
+# cifar10h
+datasets/cifar10H/cifar-10-batches-py/*
