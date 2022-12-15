@@ -39,9 +39,9 @@ def agginfo():
 
 
 @run.command(
-    help="Aggregate crowdsourced labels",
+    help="Aggregate crowdsourced labels stored in the provided directory",
     epilog="All aggregated labels are stored in the associated"
-    "dataset directory with the strategy name",
+    " dataset directory with the strategy name",
 )
 @click.argument(
     "dataset",
@@ -69,7 +69,10 @@ def agginfo():
     help="Path to the metadata of the dataset if different than default",
 )
 def aggregate(**kwargs):
-    """Aggregate labels from a dictionnary of crowdsourced tasks according to a given strategy"""
+    """Aggregate labels from a dictionnary of crowdsourced tasks according to a given strategy
+
+    The dataset given is a path to the dataset directory
+    """
     # load answers and metadata
     kwargs["dataset"] = Path(kwargs["dataset"]).resolve()
     if kwargs["metadata_path"] is None:

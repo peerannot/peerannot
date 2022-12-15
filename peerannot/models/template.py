@@ -1,3 +1,9 @@
+"""
+=================================
+Parent template to all strategies
+=================================
+"""
+
 from peerannot.helpers.converters import Converter
 
 

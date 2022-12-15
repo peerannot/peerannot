@@ -1,7 +1,10 @@
-import torch
+import json
 from torchvision.utils import save_image
 import torchvision
 import torchvision.transforms as transforms
+import pandas as pd
+import pooch
+import zipfile
 from pathlib import Path
 from tqdm import tqdm
 
@@ -62,3 +65,38 @@ class CIFAR10H:
             ("train", "val", "test"), [train_path, valid_path, test_path]
         ):
             print(f"- {set}: {path}")
+        self.get_crowd_labels()
+        print(f"Train crowd labels are in {self.DIR / 'answers.json'}")
+        print(
+            f"Train crowd labels (validation set) are in {self.DIR / 'answers_valid.json'}"
+        )
+
+    def get_crowd_labels(self):
+        url = "https://github.com/jcpeterson/cifar-10h/blob/master/data/cifar10h-raw.zip?raw=true"
+        filename = self.DIR / "downloads" / "cifar10h-raw.zip"
+        filename.parent.mkdir(exist_ok=True)
+        if not filename.exists():
+            pooch.retrieve(url=url, known_hash=None, fname=filename)
+        with zipfile.ZipFile(filename, "r") as zip_ref:
+            zip_ref.extractall(self.DIR / "downloads")
+
+        csvfile = "cifar10h-raw.csv"
+        df = pd.read_csv(self.DIR / "downloads" / csvfile, na_values="-9999")
+        df = df[df.is_attn_check == 0]
+        res_train, res_valid = {}, {}
+        for t in df.cifar10_test_test_idx.unique():
+            tmp = df[df.cifar10_test_test_idx == t]
+            if t < 9500:
+                res = res_train
+            else:
+                res = res_valid
+            res[str(t)] = {}
+            for w in tmp.annotator_id:
+                res[str(t)][str(w)] = int(
+                    tmp[tmp.annotator_id == w].chosen_label.iloc[0]
+                )
+
+        with open(self.DIR / "answers.json", "w") as answ:
+            json.dump(res_train, answ)
+        with open(self.DIR / "answers_valid.json", "w") as answval:
+            json.dump(res_valid, answval)

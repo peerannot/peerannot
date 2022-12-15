@@ -1,5 +1,7 @@
 """
-Majority voting:
+=========================
+Majority voting
+=========================
 Most answered label per task
 """
 from .template import CrowdModel

@@ -1,7 +1,7 @@
 .. _strategies-documentation:
 
 ==========================
-Crowdsourcing strategies
+Strategies
 ==========================
 
 Here you can find the available crowdsourcing strategies available in the `peerannot` library.
@@ -12,3 +12,5 @@ Here you can find the available crowdsourcing strategies available in the `peera
     :recursive:
 
     models
+
+TODO: display the strategies here (how ?)

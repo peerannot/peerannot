@@ -1,5 +1,7 @@
 """
+===================================
 Naive soft: Frequency distribution
+===================================
 """
 from .template import CrowdModel
 import numpy as np
