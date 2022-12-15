@@ -36,9 +36,7 @@ class Soft(CrowdModel):
             for vote in list(task.values()):
                 baseline[task_id, vote] += 1
         self.baseline = baseline
-        return (baseline / baseline.sum(axis=1).reshape(-1, 1))[
-            self.converter.inv_task
-        ]
+        return baseline / baseline.sum(axis=1).reshape(-1, 1)
 
     def get_answers(self):
         """Argmax of soft labels, in this case corresponds to a majority vote

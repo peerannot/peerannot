@@ -1,11 +1,26 @@
-# Adapted from https://github.com/notani/python-glad
+"""
+=============================
+GLAD (Whitehill et. al 2009)
+=============================
 
+Each worker ability is modeled using one scalar.
+Each task has a difficulty level represented as a positive scalar.
+Knowing these coefficients, the probability to have the right answer is a sigmoid of their product.
+
+Assumption:
+- The errors are uniform over classes
+
+Using:
+- One scalar per task and worker (task difficulty and worker ability)
+"""
+# Adapted from https://github.com/notani/python-glad
 
 from .template import CrowdModel
 import numpy as np
 import scipy as sp
 import scipy.stats
 import scipy.optimize
+from tqdm import tqdm
 
 
 def sigmoid(x):
@@ -37,6 +52,19 @@ class GLAD(CrowdModel):
         n_classes,
         **kwargs,
     ):
+        """Aggregate labels with a bilinear trust score using a scalar per task indicating the difficulty and a scalar per worker indicating the worker ability
+
+        :param answers: Dictionnary of workers answers with format
+         .. code-block:: javascript
+
+             {
+                 task0: {worker0: label, worker1: label},
+                 task1: {worker1: label}
+             }
+         :type answers: dict
+         :param n_classes: Number of possible classes
+         :type n_classes: int
+        """
         super().__init__(answers)
         self.n_classes = n_classes
         self.n_workers = len(self.converter.table_worker)
@@ -58,21 +86,28 @@ class GLAD(CrowdModel):
     def EM(self, epsilon, maxiter):
         """Infer true labels, tasks' difficulty and workers' ability"""
         # Initialize parameters to starting values
+        print("- Running EM")
         self.alpha = self.priorAlpha.copy()
         self.beta = self.priorBeta.copy()
         self.probZ[:] = self.priorZ[:]
 
+        pbar = tqdm(total=maxiter)
         self.EStep()
         lastQ = self.computeQ()
         self.MStep()
         Q = self.computeQ()
         counter = 1
+        pbar.update(1)
         while abs((Q - lastQ) / lastQ) > epsilon and counter <= maxiter:
             lastQ = Q
             self.EStep()
             self.MStep()
             Q = self.computeQ()
             counter += 1
+            pbar.update(1)
+        else:
+            pbar.set_description("Finished")
+        pbar.close()
         # if abs((Q - lastQ) / lastQ) > epsilon:
         #     print(f"GLAD did not converge: err={abs((Q - lastQ) / lastQ)}")
 
@@ -193,7 +228,6 @@ class GLAD(CrowdModel):
         )
         # Note: The derivative in Whitehill et al.'s appendix
         # has the term ln(K-1), which is incorrect.
-
         return correct.sum() + wrong.sum()
 
     def dBeta(self, item, *args):
@@ -248,13 +282,30 @@ class GLAD(CrowdModel):
 
         return dQdAlpha, dQdBeta
 
-    def run_em(self, epsilon=1e-5, maxiter=100):
+    def run(self, epsilon=1e-5, maxiter=50):
+        """Run the label aggregation via EM algorithm
+
+        :param epsilon: tolerance hyperparameter, relative change in likelihood, defaults to 1e-5
+        :type epsilon: float, optional
+        :param maxiter: Maximum number of iterations, defaults to 100
+        :type maxiter: int, optional
+        """
         self.EM(epsilon, maxiter)
 
     def get_probas(self):
-        return self.probZ[self.converter.inv_task]
+        """Get soft labels distribution for each task
+
+        :return: Soft labels
+        :rtype: numpy.ndarray(n_task, n_classes)
+        """
+        return self.probZ
 
     def get_answers(self):
+        """Argmax of soft labels.
+
+        :return: Hard labels
+        :rtype: numpy.ndarray
+        """
         return np.vectorize(self.converter.inv_labels.get)(
             np.argmax(self.get_probas(), axis=1)
         )

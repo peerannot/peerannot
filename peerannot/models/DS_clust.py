@@ -1,5 +1,16 @@
 """
-Dawid and skene model (1979) by Imomura et. al (2018) with variational inference for clustering
+====================================================================
+Dawid and skene model with worker clustering (Imomura et. al 2018)
+====================================================================
+
+Assumptions:
+- clusters of workers
+
+Using:
+- Variational inference
+
+Estimating:
+- One confusion matrix per cluster of workers
 """
 
 from .template import CrowdModel
@@ -7,7 +18,7 @@ import numpy as np
 
 
 class Dawid_Skene_clust(CrowdModel):
-    def __init__(self, answers, n_classes, L=2):
+    def __init__(self, answers, n_classes, L=2, **kwargs):
         """Dawid and Skene model with clusterized confusion matrices using variational inference.
 
         :param answers: Dictionnary of workers answers with format
@@ -225,12 +236,12 @@ class Dawid_Skene_clust(CrowdModel):
         :return: Estimated soft labels for each task
         :rtype: numpy.ndarray(n_task, n_classes)
         """
-        return self.probas[self.converter.inv_task]
+        return self.probas
 
     def get_answers(self):
         """Argmax of soft labels
 
-        :return: Hard labels (majority vote)
+        :return: Hard labels
         :rtype: numpy.ndarray(n_task)
         """
         return np.vectorize(self.converter.inv_labels.get)(

@@ -15,10 +15,11 @@ Estimating:
 
 from .template import CrowdModel
 import numpy as np
+from tqdm import tqdm
 
 
 class Dawid_Skene(CrowdModel):
-    def __init__(self, answers, n_classes):
+    def __init__(self, answers, n_classes, **kwargs):
         super().__init__(answers)
         self.n_classes = n_classes
         self.n_workers = len(self.converter.table_worker)
@@ -78,11 +79,12 @@ class Dawid_Skene(CrowdModel):
     def log_likelihood(self):
         return np.log(np.sum(self.denom_e_step))
 
-    def run_em(self, epsilon=1e-7, maxiter=100, verbose=False):
+    def run(self, epsilon=1e-6, maxiter=50, verbose=False):
         self.get_crowd_matrix()
         self.init_T()
         ll = []
         k, eps = 0, 1e1
+        pbar = tqdm(total=maxiter)
         while k < maxiter and eps > epsilon:
             self.m_step()
             self.e_step()
@@ -91,6 +93,10 @@ class Dawid_Skene(CrowdModel):
             if len(ll) >= 2:
                 eps = np.abs(ll[-1] - ll[-2])
             k += 1
+            pbar.update(1)
+        else:
+            pbar.set_description("Finished")
+        pbar.close()
         self.c = k
         if eps > epsilon and verbose:
             print(f"DS did not converge: err={eps}")
@@ -102,4 +108,4 @@ class Dawid_Skene(CrowdModel):
         )
 
     def get_probas(self):
-        return self.T[self.converter.inv_task]
+        return self.T

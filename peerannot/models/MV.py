@@ -48,6 +48,21 @@ class MV(CrowdModel):
             )
             for i in range(len(self.answers))
         ]
-        return np.vectorize(self.converter.inv_labels.get)(
-            np.array(ans)[self.converter.inv_task]
-        )
+        self.ans = ans
+        return np.vectorize(self.converter.inv_labels.get)(np.array(ans))
+
+    def get_probas(self):
+        """Get labels obtained with majority voting aggregation
+
+        :return: Most answered labels per task
+        :rtype: numpy.ndarray
+        """
+        self.compute_baseline()
+        ans = [
+            np.random.choice(
+                np.flatnonzero(self.baseline[i] == self.baseline[i].max())
+            )
+            for i in range(len(self.answers))
+        ]
+        self.ans = ans
+        return np.vectorize(self.converter.inv_labels.get)(np.array(ans))
