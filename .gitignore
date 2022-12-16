@@ -179,3 +179,4 @@ docs/generated/*
 
 # cifar10h
 datasets/cifar10H/cifar-10-batches-py/*
+datasets/cifar10H/best_models/

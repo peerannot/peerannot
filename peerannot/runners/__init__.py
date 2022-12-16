@@ -3,8 +3,9 @@ import click
 from peerannot import __version__
 from peerannot.runners.run import run
 from peerannot.runners.datasets import datasets
+from peerannot.runners.train import trainmod
 
-SOURCES = [run, datasets]
+SOURCES = [run, datasets, trainmod]
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 

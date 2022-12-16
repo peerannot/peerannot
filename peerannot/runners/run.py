@@ -68,6 +68,12 @@ def agginfo():
     default=None,
     help="Path to the metadata of the dataset if different than default",
 )
+@click.option(
+    "--answers-file",
+    type=str,
+    default="answers.json",
+    help="Name (with json extension) of the path to the crowdsourced labels",
+)
 def aggregate(**kwargs):
     """Aggregate labels from a dictionnary of crowdsourced tasks according to a given strategy
 
@@ -80,7 +86,7 @@ def aggregate(**kwargs):
     else:
         kwargs["metadata_path"] = Path(["metadata_path"]).resolve()
     check_dataset(kwargs["dataset"], kwargs["metadata_path"])
-    with open(kwargs["dataset"] / "answers.json", "r") as answers:
+    with open(kwargs["dataset"] / kwargs["answers_file"], "r") as answers:
         answers = json.load(answers)
     with open(kwargs["metadata_path"], "r") as metadata:
         metadata = json.load(metadata)
@@ -138,7 +144,3 @@ def get_options(strat):
             match = match.replace(f"'{token}'", token)
         result = ast.literal_eval(match)
     return strat_name, result
-
-
-if __name__ == "__main__":
-    aggregate(["--help"])

@@ -90,12 +90,13 @@ class CIFAR10H:
                 res = res_train
             else:
                 res = res_valid
-            res[str(t)] = {}
+            res[int(t)] = {}
             for w in tmp.annotator_id:
-                res[str(t)][str(w)] = int(
+                res[int(t)][str(w)] = int(
                     tmp[tmp.annotator_id == w].chosen_label.iloc[0]
                 )
-
+        res_train = dict(sorted(res_train.items()))
+        res_valid = dict(sorted(res_valid.items()))
         with open(self.DIR / "answers.json", "w") as answ:
             json.dump(res_train, answ)
         with open(self.DIR / "answers_valid.json", "w") as answval:
