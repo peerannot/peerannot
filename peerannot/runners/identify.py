@@ -262,6 +262,8 @@ def identify(folderpath, n_classes, method, **kwargs):
         print(
             f"Saved AUM per worker values at {path_waum / 'aum_per_worker.json'}"
         )
+        np.savetxt(path_waum / f"too_hard_{alpha}.txt", waum.too_hard)
+        print(f"Saved too hard index at {path_waum / f'too_hard_{alpha}.txt'}")
     elif method.lower() == "WAUMstacked".lower():
         from peerannot.models.WAUM_stacked import WAUM_stacked
 
@@ -298,11 +300,13 @@ def identify(folderpath, n_classes, method, **kwargs):
         print(
             f"Saved AUM per worker values at {path_waum / 'aum_per_worker.json'}"
         )
+        np.savetxt(path_waum / f"too_hard_{alpha}.txt", waum.too_hard)
+        print(f"Saved too hard index at {path_waum / f'too_hard_{alpha}.txt'}")
 
     if method.startswith("WAUM"):
         path_results = path_folders / "labels"
         path_results.mkdir(parents=True, exist_ok=True)
-        path_file = path_results / (method.lower() + ".npy")
+        path_file = path_results / (method.lower() + f"_{str(alpha)}" + ".npy")
         yhat = waum.get_probas()
         np.save(path_file, yhat)
         print(

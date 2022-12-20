@@ -39,56 +39,48 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
         dataset.real_class_to_idx = dataset.class_to_idx
 
     dataset.inv_class_to_idx = {v: k for k, v in dataset.class_to_idx.items()}
+    if path_remove:
+        rm_idx = np.loadtxt(path_remove, dtype=int)
+    else:
+        rm_idx = []
     if path_labels:
         labs = np.load(path_labels)
         ll = []
         targets = []
         imgs = []
         true_labels = []
-        for samp in dataset.samples:
-            img, true_label = samp
-            true_label = dataset.real_class_to_idx[
-                dataset.inv_class_to_idx[true_label]
-            ]
-            true_labels.append(true_label)
-            num = int(img.split("-")[1].split(".")[0])
-            ll.append((img, labs[num]))
-            imgs.append(img)
-            targets.append(labs[num])
+        for i, samp in enumerate(dataset.samples):
+            if i not in rm_idx:
+                img, true_label = samp
+                true_label = dataset.real_class_to_idx[
+                    dataset.inv_class_to_idx[true_label]
+                ]
+                true_labels.append(true_label)
+                num = int(img.split("-")[-1].split(".")[0])
+                ll.append((img, labs[num]))
+                imgs.append(img)
+                targets.append(labs[num])
     else:
         labs = dataset.targets
         ll = []
         targets = []
         imgs = []
         true_labels = []
-        for samp in dataset.samples:
-            img, true_label = samp
-            true_label = dataset.real_class_to_idx[
-                dataset.inv_class_to_idx[true_label]
-            ]
-            true_labels.append(true_label)
-            ll.append((img, true_label))
-            imgs.append(img)
-            targets.append(true_label)
+        for i, samp in enumerate(dataset.samples):
+            if i not in rm_idx:
+                img, true_label = samp
+                true_label = dataset.real_class_to_idx[
+                    dataset.inv_class_to_idx[true_label]
+                ]
+                true_labels.append(true_label)
+                ll.append((img, true_label))
+                imgs.append(img)
+                targets.append(true_label)
     dataset.samples = ll
     dataset.imgs = imgs
     dataset.targets = targets
     dataset.true_labels = true_labels
     dataset.class_to_idx = dataset.real_class_to_idx
-    if path_remove:
-        rm_idx = np.load(path_remove)
-        dataset.samples = [
-            samp for i, samp in enumerate(dataset.samples) if i not in rm_idx
-        ]
-        dataset.targets = [
-            tar for i, tar in enumerate(dataset.targets) if i not in rm_idx
-        ]
-        dataset.imgs = [
-            im for i, im in enumerate(dataset.imgs) if i not in rm_idx
-        ]
-        dataset.true_labels = [
-            im for i, im in enumerate(dataset.true_labels) if i not in rm_idx
-        ]
     if path_labels:
         acc = (
             np.mean(np.array(dataset.targets) == np.array(dataset.true_labels))
