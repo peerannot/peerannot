@@ -36,14 +36,24 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
             weight = None
         model = torch.hub.load("pytorch/vision", name, weights=weight)
 
-    if model.fc.out_features != n_classes:
-        model.fc = nn.Linear(model.fc.in_features, n_classes)
+    if "resnet" in name:
+        if model.fc.out_features != n_classes:
+            model.fc = nn.Linear(model.fc.in_features, n_classes)
+
+    elif "vgg" in name:
+        if model.classifier[6].out_features != n_classes:
+            model.classifier[6] = nn.Linear(
+                model.classifier[6].in_features, n_classes
+            )
+    else:
+        raise NotImplementedError("Not implemented yet, sorry")
     print(f"Successfully loaded {name} with n_classes={n_classes}")
     if pretrained:
         print(f"\t with weights {weight}")
-
     if name.startswith("resnet") and cifar:
+        print("Removing initial downsampling")
         model.conv1 = nn.Conv2d(
-            3, 64, kernel_size=3, stride=1, padding=1, bias=False
+            3, 64, kernel_size=3, stride=1, padding=3, bias=False
         )
+        model.maxpool = nn.Identity()  # avoid hard downsampling
     return model

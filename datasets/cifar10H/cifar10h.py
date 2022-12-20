@@ -6,7 +6,7 @@ import pandas as pd
 import pooch
 import zipfile
 from pathlib import Path
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 class CIFAR10H:

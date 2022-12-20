@@ -3,6 +3,7 @@ import click
 from pathlib import Path
 import numpy as np
 import importlib.util
+import inspect
 import sys
 
 datasets = click.Group(
@@ -22,7 +23,7 @@ datasets = click.Group(
 )
 @click.argument(
     "path",
-    type=click.Path(exists=True),
+    type=click.Path(),
 )
 def install(path):
     """Download and install dataset
@@ -34,5 +35,10 @@ def install(path):
     mydata = importlib.util.module_from_spec(spec)
     sys.modules["dataset"] = mydata
     spec.loader.exec_module(mydata)
-    c10h = mydata.CIFAR10H()
-    c10h.setfolders()
+    mm = [
+        (name, cls)
+        for name, cls in inspect.getmembers(mydata, inspect.isclass)
+        if cls.__module__ == "dataset"
+    ][0]
+    df = mm[1]()
+    df.setfolders()

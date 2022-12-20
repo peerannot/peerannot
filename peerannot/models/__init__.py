@@ -4,7 +4,7 @@ from .DS import Dawid_Skene
 from .DS_clust import Dawid_Skene_clust
 from .GLAD import GLAD
 from .WAUM import WAUM
-from .WAUM_redundant import WAUM_redundant
+from .WAUM_stacked import WAUM_stacked
 
 agg_strategies = {
     "MV": MV,

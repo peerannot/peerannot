@@ -15,7 +15,7 @@ Estimating:
 
 from .template import CrowdModel
 import numpy as np
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 class Dawid_Skene(CrowdModel):
@@ -84,7 +84,7 @@ class Dawid_Skene(CrowdModel):
         self.init_T()
         ll = []
         k, eps = 0, 1e1
-        pbar = tqdm(total=maxiter)
+        pbar = tqdm(total=maxiter, desc="Dawid and Skene")
         while k < maxiter and eps > epsilon:
             self.m_step()
             self.e_step()

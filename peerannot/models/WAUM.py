@@ -3,8 +3,7 @@
 WAUM (2022)
 =============================
 
-Measures the WAUM per worker and task without duplication for each task by the number
-of workers that responded.
+Measures the WAUM per worker and task without duplication for each task by the number of workers that responded.
 Once too prone to confusion tasks are removed, the final label is a
 weighted distribution by the diagonal of the estimated confusion matrix.
 
@@ -19,7 +18,7 @@ from .DS import Dawid_Skene as DS
 import torch
 from pathlib import Path
 from torch.utils.data import Subset
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from torchvision import transforms
 import numpy as np
 
@@ -107,7 +106,7 @@ class WAUM(CrowdModel):
     def run_DS(self, cut=False):
         if not cut:
             self.ds = DS(self.answers, self.n_classes)
-            self.ds.run_em(maxiter=self.maxiterDS)
+            self.ds.run(maxiter=self.maxiterDS)
         else:
             self.answers_waum = {
                 key: val
@@ -115,7 +114,7 @@ class WAUM(CrowdModel):
                 if key not in self.too_hard
             }
             self.ds = DS(self.answers_waum, self.n_classes)
-            self.ds.run_em(maxiter=self.maxiterDS)
+            self.ds.run(maxiter=self.maxiterDS)
 
         self.pi = self.ds.pi
 
@@ -126,8 +125,7 @@ class WAUM(CrowdModel):
             Batch:
                 - index 0: tasks (x_i)_i
                 - index 1: labels
-                - index 2: true index (witout redundancy)
-                - index 3: tasks index (i)_i
+                - index 2: tasks index (i)_i
         :type batch: batch
         :return: Tuple with length, logits, targets, ground turths and index
         :rtype: tuple
@@ -196,7 +194,11 @@ class WAUM(CrowdModel):
             )
             self.model.to(self.DEVICE)
             self.model.train()
-            for epoch in range(self.n_epoch):
+            for epoch in (
+                tqdm(range(self.n_epoch), desc="Epoch", leave=False)
+                if self.verbose
+                else range(self.n_epoch)
+            ):
                 for batch in dl:
                     len_, out, labels, idx, truth = self.make_step(
                         data_j, batch
@@ -387,6 +389,12 @@ class WAUM(CrowdModel):
         return tasks_too_hard
 
     def run(self, alpha=0.01):
+        """Run WAUM identification and label aggregation using the cut-off hyperparameter alpha
+
+        :param alpha: WAUM quantile below which tasks are removed, defaults to 0.01
+        :type alpha: float, optional
+        """
+
         self.run_DS()
         self.ds1 = self.ds
         self.pi1 = self.ds1.pi
@@ -401,6 +409,11 @@ class WAUM(CrowdModel):
         self.pi2 = self.ds2.pi
 
     def get_probas(self):
+        """Get soft labels distribution for each task
+
+        :return: Weighted label frequency for each task
+        :rtype: numpy.ndarray(n_task, n_classes)
+        """
         baseline = np.zeros((len(self.answers_waum), self.n_classes))
         self.answers_waum = dict(sorted(self.answers_waum.items()))
         for task_id, tt in enumerate(list(self.answers_waum.keys())):
@@ -410,15 +423,18 @@ class WAUM(CrowdModel):
                     self.ds.converter.table_worker[int(worker)]
                 ][int(vote), int(vote)]
         self.baseline = baseline
-        return (
-            np.where(
-                baseline.sum(axis=1).reshape(-1, 1),
-                baseline / baseline.sum(axis=1).reshape(-1, 1),
-                0,
-            )
-        )[self.converter.inv_task[: -len(self.too_hard)]]
+        return np.where(
+            baseline.sum(axis=1).reshape(-1, 1),
+            baseline / baseline.sum(axis=1).reshape(-1, 1),
+            0,
+        )
 
     def get_answers(self):
+        """Argmax of soft labels, in this case corresponds to a majority vote
+
+        :return: Hard labels
+        :rtype: numpy.ndarray
+        """
         return np.vectorize(self.converter.inv_labels.get)(
             np.argmax(self.get_probas(), axis=1)
         )

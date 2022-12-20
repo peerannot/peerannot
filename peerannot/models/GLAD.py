@@ -20,7 +20,7 @@ import numpy as np
 import scipy as sp
 import scipy.stats
 import scipy.optimize
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 def sigmoid(x):

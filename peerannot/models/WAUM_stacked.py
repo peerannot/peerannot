@@ -17,7 +17,7 @@ import pandas as pd
 from .DS import Dawid_Skene as DS
 import torch
 from pathlib import Path
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import numpy as np
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -34,7 +34,7 @@ def convert_json_to_pd(crowd_data):
     return data_
 
 
-class WAUM_redundant(CrowdModel):
+class WAUM_stacked(CrowdModel):
     def __init__(
         self,
         tasks,
@@ -50,7 +50,7 @@ class WAUM_redundant(CrowdModel):
     ):
         """Compute the WAUM score for each task using a stacked version of the dataset (stacked over workers)
 
-        :param tasks: Dataset of tasks as
+        :param tasks: Loader for dataset of tasks as
             (x_i, y_i^(j), w^(j), y_i^*, i)_(i,j)
         :type tasks: torch Dataset
         :param answers: Dictionnary of workers answers with format
@@ -103,7 +103,7 @@ class WAUM_redundant(CrowdModel):
     def run_DS(self, cut=False):
         if not cut:
             self.ds = DS(self.answers, self.n_classes)
-            self.ds.run_em(maxiter=self.maxiterDS)
+            self.ds.run(maxiter=self.maxiterDS)
         else:
             self.answers_waum = {
                 key: val
@@ -111,7 +111,7 @@ class WAUM_redundant(CrowdModel):
                 if key not in self.too_hard
             }
             self.ds = DS(self.answers_waum, self.n_classes)
-            self.ds.run_em(maxiter=self.maxiterDS)
+            self.ds.run(maxiter=self.maxiterDS)
 
         self.pi = self.ds.pi
 
@@ -129,7 +129,6 @@ class WAUM_redundant(CrowdModel):
         :return: Tuple with length, logits, targets, workers, ground turths and index
         :rtype: tuple
         """
-
         xi, yy, ww, dd, idx = batch
         ww = list(map(int, ww.tolist()))
         dd = list(map(int, dd.tolist()))
@@ -171,11 +170,7 @@ class WAUM_redundant(CrowdModel):
             if self.verbose
             else range(self.n_epoch)
         ):
-            for batch in (
-                tqdm(self.tasks, total=len(self.tasks), desc="batch")
-                if self.verbose
-                else self.tasks
-            ):
+            for batch in self.tasks:
                 len_, out, y, ww, dd, idx = self.make_step(batch)
                 if len_ is None:
                     continue
@@ -260,7 +255,7 @@ class WAUM_redundant(CrowdModel):
         self.AUM_recorder = recorder2
 
     def reset(self):
-        check_ = torch.load("./temp/checkpoint_waum_red.pth")
+        check_ = torch.load("./temp/checkpoint_waum_stacked.pth")
         self.n_epoch = check_["epoch"]
         self.model.load_state_dict(self.checkpoint["model"])
         self.optimizer.load_state_dict(self.checkpoint["optimizer"])
@@ -350,6 +345,11 @@ class WAUM_redundant(CrowdModel):
         return tasks_too_hard
 
     def run(self, alpha=0.01):
+        """Run WAUM identification and label aggregation using the cut-off hyperparameter alpha
+
+        :param alpha: WAUM quantile below which tasks are removed, defaults to 0.01
+        :type alpha: float, optional
+        """
         self.run_DS()
         self.ds1 = self.ds
         self.pi1 = self.ds1.pi
@@ -364,6 +364,11 @@ class WAUM_redundant(CrowdModel):
         self.pi2 = self.ds2.pi
 
     def get_probas(self):
+        """Get soft labels distribution for each task
+
+        :return: Weighted label frequency for each task in D_pruned
+        :rtype: numpy.ndarray(n_task, n_classes)
+        """
         baseline = np.zeros((len(self.answers_waum), self.n_classes))
         self.answers_waum = dict(sorted(self.answers_waum.items()))
         for task_id, tt in enumerate(list(self.answers_waum.keys())):
@@ -373,15 +378,19 @@ class WAUM_redundant(CrowdModel):
                     self.ds.converter.table_worker[int(worker)]
                 ][int(vote), int(vote)]
         self.baseline = baseline
-        return (
-            np.where(
-                baseline.sum(axis=1).reshape(-1, 1),
-                baseline / baseline.sum(axis=1).reshape(-1, 1),
-                0,
-            )
-        )[self.converter.inv_task[: -len(self.too_hard)]]
+        return np.where(
+            baseline.sum(axis=1).reshape(-1, 1),
+            baseline / baseline.sum(axis=1).reshape(-1, 1),
+            0,
+        )
 
     def get_answers(self):
+        """Argmax of soft labels.
+
+        :return: Hard labels
+        :rtype: numpy.ndarray
+        """
+
         return np.vectorize(self.converter.inv_labels.get)(
             np.argmax(self.get_probas(), axis=1)
         )

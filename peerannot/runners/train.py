@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 import click
 from pathlib import Path
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import torchmetrics
 import json
 import re
@@ -48,7 +48,7 @@ def get_model(
         model_name.lower() in nethelp.get_all_models()
     ), "The neural network asked is not one of available networks, please run `peerannot modelinfo` to get the list of available models"
     model = nethelp.networks(
-        model_name, n_classes, n_params=None, pretrained=False, cifar=False
+        model_name, n_classes, n_params=None, pretrained=False, cifar=cifar
     )
     return model
 
@@ -69,7 +69,7 @@ def get_optimizer(net, optimizer, **kwargs):
         raise ValueError("Not implemented yet")
     if kwargs["scheduler"]:
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones, gamma=kwargs["lr_decay"]
+            optimizer, milestones=milestones, gamma=kwargs["lr_decay"]
         )
     else:
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
@@ -141,7 +141,7 @@ def get_optimizer(net, optimizer, **kwargs):
     "--scheduler",
     is_flag=True,
     show_default=True,
-    default=True,
+    default=False,
     help="Use a multistep scheduler for the learning rate",
 )
 @click.option(
@@ -151,6 +151,12 @@ def get_optimizer(net, optimizer, **kwargs):
     multiple=True,
     default=[50],
     help="Milestones for the learning rate decay scheduler",
+)
+@click.option(
+    "--n-params",
+    type=int,
+    default=int(32 * 32 * 3),
+    help="Number of parameters for the logistic regression only",
 )
 @click.option(
     "--lr-decay",
@@ -179,6 +185,7 @@ def train(datapath, output_name, n_classes, **kwargs):
         shuffle=True,
         batch_size=kwargs["batch_size"],
         num_workers=kwargs["num_workers"],
+        pin_memory=(torch.cuda.is_available()),
     ), DataLoader(
         testset,
         batch_size=kwargs["batch_size"],
@@ -199,7 +206,7 @@ def train(datapath, output_name, n_classes, **kwargs):
     model = get_model(
         kwargs["model"],
         n_classes,
-        n_params=None,
+        n_params=kwargs["n_params"],
         pretrained=kwargs["pretrained"],
         cifar="cifar" in datapath.lower(),
     )
@@ -241,6 +248,11 @@ def train(datapath, output_name, n_classes, **kwargs):
                     print("Validation loss stopped improving, stop training")
                     break
         scheduler.step()
+        if epoch in kwargs["milestones"]:
+            print()
+            print(
+                f"Adjusting learning rate to = {scheduler.optimizer.param_groups[0]['lr']:.4f}"
+            )
 
     # load and test model
     model.load_state_dict(torch.load(path_best / f"{output_name}.pth"))
@@ -302,7 +314,7 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
         # logger["test_class_ece"] = np.mean(
         #     compute_ece_by_class(model, loader).cpu().numpy()
         # ).item()
-        print(logger)
+        # print(logger)
     else:  # validation
         logger["val_loss"].append(avg_loss)
         logger["val_accuracy"].append(accuracy)

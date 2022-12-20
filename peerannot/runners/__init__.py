@@ -4,8 +4,9 @@ from peerannot import __version__
 from peerannot.runners.run import run
 from peerannot.runners.datasets import datasets
 from peerannot.runners.train import trainmod
+from peerannot.runners.identify import identification
 
-SOURCES = [run, datasets, trainmod]
+SOURCES = [run, datasets, trainmod, identification]
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
