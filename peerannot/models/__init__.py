@@ -5,6 +5,7 @@ from .DS_clust import Dawid_Skene_clust
 from .GLAD import GLAD
 from .WAUM import WAUM
 from .WAUM_stacked import WAUM_stacked
+from .CoNAL import CoNAL
 
 agg_strategies = {
     "MV": MV,
@@ -12,4 +13,5 @@ agg_strategies = {
     "DS": Dawid_Skene,
     "DSWC": Dawid_Skene_clust,
     "GLAD": GLAD,
+    "CoNAL": CoNAL,
 }

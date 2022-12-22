@@ -184,3 +184,5 @@ datasets/cifar10H/best_models/
 *.sh
 
 datasets/labelme/data/
+
+*.pth

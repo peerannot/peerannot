@@ -38,6 +38,129 @@ def agginfo():
     return
 
 
+@run.command(help="Crowdsourcing strategy using deep learning models")
+@click.argument(
+    "dataset",
+    default=Path.cwd(),
+    type=click.Path(exists=True),
+)
+@click.option(
+    "--n-classes",
+    "-K",
+    default=10,
+    type=int,
+    help="Number of classes to separate",
+)
+@click.option(
+    "--output-name",
+    "-o",
+    type=str,
+    help="Name of the generated results file",
+)
+@click.option(
+    "--strategy",
+    "-s",
+    type=str,
+    default="conal",
+    help="Deep learning strategy",
+)
+@click.option(
+    "--model", type=str, default="resnet18", help="Neural network to train on"
+)
+@click.option(
+    "--answers",
+    type=click.Path(),
+    default=Path.cwd() / "answers.json",
+    help="Crowdsourced labels in json file",
+)
+@click.option(
+    "--img-size", type=int, default=224, help="Size of image (square)"
+)
+@click.option(
+    "--pretrained",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Use torch available weights to initialize the network",
+)
+@click.option(
+    "--n-epochs", type=int, default=100, help="Number of training epochs"
+)
+@click.option("--lr", type=float, default=0.1, help="Learning rate")
+@click.option(
+    "--momentum", type=float, default=0.9, help="Momentum for the optimizer"
+)
+@click.option(
+    "--decay", type=float, default=5e-4, help="Weight decay for the optimizer"
+)
+@click.option(
+    "--scheduler",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Use a multistep scheduler for the learning rate",
+)
+@click.option(
+    "--milestones",
+    "-m",
+    type=int,
+    multiple=True,
+    default=[50],
+    help="Milestones for the learning rate decay scheduler",
+)
+@click.option(
+    "--n-params",
+    type=int,
+    default=int(32 * 32 * 3),
+    help="Number of parameters for the logistic regression only",
+)
+@click.option(
+    "--lr-decay",
+    type=float,
+    default=0.1,
+    help="Learning rate decay for the scheduler",
+)
+@click.option("--num-workers", type=int, default=1, help="Number of workers")
+@click.option("--batch-size", default=64, type=int, help="Batch size")
+@click.option(
+    "--optimizer",
+    "-optim",
+    type=str,
+    default="SGD",
+    help="Optimizer for the neural network",
+)
+@click.option(
+    "--data-augmentation",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Perform data augmentation on training set with a random choice between RandomAffine(shear=15), RandomHorizontalFlip(0.5) and RandomResizedCrop",
+)
+def aggregate_deep(**kwargs):
+    print("Running the following configuration:")
+    print("-" * 10)
+    print(
+        f"- Data at {kwargs['dataset']} will be saved with prefix {kwargs['output_name']}"
+    )
+    print(f"- number of classes: {kwargs['n_classes']}")
+    for key, value in kwargs.items():
+        print(f"- {key}: {value}")
+    print("-" * 10)
+    strat_name, options = get_options(kwargs["strategy"])
+    if strat_name.lower() == "conal":
+        strat = agg_strategies[strat_name]
+        strat = strat(
+            tasks_path=kwargs["dataset"],
+            scale=options.get("scale", 1e-4),
+            **kwargs,
+        )
+    else:
+        raise NotImplementedError(
+            "Not implemented yet, sorry, maybe a simple `peerannot aggregate` is enough ;)"
+        )
+    strat.run(**kwargs)
+
+
 @run.command(
     help="Aggregate crowdsourced labels stored in the provided directory",
     epilog="All aggregated labels are stored in the associated"
@@ -133,11 +256,11 @@ def get_options(strat):
         all_options += re.findall(
             r"(?<![a-zA-Z0-9_])[+-]?[0-9]+[.]?[0-9]*[eE][-+]?[0-9]+", match
         )
-        for match in all_options:
-            match = options.replace(match, str(hash(match)))
+        for oo in all_options:
+            match = match.replace(oo, str(hash(oo)))
         match = re.sub(r"[a-zA-Z][a-zA-Z0-9._-]*", r"'\g<0>'", match)
-        for match in all_options:
-            match = match.replace(str(hash(match)), match)
+        for oo in all_options:
+            match = match.replace(str(hash(oo)), oo)
         match = "{" + match.replace("=", ":") + "}"
         for token in ["True", "False", "None"]:
             match = match.replace(f'"{token}"', token)

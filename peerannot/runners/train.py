@@ -29,8 +29,10 @@ def load_all_data(folderpath, labels_path, **kwargs):
     trainset = ptrain.load_data(folderpath / "train", labels_path, **kwargs)
     path_rm = kwargs["path_remove"]
     path_lab = kwargs["labels"]
+    data_augm = kwargs["data_augmentation"]
     kwargs["path_remove"] = None  # do not remove tasks in val/test sets
     kwargs["labels"] = None
+    kwargs["data_augmentation"] = False
     testset = ptrain.load_data(folderpath / "test", **kwargs)
     if (folderpath / "val").exists():
         valset = ptrain.load_data(folderpath / "val", **kwargs)
@@ -38,6 +40,7 @@ def load_all_data(folderpath, labels_path, **kwargs):
         valset = None
     kwargs["path_remove"] = path_rm
     kwargs["labels"] = path_lab
+    kwargs["data_augmentation"] = data_augm
     return trainset, valset, testset
 
 
@@ -65,6 +68,8 @@ def get_optimizer(net, optimizer, **kwargs):
             momentum=momentum,
             weight_decay=weight_decay,
         )
+    elif optimizer.lower() == "adam":
+        optimizer = optim.Adam(net.parameters(), lr=lr)
     else:
         raise ValueError("Not implemented yet")
     if kwargs["scheduler"]:
@@ -113,6 +118,13 @@ def get_optimizer(net, optimizer, **kwargs):
 )
 @click.option(
     "--img-size", type=int, default=224, help="Size of image (square)"
+)
+@click.option(
+    "--data-augmentation",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Perform data augmentation on training set with a random choice between RandomAffine(shear=15), RandomHorizontalFlip(0.5) and RandomResizedCrop",
 )
 @click.option(
     "--path-remove",
@@ -197,7 +209,7 @@ def train(datapath, output_name, n_classes, **kwargs):
             valset,
             batch_size=kwargs["batch_size"],
         )
-        print(f"Valdiation set: {len(valloader.dataset)} tasks")
+        print(f"Validation set: {len(valloader.dataset)} tasks")
 
     path_best = path_folders / "best_models"
     path_best.mkdir(exist_ok=True)
@@ -235,7 +247,14 @@ def train(datapath, output_name, n_classes, **kwargs):
 
         # evaluate the model if validation set
         if valset:
-            logger = evaluate(model, valloader, criterion, logger, test=False)
+            logger = evaluate(
+                model,
+                valloader,
+                criterion,
+                logger,
+                test=False,
+                n_classes=n_classes,
+            )
 
             # save if improve
             if logger["val_loss"][-1] < min_val_loss:
@@ -297,7 +316,6 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
             # move to device
             inputs = inputs.to(DEVICE)
             labels = labels.to(DEVICE)
-
             # logits
             outputs = model(inputs)
             loss = criterion(outputs, labels)

@@ -1,11 +1,39 @@
 import torch
 import torch.nn as nn
+import torchvision
 
 
 def get_all_models():
     torch_models = torch.hub.list("pytorch/vision")
     all_models = torch_models
+    all_models.append("modellabelme")
     return all_models
+
+
+class Classifier_labelme(nn.Module):
+    def __init__(self, dropout, n_units, n_class):
+        super().__init__()
+        self.dropout = dropout
+        self.n_units = n_units
+        self.n_class = n_class
+
+        self.backbone = torchvision.models.vgg16_bn(
+            weights=torchvision.models.VGG16_BN_Weights.DEFAULT
+        )
+        self.backbone.classifier = nn.Sequential(
+            nn.Linear(512 * 7 * 7, self.n_units),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Linear(self.n_units, self.n_class),
+            nn.Softmax(dim=-1),
+        )
+
+        for param in self.backbone.features.parameters():
+            param.requires_grad = False
+
+    def forward(self, x):
+        x = self.backbone(x)
+        return x
 
 
 def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
@@ -26,7 +54,7 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
     """
     name = name.lower()
     torch_models = get_all_models()
-    if name in torch_models:
+    if name in torch_models and name != "modellabelme":
         if pretrained:
             weights = torch.hub.load(
                 "pytorch/vision", "get_model_weights", name=name
@@ -35,6 +63,8 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
         else:
             weight = None
         model = torch.hub.load("pytorch/vision", name, weights=weight)
+    elif name == "modellabelme":
+        model = Classifier_labelme(0.5, 128, 8)
 
     if "resnet" in name:
         if model.fc.out_features != n_classes:
@@ -45,7 +75,7 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
             model.classifier[6] = nn.Linear(
                 model.classifier[6].in_features, n_classes
             )
-    else:
+    elif name != "modellabelme":
         raise NotImplementedError("Not implemented yet, sorry")
     print(f"Successfully loaded {name} with n_classes={n_classes}")
     if pretrained:

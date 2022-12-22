@@ -4,13 +4,21 @@ import numpy as np
 
 def load_data(path, path_labels=None, path_remove=None, **kwargs):
     img_size = kwargs.get("img_size", 224)
-    data_transforms = transforms.Compose(
-        [
-            transforms.Resize((img_size, img_size)),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ]
-    )
+    data_transforms = [
+        transforms.Resize((img_size, img_size)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]
+    if kwargs["data_augmentation"]:
+        augmentations = transforms.RandomChoice(
+            [
+                transforms.RandomAffine(degrees=0, shear=15),
+                transforms.RandomHorizontalFlip(0.5),
+                transforms.RandomResizedCrop(img_size),
+            ]
+        )
+        data_transforms.insert(0, augmentations)
+    data_transforms = transforms.Compose(data_transforms)
     dataset = datasets.ImageFolder(path, transform=data_transforms)
     if "cifar" in str(path).lower():
         dataset.real_class_to_idx = {

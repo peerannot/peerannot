@@ -79,7 +79,7 @@ def adapt_dataset_to_method(dataset, method, n_classes, votes=None):
         true_idx = []
         for i, samp in enumerate(dataset.samples):
             img, label = samp
-            num = int(img.split("-")[1].split(".")[0])
+            num = int(img.split("-")[-1].split(".")[0])
             for worker, worker_vote in votes[num].items():
                 ll.append((img, worker_vote))
                 targets.append(worker_vote)
@@ -306,7 +306,7 @@ def identify(folderpath, n_classes, method, **kwargs):
     if method.startswith("WAUM"):
         path_results = path_folders / "labels"
         path_results.mkdir(parents=True, exist_ok=True)
-        path_file = path_results / (method.lower() + f"_{str(alpha)}" + ".npy")
+        path_file = path_results / f"labels_{method.lower()}_{str(alpha)}.npy"
         yhat = waum.get_probas()
         np.save(path_file, yhat)
         print(
