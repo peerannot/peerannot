@@ -57,19 +57,22 @@ def get_model(
 
 
 def get_optimizer(net, optimizer, **kwargs):
+    use_parameters = kwargs.get("use_parameters", True)  # cf crowdlayer
     milestones = [int(x) for x in kwargs.get("milestones", [1e6])]
     lr = kwargs.get("lr", 0.1)
     momentum = kwargs.get("momentum", 0.9)
     weight_decay = kwargs.get("decay", 5e-4)
     if optimizer.lower() == "sgd":
         optimizer = optim.SGD(
-            net.parameters(),
+            net.parameters() if use_parameters else net,
             lr=lr,
             momentum=momentum,
             weight_decay=weight_decay,
         )
     elif optimizer.lower() == "adam":
-        optimizer = optim.Adam(net.parameters(), lr=lr)
+        optimizer = optim.Adam(
+            net.parameters() if use_parameters else net, lr=lr
+        )
     else:
         raise ValueError("Not implemented yet")
     if kwargs["scheduler"]:
@@ -262,10 +265,6 @@ def train(datapath, output_name, n_classes, **kwargs):
                     model.state_dict(), path_best / f"{output_name}.pth"
                 )
                 min_val_loss = logger["val_loss"][-1]
-            elif epoch > 2:
-                if abs(logger["val_loss"][-2] - logger["val_loss"][-1]) < 1e-5:
-                    print("Validation loss stopped improving, stop training")
-                    break
         scheduler.step()
         if epoch in kwargs["milestones"]:
             print()

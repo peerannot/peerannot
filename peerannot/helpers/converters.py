@@ -1,5 +1,7 @@
 import numpy as np
 
+# XXX TODO: clean this file and depend less on it
+
 
 class Converter:
     def __init__(self, answers):
@@ -69,8 +71,8 @@ class Converter:
         all_ans = {}
         self.map_string()
         for task in self.answers:
-            all_ans[self.table_task[task]] = {
-                self.table_worker[key]: self.table_labels[str(value)]
+            all_ans[int(task)] = {
+                int(key): int(value)
                 for key, value in self.answers[task].items()
             }
         return all_ans

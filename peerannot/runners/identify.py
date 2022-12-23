@@ -195,6 +195,13 @@ def dump(js, file, level=1):
     default=50,
     help="Maximum number of iterations for the Dawid and Skene algorithm",
 )
+@click.option(
+    "--data-augmentation",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Perform data augmentation on training set with a random choice between RandomAffine(shear=15), RandomHorizontalFlip(0.5) and RandomResizedCrop",
+)
 def identify(folderpath, n_classes, method, **kwargs):
     print("Running the following configuration:")
     print("-" * 10)

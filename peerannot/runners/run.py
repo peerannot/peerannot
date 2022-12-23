@@ -213,7 +213,6 @@ def aggregate(**kwargs):
         answers = json.load(answers)
     with open(kwargs["metadata_path"], "r") as metadata:
         metadata = json.load(metadata)
-
     strat_name, options = get_options(kwargs["strategy"])
     strat = agg_strategies[strat_name]
     print(f"Running aggregation {strat_name} with options {options}")
@@ -226,7 +225,6 @@ def aggregate(**kwargs):
         raise ValueError(
             f"Strategy {strat_name} is not one of {list(agg_strategies.keys())}"
         )
-
     filename = f"labels_{metadata['name']}_{strat_name}"
     if kwargs["hard"]:
         yhat = strat.get_answers()

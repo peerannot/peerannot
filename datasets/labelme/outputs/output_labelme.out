@@ -1,0 +1,45 @@
+LabelMe CoNAL
+/home/tlefort/warm/phd/peerannot/datasets/labelme
+Running the following configuration:
+----------
+- Data at ./../labelme will be saved with prefix labelme_conal
+- number of classes: 8
+- output_name: labelme_conal
+- answers: ./../labelme/answers.json
+- strategy: conal[scale=1e-5]
+- model: modellabelme
+- img_size: 224
+- pretrained: True
+- n_classes: 8
+- n_epochs: 1100
+- lr: 0.005
+- milestones: (1000, 1050)
+- scheduler: True
+- batch_size: 228
+- optimizer: adam
+- num_workers: 8
+- data_augmentation: True
+- dataset: ./../labelme
+- momentum: 0.9
+- decay: 0.0005
+- n_params: 3072
+- lr_decay: 0.1
+----------
+Loading datasets
+Successfully loaded modellabelme with n_classes=8
+Train set: 1000 tasks
+Test set: 1188 tasks
+Validation set: 500 tasks
+
+Adjusting learning rate to = 0.0005
+
+Adjusting learning rate to = 0.0001
+----------
+Final metrics:
+- train_loss: 1.7502059936523438
+- val_loss: 1.396001277923584
+- val_accuracy: 87.8
+- test_accuracy: 89.39393939393939
+- test_loss: 1.3800209315136225
+- test_ece: 0.10599476099014282
+Results stored in /home-warm/tlefort/phd/peerannot/datasets/labelme/results/labelme_conal.json

@@ -1,9 +1,16 @@
 """
-=====================================================
-CoNAL (Common Noise Adaptation Layer), Chu et.al 2021
-=====================================================
-Implementation based from the unofficial repository
-https://github.com/seunghyukcho/CoNAL-pytorch
+===================================
+Crowdlayer (Rodrigues et. al 2018)
+===================================
+
+End-to-end learning strategy with multiple votes per task
+
+Using:
+- Crowd layer added to network
+
+Code:
+- Tensorflow original code available at https://github.com/fmpr/CrowdLayer
+- Code adaptated in Python
 """
 import torch
 from torch import nn
@@ -33,90 +40,44 @@ def reformat_labels(votes, n_workers):
     return np.array(answers)
 
 
-class AuxiliaryNetwork(nn.Module):
-    def __init__(self, x_dim, e_dim, w_dim):
-        super().__init__()
-
-        self.weight_v1 = nn.Linear(x_dim, 128)
-        self.weight_v2 = nn.Linear(128, w_dim)
-        self.weight_u = nn.Linear(e_dim, w_dim)
-        self.activation = nn.Sigmoid()
-
-    def forward(self, x, e):
-        v = self.weight_v1(x)
-        v = self.weight_v2(v)
-        v = f.normalize(v)
-        u = self.weight_u(e)
-        u = f.normalize(u)
-        u = torch.transpose(u, 0, 1)
-        w = torch.matmul(v, u)
-        w = self.activation(w)
-        return w
-
-
-class NoiseAdaptationLayer(nn.Module):
-    def __init__(self, n_class, n_annotator):
-        super().__init__()
-
-        self.global_confusion_matrix = nn.Parameter(
-            torch.eye(n_class, n_class) * 2, requires_grad=True
-        )
-        self.local_confusion_matrices = nn.Parameter(
-            torch.stack(
-                [torch.eye(n_class, n_class) * 2 for _ in range(n_annotator)]
-            ),
-            requires_grad=True,
-        )
-
-    def forward(self, f, w):
-        global_prob = torch.einsum(
-            "ij,jk->ik", f, self.global_confusion_matrix
-        )
-        local_probs = torch.einsum(
-            "ik,jkl->ijl", f, self.local_confusion_matrices
-        )
-
-        h = (
-            w[:, :, None] * global_prob[:, None, :]
-            + (1 - w[:, :, None]) * local_probs
-        )
-
-        return h
-
-
-class CoNAL_net(nn.Module):
+class Crowdlayer_net(nn.Module):
     def __init__(
         self,
-        input_dim,
         n_class,
         n_annotator,
         classifier,
-        annotator_dim,
-        embedding_dim,
+        scale,
+        criterion,
     ):
         super().__init__()
 
-        self.auxiliary_network = AuxiliaryNetwork(
-            input_dim, annotator_dim, embedding_dim
-        )
         self.classifier = classifier
-        self.noise_adaptation_layer = NoiseAdaptationLayer(
-            n_class, n_annotator
+        self.n_worker = n_annotator
+        self.n_classes = n_class
+        self.scale = scale
+        self.criterion = criterion
+        self.workers = [torch.eye(n_class) for _ in range(self.n_worker)]
+        self.confusion = nn.parameter.Parameter(
+            torch.stack(self.workers), requires_grad=True
         )
 
-    def forward(self, x, annotator=None):
-        f = self.classifier(x)
-        if annotator is None:
-            return f
+    def forward(self, x, labels):
+        z_pred = F.softmax(self.classifier(x), dim=1)
+        pm = F.softmax(self.confusion, dim=2)
+        ann_pred = torch.einsum("ik,jkl->ijl", z_pred, pm).view(
+            (-1, self.n_classes)
+        )
 
-        x_flatten = torch.flatten(x, start_dim=1)
-        w = self.auxiliary_network(x_flatten, annotator)
-        h = self.noise_adaptation_layer(f, w)
+        reg = torch.zeros(1).to(DEVICE)
+        for i in range(self.n_worker):
+            reg += pm[i, 0, 0].log()
 
-        return h, f
+        labels = labels.view(-1)
+        loss = self.criterion(ann_pred, labels) + self.scale * reg
+        return loss
 
 
-class CoNAL(CrowdModel):
+class Crowdlayer(CrowdModel):
     def __init__(
         self,
         tasks_path,
@@ -125,7 +86,7 @@ class CoNAL(CrowdModel):
         n_classes,
         optimizer,
         n_epochs,
-        scale=1e-5,
+        scale=0,
         verbose=True,
         pretrained=False,
         output_name="conal",
@@ -159,19 +120,25 @@ class CoNAL(CrowdModel):
         self.n_epochs = n_epochs
         self.verbose = verbose
         self.n_workers = len(self.converter.table_worker)
-        self.conal_net = CoNAL_net(
-            self.input_dim,
+        self.output_name = output_name
+        self.criterion = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
+        self.crowdlayer_net = Crowdlayer_net(
             self.n_classes,
             self.n_workers,
             self.model,
-            annotator_dim=self.n_workers,
-            embedding_dim=20,
+            self.scale,
+            self.criterion,
         )
         self.optimizer, self.scheduler = get_optimizer(
-            self.conal_net, optimizer, **kwargs
+            self.crowdlayer_net.classifier, optimizer, **kwargs
         )
-        self.output_name = output_name
-        self.criterion = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
+        kwargs[
+            "use_parameters"
+        ] = False  # disable parameters for the optimizer
+        self.optimizer2, self.scheduler2 = get_optimizer(
+            self.crowdlayer_net.confusion, optimizer, **kwargs
+        )
+        kwargs["use_parameters"] = True
         self.setup(**kwargs)
 
     def setup(self, **kwargs):
@@ -207,7 +174,7 @@ class CoNAL(CrowdModel):
     def run(self, **kwargs):
         from peerannot.runners.train import evaluate
 
-        self.conal_net = self.conal_net.to(DEVICE)
+        self.crowdlayer_net = self.crowdlayer_net.to(DEVICE)
         path_best = self.tasks_path / "best_models"
         path_best.mkdir(exist_ok=True)
 
@@ -225,17 +192,18 @@ class CoNAL(CrowdModel):
         for epoch in tqdm(range(self.n_epochs), desc="Training epoch"):
             # train for one epoch
             logger = self.run_epoch(
-                self.conal_net,
+                self.crowdlayer_net,
                 self.trainloader,
                 self.criterion,
                 self.optimizer,
+                self.optimizer2,
                 logger,
             )
 
             # evaluate the self.conal_net if validation set
             if self.valset:
                 logger = evaluate(
-                    self.conal_net.classifier,
+                    self.crowdlayer_net.classifier,
                     self.valloader,
                     self.criterion,
                     logger,
@@ -247,15 +215,15 @@ class CoNAL(CrowdModel):
                 if logger["val_loss"][-1] < min_val_loss:
                     torch.save(
                         {
-                            "auxiliary": self.conal_net.auxiliary_network.state_dict(),
-                            "noise_adaptation": self.conal_net.noise_adaptation_layer.state_dict(),
-                            "classifier": self.conal_net.classifier.state_dict(),
+                            "confusion": self.crowdlayer_net.confusion.state_dict(),
+                            "classifier": self.crowdlayer_net.classifier.state_dict(),
                         },
                         path_best / f"{self.output_name}.pth",
                     )
                     min_val_loss = logger["val_loss"][-1]
 
             self.scheduler.step()
+            self.scheduler2.step()
             if epoch in kwargs["milestones"]:
                 print()
                 print(
@@ -264,9 +232,11 @@ class CoNAL(CrowdModel):
 
         # load and test self.conal_net
         checkpoint = torch.load(path_best / f"{self.output_name}.pth")
-        self.conal_net.classifier.load_state_dict(checkpoint["classifier"])
+        self.crowdlayer_net.classifier.load_state_dict(
+            checkpoint["classifier"]
+        )
         logger = evaluate(
-            self.conal_net.classifier,
+            self.crowdlayer_net.classifier,
             self.testloader,
             self.criterion,
             logger,
@@ -291,7 +261,9 @@ class CoNAL(CrowdModel):
             f"Results stored in {self.tasks_path / 'results' / f'{self.output_name}.json'}"
         )
 
-    def run_epoch(self, model, trainloader, criterion, optimizer, logger):
+    def run_epoch(
+        self, model, trainloader, criterion, optimizer, optimizer2, logger
+    ):
         model.train()
         total_loss = 0.0
         for inputs, labels in trainloader:
@@ -300,29 +272,15 @@ class CoNAL(CrowdModel):
             labels = labels.to(DEVICE)
 
             # zero out gradients
-            model.zero_grad()  # model.zero_grad() to be Xtra safe
+            optimizer.zero_grad()  # model.zero_grad() to be Xtra safe
 
-            annotator = torch.eye(self.n_workers).to(DEVICE)
-            # logits
-            ann_out, cls_out = model(inputs, annotator)
-
-            # annotators loss
-            ann_out = torch.reshape(ann_out, (-1, self.n_classes))
-            labels = labels.view(-1)
-            loss = criterion(ann_out, labels)
-
-            # Regularization term
-            confusion_matrices = model.noise_adaptation_layer
-            matrices = (
-                confusion_matrices.local_confusion_matrices
-                - confusion_matrices.global_confusion_matrix
-            )
-            for matrix in matrices:
-                loss -= self.scale * torch.linalg.norm(matrix)
+            # compute the loss directly !!!!!
+            loss = model(inputs, labels)
 
             # gradient step
             loss.backward()
             optimizer.step()
+            optimizer2.step()
             total_loss += loss
         # log everything
         logger["train_loss"].append(total_loss.item())
