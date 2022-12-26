@@ -22,7 +22,7 @@ class Dawid_Skene(CrowdModel):
     def __init__(self, answers, n_classes, **kwargs):
         super().__init__(answers)
         self.n_classes = n_classes
-        self.n_workers = len(self.converter.table_worker)
+        self.n_workers = kwargs["n_workers"]
         self.n_task = len(self.answers)
 
     def get_crowd_matrix(self):

@@ -184,6 +184,12 @@ def dump(js, file, level=1):
     "--momentum", type=float, default=0.9, help="Momentum for the optimizer"
 )
 @click.option(
+    "--metadata_path",
+    type=click.Path(),
+    default=None,
+    help="Path to the metadata of the dataset if different than default",
+)
+@click.option(
     "--decay", type=float, default=5e-4, help="Weight decay for the optimizer"
 )
 @click.option(
@@ -194,6 +200,13 @@ def dump(js, file, level=1):
     type=int,
     default=50,
     help="Maximum number of iterations for the Dawid and Skene algorithm",
+)
+@click.option(
+    "--optimizer",
+    "-optim",
+    type=str,
+    default="SGD",
+    help="Optimizer for the neural network",
 )
 @click.option(
     "--data-augmentation",
@@ -211,6 +224,14 @@ def identify(folderpath, n_classes, method, **kwargs):
         print(f"- {key}: {value}")
     print("-" * 10)
     kwargs["scheduler"] = False
+    if kwargs["metadata_path"] is None:
+        kwargs["metadata_path"] = Path(kwargs["folderpath"]) / "metadata.json"
+    else:
+        kwargs["metadata_path"] = Path(["metadata_path"]).resolve()
+    with open(kwargs["metadata_path"], "r") as metadata:
+        metadata = json.load(metadata)
+    kwargs["n_workers"] = metadata["n_workers"]
+
     votes = Path(kwargs["labels"]).resolve() if kwargs["labels"] else None
     if votes:
         with open(votes, "r") as f:
@@ -229,7 +250,7 @@ def identify(folderpath, n_classes, method, **kwargs):
         pretrained=kwargs["pretrained"],
         cifar="cifar" in str(path_folders).lower(),
     )
-    optimizer, _ = get_optimizer(model, "sgd", **kwargs)
+    optimizer, _ = get_optimizer(model, kwargs['optimizer'], **kwargs)
     model = model.to(DEVICE)
     criterion = nn.CrossEntropyLoss()
     n_epochs = int(kwargs.get("n_epochs", 50))
@@ -251,6 +272,7 @@ def identify(folderpath, n_classes, method, **kwargs):
             verbose=True,
             use_pleiss=kwargs["use_pleiss"],
             maxiterDS=kwargs["maxiter_ds"],
+            **kwargs,
         )
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
         waum.run(alpha=kwargs["alpha"])
@@ -287,6 +309,7 @@ def identify(folderpath, n_classes, method, **kwargs):
             verbose=True,
             use_pleiss=kwargs["use_pleiss"],
             maxiterDS=kwargs["maxiter_ds"],
+            **kwargs,
         )
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
         waum.run(alpha=kwargs["alpha"])

@@ -136,6 +136,18 @@ def agginfo():
     show_default=True,
     help="Perform data augmentation on training set with a random choice between RandomAffine(shear=15), RandomHorizontalFlip(0.5) and RandomResizedCrop",
 )
+@click.option(
+    "--path-remove",
+    type=click.Path(),
+    default=None,
+    help="Path to file of index to prune from the training set",
+)
+@click.option(
+    "--metadata_path",
+    type=click.Path(),
+    default=None,
+    help="Path to the metadata of the dataset if different than default",
+)
 def aggregate_deep(**kwargs):
     print("Running the following configuration:")
     print("-" * 10)
@@ -146,8 +158,16 @@ def aggregate_deep(**kwargs):
     for key, value in kwargs.items():
         print(f"- {key}: {value}")
     print("-" * 10)
+    if kwargs["metadata_path"] is None:
+        kwargs["metadata_path"] = Path(kwargs["dataset"]) / "metadata.json"
+    else:
+        kwargs["metadata_path"] = Path(["metadata_path"]).resolve()
+    with open(kwargs["metadata_path"], "r") as metadata:
+        metadata = json.load(metadata)
+    kwargs["n_workers"] = metadata["n_workers"]
+
     strat_name, options = get_options(kwargs["strategy"])
-    if strat_name.lower() == "conal":
+    if strat_name.lower() == "conal" or strat_name.lower() == "crowdlayer":
         strat = agg_strategies[strat_name]
         strat = strat(
             tasks_path=kwargs["dataset"],
@@ -213,13 +233,14 @@ def aggregate(**kwargs):
         answers = json.load(answers)
     with open(kwargs["metadata_path"], "r") as metadata:
         metadata = json.load(metadata)
+    kwargs["n_workers"] = metadata["n_workers"]
     strat_name, options = get_options(kwargs["strategy"])
     strat = agg_strategies[strat_name]
     print(f"Running aggregation {strat_name} with options {options}")
     if strat_name in list(map(lambda x: x.lower(), ["MV", "NaiveSoft"])):
-        strat = strat(answers, metadata["n_classes"])
+        strat = strat(answers, metadata["n_classes"], **kwargs)
     elif strat_name in list(map(lambda x: x.lower(), ["DS", "GLAD", "DSwc"])):
-        strat = strat(answers, metadata["n_classes"], **options)
+        strat = strat(answers, metadata["n_classes"], **options, **kwargs)
         strat.run()
     else:
         raise ValueError(

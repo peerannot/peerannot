@@ -8,40 +8,43 @@ pwd
 
 for strat in MV NaiveSoft DS GLAD
 do
+echo "Strategy: ${strat}"
 peerannot aggregate ./../labelme/ -s $strat
 declare -l strat
 strat=$strat
 for i in `seq 1 5`
 do
 echo "Repetition ${i}"
-peerannot train ./../labelme -o labelme_${strat}_$i -K 8 --labels=./../labelme/labels/labels_labelme_${strat}.npy --model resnet18 --n-epochs=150 --lr=0.1 --scheduler -m 50 -m 100 --scheduler --num-workers=8 --pretrained
+peerannot train ./../labelme -o labelme_${strat}_$i -K 8 --labels=./../labelme/labels/labels_labelme_${strat}.npy --model modellabelme --n-epochs=1100 --lr=0.005 --scheduler -m 750 -m 1000 --num-workers=8 --pretrained --img-size=224 --data-augmentation --batch-size=228 --optimizer=adam
 done
 done
 
-echo "WAUMstacked"
-peerannot identify ./../labelme/ -K 8 --method WAUMstacked --labels ./../labelme/answers.json --model resnet18 --n-epochs 50 --lr=0.1 --maxiter-DS=50 --alpha=0.01 --pretrained
-peerannot train ./../labelme -o labelme_waum_0.01 -K 8 --labels=./../labelme/labels/labels_waumstacked_0.01.npy --model resnet18 --n-epochs=150 --lr=0.1 --scheduler -m 50 -m 100 --scheduler --num-workers=8 --path-remove ./../identification/waum_stacked_0.01_yang/too_hard_0.01.txt --pretrained
+echo "Strategy: WAUMstacked"
+peerannot identify ./../labelme/ -K 8 --method WAUMstacked --labels ./../labelme/answers.json --model modellabel --n-epochs 500 --lr=0.005 --maxiter-DS=50 --alpha=0.01 --pretrained --optimizer=adam --batch-size=228
+for i in `seq 1 5`
+do
+echo "Repetition ${i}"
+peerannot train ./../labelme -o labelme_waum_0.01 -K 8 --labels=./../labelme/labels/labels_waumstacked_0.01.npy --model modellabelme --n-epochs=1100 --lr=0.005 --scheduler -m 750 -m 1000 --num-workers=8 --path-remove ./../identification/waum_stacked_0.01_yang/too_hard_0.01.txt --pretrained --data-augmentation --optimizer=adam --batch-size=228
+done
 
+for strat in MV NaiveSoft DS GLAD
+do
+echo "Strategy: WAUM stacked + ${strat}"
+declare -l strat
+strat=$strat
+for i in `seq 1 5`
+do
+echo "Repetition ${i}"
+peerannot train ./../labelme -o labelme_waum_0.01_${strat}_${i} -K 8 --labels=./../labelme/labels/labels_waumstacked_0.01.npy --model modellabelme --n-epochs=1100 --lr=0.005 --scheduler -m 750 -m 1000 --num-workers=8 --path-remove ./../identification/waum_stacked_0.01_yang/too_hard_0.01.txt --pretrained --data-augmentation --optimizer=adam --batch-size=228
+done
+done
 
-# echo "MV"
-# peerannot aggregate ./../labelme/ -s MV
-# peerannot train ./../labelme -o labelme_mv -K 8 --labels=./../labelme/labels/labels_labelme_mv.npy --model vgg16_bn  --n-epochs=150 --lr=0.1 --scheduler -m 50 -m 100 --scheduler --num-workers=8
-
-# echo "Naive soft"
-# peerannot aggregate ./../labelme/ -s NaiveSoft
-# peerannot train ./../labelme -o labelme_naivesoft -K 8 --labels=./../labelme/labels/labels_labelme_naivesoft.npy --model vgg16_bn  --n-epochs=150 --lr=0.1 --scheduler -m 50 -m 100 --scheduler --num-workers=8
-
-# echo "DS"
-# peerannot aggregate ./../labelme/ -s DS
-# peerannot train ./../labelme -o labelme_ds -K 8 --labels=./../labelme/labels/labels_labelme_ds.npy --model vgg16_bn  --n-epochs=150 --lr=0.1 --scheduler -m 50 -m 100 --scheduler --num-workers=8
-
-# echo "GLAD"
-# peerannot aggregate ./../labelme/ -s glad
-# peerannot train ./../labelme -o labelme_glad -K 8 --labels=./../labelme/labels/labels_labelme_glad.npy --model vgg16_bn  --n-epochs=150 --lr=0.1 --scheduler -m 50 -m 100 --scheduler --num-workers=8
-
-# echo "WAUMstacked"
-# peerannot identify ./../labelme/ -K 8 --method WAUMstacked --labels ./../labelme/answers.json --model vgg16_bn --n-epochs 50 --lr=0.1  --maxiter-DS=50 --alpha=0.01
-# peerannot train ./../labelme -o labelme_waum_0.01 -K 8 --labels=./../labelme/labels/labels_labelme_waumstacked_0.01.npy --model vgg16_bn  --n-epochs=150 --lr=0.1 --scheduler -m 50 -m 100 --scheduler --num-workers=8 --path-remove ./../identification/waum_stacked_0.01_yang/too_hard_0.01.txt
-
-
-
+for strat in CoNAL[scale=0] CoNAL[scale=1e-4] CrowdLayer[scale=0] CrowdLayer[scale=1e-4]
+echo "Strategy: ${strat}"
+declare -l strat
+strat=$strat
+for i in `seq 1 5`
+do
+peerannot aggregate-deep ./../labelme -o labelme_${strat}_${i} --answers ./../labelme/answers.json --model modellabelme --n-classes=8 --n-epochs 1100 --lr 0.005 --optimizer adam --batch-size 228 --num-workers 8 --img-size=224 -s ${strat} --scheduler -m 750 -m 1000 --data-augmentation --pretrained
+done
+done

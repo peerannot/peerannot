@@ -6,6 +6,6 @@
 #SBATCH -o /home/tlefort/warm/phd/peerannot/datasets/labelme/outputs/output_labelme.out
 #SBATCH --error /home/tlefort/warm/phd/peerannot/datasets/labelme/errors/error_labelme.out
 #SBATCH -J "ptlbm"
-path=/home/tlefort/warm/phd/peerannot/datasets/labelme/run_conal.sh
+path=/home/tlefort/warm/phd/peerannot/datasets/labelme/run_all.sh
 
 srun $path

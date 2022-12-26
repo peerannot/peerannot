@@ -64,14 +64,15 @@ def get_optimizer(net, optimizer, **kwargs):
     weight_decay = kwargs.get("decay", 5e-4)
     if optimizer.lower() == "sgd":
         optimizer = optim.SGD(
-            net.parameters() if use_parameters else net,
+            net.parameters() if use_parameters else [net],
             lr=lr,
             momentum=momentum,
             weight_decay=weight_decay,
         )
     elif optimizer.lower() == "adam":
+        print(use_parameters)
         optimizer = optim.Adam(
-            net.parameters() if use_parameters else net, lr=lr
+            net.parameters() if use_parameters else [net], lr=lr
         )
     else:
         raise ValueError("Not implemented yet")
@@ -118,6 +119,12 @@ def get_optimizer(net, optimizer, **kwargs):
     default="resnet18",
     type=str,
     help="Name of neural network to use. The list is available at `peerannot modelinfo`",
+)
+@click.option(
+    "--metadata_path",
+    type=click.Path(),
+    default=None,
+    help="Path to the metadata of the dataset if different than default",
 )
 @click.option(
     "--img-size", type=int, default=224, help="Size of image (square)"
@@ -190,7 +197,16 @@ def train(datapath, output_name, n_classes, **kwargs):
     for key, value in kwargs.items():
         print(f"- {key}: {value}")
     print("-" * 10)
+
     path_folders = Path(datapath).resolve()
+    if kwargs["metadata_path"] is None:
+        kwargs["metadata_path"] = path_folders / "metadata.json"
+    else:
+        kwargs["metadata_path"] = Path(["metadata_path"]).resolve()
+    with open(kwargs["metadata_path"], "r") as metadata:
+        metadata = json.load(metadata)
+    kwargs["n_workers"] = metadata["n_workers"]
+
     path_labels = Path(kwargs["labels"]).resolve()
     trainset, valset, testset = load_all_data(
         path_folders, path_labels, **kwargs

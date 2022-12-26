@@ -144,7 +144,6 @@ class CoNAL(CrowdModel):
             self.answers = json.load(ans)
         super().__init__(self.answers)
         kwargs["labels"] = None  # to prevent any loading of labels
-        kwargs["path_remove"] = None  # XXX TODO: add index removal
         self.trainset, self.valset, self.testset = load_all_data(
             self.tasks_path, labels_path=None, **kwargs
         )
@@ -158,7 +157,7 @@ class CoNAL(CrowdModel):
         self.n_classes = n_classes
         self.n_epochs = n_epochs
         self.verbose = verbose
-        self.n_workers = len(self.converter.table_worker)
+        self.n_workers = kwargs["n_workers"]
         self.conal_net = CoNAL_net(
             self.input_dim,
             self.n_classes,

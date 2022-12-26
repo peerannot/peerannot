@@ -37,7 +37,7 @@ class Dawid_Skene_clust(CrowdModel):
         """
         super().__init__(answers)
         self.n_classes = n_classes
-        self.n_workers = len(self.converter.table_worker)
+        self.n_workers = kwargs["n_workers"]
         self.n_task = len(self.answers)
         self.L = L
         assert self.L <= self.n_workers, "L must be <= n_workers"

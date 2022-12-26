@@ -45,6 +45,8 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
         #     "opencountry": 7,
         # }
         dataset.real_class_to_idx = dataset.class_to_idx
+    elif "music" in str(path).lower():
+        dataset.real_class_to_idx = dataset.class_to_idx
 
     dataset.inv_class_to_idx = {v: k for k, v in dataset.class_to_idx.items()}
     if path_remove:

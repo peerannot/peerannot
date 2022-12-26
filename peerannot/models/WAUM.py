@@ -83,7 +83,7 @@ class WAUM(CrowdModel):
         super().__init__(answers)
         self.maxiterDS = kwargs.get("maxiterDS", 60)
         self.n_classes = n_classes
-        self.n_workers = len(self.converter.table_worker)
+        self.n_workers = kwargs["n_workers"]
         self.n_task = len(self.answers)
         self.model = model
         self.DEVICE = kwargs.get("DEVICE", DEVICE)

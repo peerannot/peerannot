@@ -6,6 +6,7 @@ from .GLAD import GLAD
 from .WAUM import WAUM
 from .WAUM_stacked import WAUM_stacked
 from .CoNAL import CoNAL
+from .Crowdlayer import Crowdlayer
 
 agg_strategies = {
     "MV": MV,
@@ -14,4 +15,5 @@ agg_strategies = {
     "DSWC": Dawid_Skene_clust,
     "GLAD": GLAD,
     "CoNAL": CoNAL,
+    "CrowdLayer": Crowdlayer,
 }

@@ -57,7 +57,7 @@ class Crowdlayer_net(nn.Module):
         self.scale = scale
         self.criterion = criterion
         self.workers = [torch.eye(n_class) for _ in range(self.n_worker)]
-        self.confusion = nn.parameter.Parameter(
+        self.confusion = nn.Parameter(
             torch.stack(self.workers), requires_grad=True
         )
 
@@ -105,7 +105,6 @@ class Crowdlayer(CrowdModel):
             self.answers = json.load(ans)
         super().__init__(self.answers)
         kwargs["labels"] = None  # to prevent any loading of labels
-        kwargs["path_remove"] = None  # XXX TODO: add index removal
         self.trainset, self.valset, self.testset = load_all_data(
             self.tasks_path, labels_path=None, **kwargs
         )
@@ -119,7 +118,7 @@ class Crowdlayer(CrowdModel):
         self.n_classes = n_classes
         self.n_epochs = n_epochs
         self.verbose = verbose
-        self.n_workers = len(self.converter.table_worker)
+        self.n_workers = kwargs["n_workers"]
         self.output_name = output_name
         self.criterion = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
         self.crowdlayer_net = Crowdlayer_net(

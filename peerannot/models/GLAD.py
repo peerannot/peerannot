@@ -67,7 +67,7 @@ class GLAD(CrowdModel):
         """
         super().__init__(answers)
         self.n_classes = n_classes
-        self.n_workers = len(self.converter.table_worker)
+        self.n_workers = kwargs["n_workers"]
         self.n_task = len(self.answers)
 
         self.labels = np.zeros((self.n_task, self.n_workers))
