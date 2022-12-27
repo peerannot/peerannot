@@ -90,7 +90,9 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
     dataset.imgs = imgs
     dataset.targets = targets
     dataset.true_labels = true_labels
+    dataset.class_to_idx_imagefolder = dataset.class_to_idx
     dataset.class_to_idx = dataset.real_class_to_idx
+    dataset.inv_class_to_idx = {v: k for k, v in dataset.class_to_idx.items()}
     if path_labels:
         acc = (
             np.mean(np.array(dataset.targets) == np.array(dataset.true_labels))

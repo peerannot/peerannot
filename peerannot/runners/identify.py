@@ -225,7 +225,7 @@ def identify(folderpath, n_classes, method, **kwargs):
     print("-" * 10)
     kwargs["scheduler"] = False
     if kwargs["metadata_path"] is None:
-        kwargs["metadata_path"] = Path(kwargs["folderpath"]) / "metadata.json"
+        kwargs["metadata_path"] = Path(folderpath) / "metadata.json"
     else:
         kwargs["metadata_path"] = Path(["metadata_path"]).resolve()
     with open(kwargs["metadata_path"], "r") as metadata:
@@ -250,7 +250,7 @@ def identify(folderpath, n_classes, method, **kwargs):
         pretrained=kwargs["pretrained"],
         cifar="cifar" in str(path_folders).lower(),
     )
-    optimizer, _ = get_optimizer(model, kwargs['optimizer'], **kwargs)
+    optimizer, _ = get_optimizer(model, kwargs["optimizer"], **kwargs)
     model = model.to(DEVICE)
     criterion = nn.CrossEntropyLoss()
     n_epochs = int(kwargs.get("n_epochs", 50))

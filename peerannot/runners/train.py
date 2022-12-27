@@ -70,7 +70,6 @@ def get_optimizer(net, optimizer, **kwargs):
             weight_decay=weight_decay,
         )
     elif optimizer.lower() == "adam":
-        print(use_parameters)
         optimizer = optim.Adam(
             net.parameters() if use_parameters else [net], lr=lr
         )

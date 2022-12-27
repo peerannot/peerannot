@@ -7,6 +7,7 @@ def get_all_models():
     torch_models = torch.hub.list("pytorch/vision")
     all_models = torch_models
     all_models.append("modellabelme")
+    all_models.append("modelmusic")
     return all_models
 
 
@@ -54,7 +55,7 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
     """
     name = name.lower()
     torch_models = get_all_models()
-    if name in torch_models and name != "modellabelme":
+    if name in torch_models and (name not in ["modellabelme", "modelmusic"]):
         if pretrained:
             weights = torch.hub.load(
                 "pytorch/vision", "get_model_weights", name=name
@@ -65,7 +66,8 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
         model = torch.hub.load("pytorch/vision", name, weights=weight)
     elif name == "modellabelme":
         model = Classifier_labelme(0.5, 128, 8)
-
+    elif name == "modelmusic":
+        model = Classifier_labelme(0.5, 128, 10)
     if "resnet" in name:
         if model.fc.out_features != n_classes:
             model.fc = nn.Linear(model.fc.in_features, n_classes)
@@ -75,7 +77,7 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
             model.classifier[6] = nn.Linear(
                 model.classifier[6].in_features, n_classes
             )
-    elif name != "modellabelme":
+    elif name not in ["modellabelme", "modelmusic"]:
         raise NotImplementedError("Not implemented yet, sorry")
     print(f"Successfully loaded {name} with n_classes={n_classes}")
     if pretrained:
