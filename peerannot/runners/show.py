@@ -1,6 +1,6 @@
 import click
 from pathlib import Path
-from peerannot.render.app_dataset import render_app
+from peerannot.render.index import render_app
 
 show = click.Group(
     name="Running peerannot show",

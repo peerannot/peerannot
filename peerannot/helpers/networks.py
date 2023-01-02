@@ -67,7 +67,7 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
     elif name == "modellabelme":
         model = Classifier_labelme(0.5, 128, 8)
     elif name == "modelmusic":
-        model = Classifier_labelme(0.5, 128, 10)
+        model = Classifier_music(0.5, 128, 10)
     if "resnet" in name:
         if model.fc.out_features != n_classes:
             model.fc = nn.Linear(model.fc.in_features, n_classes)

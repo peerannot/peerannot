@@ -97,20 +97,32 @@ class WAUM_stacked(CrowdModel):
             "model": self.model.state_dict(),
             "optimizer": self.optimizer.state_dict(),
         }
+        self.filenames = np.array(
+            [
+                Path(samp[0]).name
+                for samp in self.tasks.dataset.dataset.base_samples
+            ]
+        )
+
         self.path = Path("./temp/").mkdir(parents=True, exist_ok=True)
-        torch.save(self.checkpoint, "./temp/checkpoint_waum.pth")
+        torch.save(self.checkpoint, "./temp/checkpoint_waum_stacked.pth")
 
     def run_DS(self, cut=False):
         if not cut:
-            self.ds = DS(self.answers, self.n_classes)
+            self.ds = DS(
+                self.answers, self.n_classes, n_workers=self.n_workers
+            )
             self.ds.run(maxiter=self.maxiterDS)
         else:
-            self.answers_waum = {
-                key: val
-                for key, val in self.answers.items()
-                if key not in self.too_hard
-            }
-            self.ds = DS(self.answers_waum, self.n_classes)
+            self.answers_waum = {}
+            i = 0
+            for key, val in self.answers.items():
+                if int(key) not in self.too_hard[:, 1]:
+                    self.answers_waum[i] = val
+                    i += 1
+            self.ds = DS(
+                self.answers_waum, self.n_classes, n_workers=self.n_workers
+            )
             self.ds.run(maxiter=self.maxiterDS)
 
         self.pi = self.ds.pi
@@ -150,6 +162,7 @@ class WAUM_stacked(CrowdModel):
 
     def get_aum(self):
         AUM_recorder = {
+            "index": [],
             "task": [],
             "worker": [],
             "label": [],
@@ -174,7 +187,8 @@ class WAUM_stacked(CrowdModel):
                 len_, out, y, ww, dd, idx = self.make_step(batch)
                 if len_ is None:
                     continue
-                AUM_recorder["task"].extend(dd)
+                AUM_recorder["task"].extend(self.filenames[dd])
+                AUM_recorder["index"].extend(dd)
                 AUM_recorder["label"].extend(y.cpu().tolist())
                 AUM_recorder["worker"].extend(ww)
                 AUM_recorder["epoch"].extend([epoch] * len_)
@@ -234,25 +248,29 @@ class WAUM_stacked(CrowdModel):
                         .numpy()
                     )
         self.AUM_recorder = pd.DataFrame(AUM_recorder)
-        recorder2 = self.AUM_recorder.copy()
+        uni_ = self.AUM_recorder["index"].unique()
         for task in (
-            tqdm(recorder2.task.unique())
+            tqdm(uni_, total=len(uni_), desc="Scores")
             if self.verbose
-            else recorder2.task.unique()
+            else uni_
         ):
-            tmp = recorder2[recorder2.task == task]
-            for j in tmp.worker.unique():
-                recorder2.loc[
-                    recorder2[
-                        (recorder2.task == task) & (recorder2.worker == j)
-                    ].score.index,
+            workers = self.AUM_recorder.loc[
+                self.AUM_recorder["index"] == task, "worker"
+            ].unique()
+            for j in workers:
+                value = self.AUM_recorder.loc[
+                    (self.AUM_recorder["index"] == task)
+                    & (self.AUM_recorder["worker"] == j)
+                    & (self.AUM_recorder["epoch"] == self.n_epoch - 1),
                     "score",
-                ] = tmp[
-                    (tmp.worker == j) & (tmp.epoch == self.n_epoch - 1)
-                ].score.values[
-                    0
-                ]
-        self.AUM_recorder = recorder2
+                ].values[0]
+                self.AUM_recorder.loc[
+                    (self.AUM_recorder["index"] == task)
+                    & (self.AUM_recorder["worker"] == j)
+                    & (self.AUM_recorder["epoch"] <= self.n_epoch - 1),
+                    "score",
+                ] = value
+        self.AUM_recorder
 
     def reset(self):
         check_ = torch.load("./temp/checkpoint_waum_stacked.pth")
@@ -267,11 +285,11 @@ class WAUM_stacked(CrowdModel):
 
     def get_psi1_waum(self):
         aum_df = self.AUM_recorder
-        dico_cpt_aum = {}
+        dico_cpt_aum = {"index": [], "task": [], "waum": []}
         aum_df["margin"] = np.array(aum_df["label_prob"]) - np.array(
             aum_df["other_max_prob"]
         )
-        unique_task = np.unique(np.array(aum_df["task"]))
+        unique_task = np.unique(np.array(aum_df["index"]))
         aum_per_worker = {}
         score_per_worker = {}
         for i, each_task in (
@@ -285,7 +303,7 @@ class WAUM_stacked(CrowdModel):
         ):
             aum_per_worker[each_task] = {}
             score_per_worker[each_task] = {}
-            temp = aum_df[aum_df["task"] == each_task]
+            temp = aum_df[aum_df["index"] == each_task]
             avg = []
             score = []
             for j in np.unique(np.array(temp["worker"])):
@@ -294,18 +312,20 @@ class WAUM_stacked(CrowdModel):
                 avg.append((np.array(tempj["margin"]) * tempj["score"]).mean())
                 score.append(tempj["score"].iloc[0])
                 score_per_worker[each_task][j] = score[-1]
-            dico_cpt_aum[each_task] = np.sum(avg) / sum(score)
-        self.waum = dico_cpt_aum
+            dico_cpt_aum["index"].append(each_task)
+            dico_cpt_aum["task"].append(self.filenames[each_task])
+            dico_cpt_aum["waum"].append((np.sum(avg) / sum(score)).item())
+        self.waum = pd.DataFrame(dico_cpt_aum)
         self.score_per_worker = score_per_worker
         self.aum_per_worker = aum_per_worker
 
     def get_psi5_waum(self):
         aum_df = self.AUM_recorder
-        dico_cpt_aum = {}
+        dico_cpt_aum = {"index": [], "task": [], "waum": []}
         aum_df["margin"] = np.array(aum_df["label_prob"]) - np.array(
             aum_df["secondprob"]
         )
-        unique_task = np.unique(np.array(aum_df["task"]))
+        unique_task = np.unique(np.array(aum_df["index"]))
         aum_per_worker = {}
         score_per_worker = {}
         for i, each_task in (
@@ -319,7 +339,7 @@ class WAUM_stacked(CrowdModel):
         ):
             aum_per_worker[each_task] = {}
             score_per_worker[each_task] = {}
-            temp = aum_df[aum_df["task"] == each_task]
+            temp = aum_df[aum_df["index"] == each_task]
             avg = []
             score = []
             for j in np.unique(np.array(temp["worker"])):
@@ -328,21 +348,25 @@ class WAUM_stacked(CrowdModel):
                 avg.append((np.array(tempj["margin"]) * tempj["score"]).mean())
                 score.append(tempj["score"].iloc[0])
                 score_per_worker[each_task][j] = score[-1]
-            dico_cpt_aum[each_task] = np.sum(avg) / sum(score)
-        self.waum = dico_cpt_aum
+            dico_cpt_aum["index"].append(each_task)
+            dico_cpt_aum["task"].append(self.filenames[each_task])
+            dico_cpt_aum["waum"].append((np.sum(avg) / sum(score)).item())
+        self.waum = pd.DataFrame(dico_cpt_aum)
         self.score_per_worker = score_per_worker
         self.aum_per_worker = aum_per_worker
 
     def cut_lowests(self, alpha=0.01):
-        quantile = np.nanquantile(list(self.waum.values()), alpha)
-        tasks_too_hard = [
-            index
-            for index in list(self.waum.keys())
-            if self.waum[index] <= quantile
+        quantile = np.nanquantile(list(self.waum["waum"].to_numpy()), alpha)
+        too_hard = self.waum[self.waum["waum"] <= quantile]
+        self.index_too_hard = too_hard["index"].to_numpy()
+        self.tasks_too_hard = [
+            int(filename.split("-")[-1].split(".")[0])
+            for filename in too_hard["task"].to_numpy()
         ]
         self.quantile = quantile
-        self.too_hard = tasks_too_hard
-        return tasks_too_hard
+        self.too_hard = np.column_stack(
+            (self.index_too_hard, self.tasks_too_hard)
+        ).astype(int)
 
     def run(self, alpha=0.01):
         """Run WAUM identification and label aggregation using the cut-off hyperparameter alpha
@@ -369,14 +393,15 @@ class WAUM_stacked(CrowdModel):
         :return: Weighted label frequency for each task in D_pruned
         :rtype: numpy.ndarray(n_task, n_classes)
         """
-        baseline = np.zeros((len(self.answers_waum), self.n_classes))
-        self.answers_waum = dict(sorted(self.answers_waum.items()))
-        for task_id, tt in enumerate(list(self.answers_waum.keys())):
-            task = self.answers_waum[tt]
-            for worker, vote in task.items():
-                baseline[task_id, int(vote)] += self.pi[
-                    self.ds.converter.table_worker[int(worker)]
-                ][int(vote), int(vote)]
+        baseline = np.zeros((len(self.answers), self.n_classes))
+        self.answers = dict(sorted(self.answers.items()))
+        for task_id, tt in enumerate(list(self.answers.keys())):
+            if tt in self.answers_waum.keys():
+                task = self.answers_waum[tt]
+                for worker, vote in task.items():
+                    baseline[task_id, int(vote)] += self.pi[
+                        self.ds.converter.table_worker[int(worker)]
+                    ][int(vote), int(vote)]
         self.baseline = baseline
         return np.where(
             baseline.sum(axis=1).reshape(-1, 1),

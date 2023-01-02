@@ -25,6 +25,7 @@ from tqdm.auto import tqdm
 import json
 import torch
 import torch.nn as nn
+from torch.utils.data import Dataset
 import torch.nn.functional as f
 from torch.utils.data import DataLoader
 
@@ -62,17 +63,20 @@ class Crowdlayer_net(nn.Module):
         )
 
     def forward(self, x, labels):
-        z_pred = F.softmax(self.classifier(x), dim=1)
-        pm = F.softmax(self.confusion, dim=2)
-        ann_pred = torch.einsum("ik,jkl->ijl", z_pred, pm).view(
-            (-1, self.n_classes)
-        )
+        z_pred = self.classifier(x).unsqueeze(-1)
+        pm = self.confusion
+        wh = torch.where(labels != -1)
+        ann_pred = torch.einsum(
+            "mik,mkl->mil",
+            pm[wh[1], :],
+            z_pred[wh[1], :],
+        ).squeeze()
 
         reg = torch.zeros(1).to(DEVICE)
         for i in range(self.n_worker):
             reg += pm[i, 0, 0].log()
 
-        labels = labels.view(-1)
+        labels = labels[wh].long().view(-1)
         loss = self.criterion(ann_pred, labels) + self.scale * reg
         return loss
 
@@ -104,6 +108,16 @@ class Crowdlayer(CrowdModel):
         with open(self.answers, "r") as ans:
             self.answers = json.load(ans)
         super().__init__(self.answers)
+        if kwargs.get("path_remove", None):
+            to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
+            self.answers_modif = {}
+            i = 0
+            for key, val in self.answers.items():
+                if int(key) not in to_remove[:, 1]:
+                    self.answers_modif[i] = val
+                    i += 1
+            self.answers = self.answers_modif
+
         kwargs["labels"] = None  # to prevent any loading of labels
         self.trainset, self.valset, self.testset = load_all_data(
             self.tasks_path, labels_path=None, **kwargs
@@ -120,7 +134,7 @@ class Crowdlayer(CrowdModel):
         self.verbose = verbose
         self.n_workers = kwargs["n_workers"]
         self.output_name = output_name
-        self.criterion = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
+        self.criterion = nn.CrossEntropyLoss()
         self.crowdlayer_net = Crowdlayer_net(
             self.n_classes,
             self.n_workers,
@@ -144,12 +158,15 @@ class Crowdlayer(CrowdModel):
         # get correct training labels
         targets, ll = [], []
         self.numpyans = reformat_labels(self.answers, self.n_workers)
+        workers = []
         for i, samp in enumerate(self.trainset.samples):
             img, true_label = samp
             num = int(img.split("-")[-1].split(".")[0])
             ll.append((img, self.numpyans[num]))
             targets.append(self.numpyans[num])
+            workers.append(list(map(int, list(self.answers[num].keys()))))
         self.trainset.samples = ll
+        self.trainset.workers = workers
         self.trainset.targets = targets
 
         self.trainloader, self.testloader = DataLoader(
@@ -214,7 +231,7 @@ class Crowdlayer(CrowdModel):
                 if logger["val_loss"][-1] < min_val_loss:
                     torch.save(
                         {
-                            "confusion": self.crowdlayer_net.confusion.state_dict(),
+                            "confusion": self.crowdlayer_net.confusion,
                             "classifier": self.crowdlayer_net.classifier.state_dict(),
                         },
                         path_best / f"{self.output_name}.pth",

@@ -143,6 +143,16 @@ class CoNAL(CrowdModel):
         with open(self.answers, "r") as ans:
             self.answers = json.load(ans)
         super().__init__(self.answers)
+        if kwargs.get("path_remove", None):
+            to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
+            self.answers_modif = {}
+            i = 0
+            for key, val in self.answers.items():
+                if int(key) not in to_remove[:, 1]:
+                    self.answers_modif[i] = val
+                    i += 1
+            self.answers = self.answers_modif
+
         kwargs["labels"] = None  # to prevent any loading of labels
         self.trainset, self.valset, self.testset = load_all_data(
             self.tasks_path, labels_path=None, **kwargs

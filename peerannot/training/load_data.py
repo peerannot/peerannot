@@ -1,5 +1,6 @@
 from torchvision import datasets, transforms
 import numpy as np
+from pathlib import Path
 
 
 def load_data(path, path_labels=None, path_remove=None, **kwargs):
@@ -50,7 +51,8 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
 
     dataset.inv_class_to_idx = {v: k for k, v in dataset.class_to_idx.items()}
     if path_remove:
-        rm_idx = np.loadtxt(path_remove, dtype=int)
+        path_remove = Path(path_remove).resolve()
+        rm_idx = np.loadtxt(path_remove, dtype=int)[:, 0]
     else:
         rm_idx = []
     if path_labels:

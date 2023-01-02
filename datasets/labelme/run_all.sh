@@ -40,6 +40,7 @@ done
 done
 
 for strat in CoNAL[scale=0] CoNAL[scale=1e-4] CrowdLayer[scale=0] CrowdLayer[scale=1e-4]
+do
 echo "Strategy: ${strat}"
 declare -l strat
 strat=$strat

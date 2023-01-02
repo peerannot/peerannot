@@ -2,11 +2,12 @@ import click
 import torch
 import peerannot.training.load_data as ptrain
 from pathlib import Path
-from .train import get_model, get_optimizer, run_epoch
+from .train import get_model, get_optimizer, run_epoch, evaluate
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch.utils.data import Dataset
 import numpy as np
+import pandas as pd
 import json
 
 identification = click.Group(
@@ -56,7 +57,7 @@ class DatasetWithIndexAndWorker(Dataset):
 
 
 def adapt_dataset_to_method(dataset, method, n_classes, votes=None):
-    if method.lower() == "AUM":
+    if method.lower() == "AUM".lower():
         # use the original labels during training
         ll = []
         targets = []
@@ -77,6 +78,7 @@ def adapt_dataset_to_method(dataset, method, n_classes, votes=None):
         imgs = []
         workers = []
         true_idx = []
+        dataset.base_samples = dataset.samples
         for i, samp in enumerate(dataset.samples):
             img, label = samp
             num = int(img.split("-")[-1].split(".")[0])
@@ -231,17 +233,18 @@ def identify(folderpath, n_classes, method, **kwargs):
     with open(kwargs["metadata_path"], "r") as metadata:
         metadata = json.load(metadata)
     kwargs["n_workers"] = metadata["n_workers"]
-
-    votes = Path(kwargs["labels"]).resolve() if kwargs["labels"] else None
-    if votes:
-        with open(votes, "r") as f:
-            votes = json.load(f)
-        votes = dict(sorted({int(k): v for k, v in votes.items()}.items()))
+    if method != "AUM":
+        votes = Path(kwargs["labels"]).resolve() if kwargs["labels"] else None
+        if votes:
+            with open(votes, "r") as f:
+                votes = json.load(f)
+            votes = dict(sorted({int(k): v for k, v in votes.items()}.items()))
+    else:
+        votes = None
     path_folders = Path(folderpath).resolve()
     trainset = ptrain.load_data(path_folders / "train", None, **kwargs)
 
     trainset = adapt_dataset_to_method(trainset, method, n_classes, votes)
-
     print(f"Train set: {len(trainset)} tasks")
     model = get_model(
         kwargs["model"],
@@ -250,14 +253,61 @@ def identify(folderpath, n_classes, method, **kwargs):
         pretrained=kwargs["pretrained"],
         cifar="cifar" in str(path_folders).lower(),
     )
-    optimizer, _ = get_optimizer(model, kwargs["optimizer"], **kwargs)
+    optimizer, _ = get_optimizer(model, **kwargs)
     model = model.to(DEVICE)
     criterion = nn.CrossEntropyLoss()
     n_epochs = int(kwargs.get("n_epochs", 50))
     alpha = kwargs["alpha"]
     print(f"Running identification with method: {method}")
+    logger = {"val_loss": [], "val_accuracy": []}  # pretend it's val
     if method == "AUM":
-        raise NotImplementedError("Not implemented yet, sorry")
+        from peerannot.models.AUM import AUM
+
+        aum = AUM(
+            DataLoader(
+                trainset,
+                batch_size=64,
+                pin_memory=True,
+                num_workers=1,
+                shuffle=True,
+            ),
+            n_classes,
+            model,
+            criterion,
+            optimizer,
+            n_epochs,
+            verbose=True,
+            use_pleiss=kwargs["use_pleiss"],
+        )
+        aum.run()
+        logger = evaluate(
+            model,
+            DataLoader(
+                ptrain.load_data(path_folders / "train", None, **kwargs),
+                batch_size=64,
+                pin_memory=True,
+                num_workers=1,
+                shuffle=False,
+            ),
+            criterion,
+            logger,
+            test=False,
+            n_classes=n_classes,
+        )
+        logger["train_accuracy"] = logger["val_accuracy"]
+        logger["train_loss"] = logger["val_loss"]
+        del logger["val_accuracy"]
+        del logger["val_loss"]
+        print(logger)
+        who = "pleiss" if kwargs["use_pleiss"] else "yang"
+        path_aum = path_folders / "identification" / "aum"
+        path_aum.mkdir(exist_ok=True, parents=True)
+        aum.AUM_recorder.to_csv(path_aum / "full_aum_records.csv", index=False)
+        print(f"Saved full log at {path_aum / 'full_aum_records.csv'}")
+
+        aum.aums.to_csv(path_aum / "aum_values.csv", index=False)
+        print(f"Saved AUM values at {path_aum / 'aum_values.csv'}")
+
     elif method.lower() == "WAUM".lower():
         from peerannot.models.WAUM import WAUM
 
@@ -270,17 +320,17 @@ def identify(folderpath, n_classes, method, **kwargs):
             optimizer,
             n_epochs,
             verbose=True,
-            use_pleiss=kwargs["use_pleiss"],
             maxiterDS=kwargs["maxiter_ds"],
-            **kwargs,
+            n_workers=kwargs["n_workers"],
         )
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
         waum.run(alpha=kwargs["alpha"])
-        path_waum = path_folders / "identification" / f"waum_{alpha}_{who}"
+        path_waum = (
+            path_folders / "identification" / f"waum_{alpha}_{who}"
+        ).resolve()
         path_waum.mkdir(exist_ok=True, parents=True)
-        with open(path_waum / "waum.json", "w") as f:
-            dump(waum.waum, f)
-        print(f"Saved WAUM values at {path_waum / 'waum.json'}")
+        waum.waum.to_csv(path_waum / "waum.csv", index=False)
+        print(f"Saved WAUM values at {path_waum / 'waum.csv'}")
         with open(path_waum / "score_per_worker.json", "w") as f:
             dump(waum.score_per_worker, f, level=2)
         print(
@@ -291,7 +341,11 @@ def identify(folderpath, n_classes, method, **kwargs):
         print(
             f"Saved AUM per worker values at {path_waum / 'aum_per_worker.json'}"
         )
-        np.savetxt(path_waum / f"too_hard_{alpha}.txt", waum.too_hard)
+        np.savetxt(
+            path_waum / f"too_hard_{alpha}.txt",
+            waum.too_hard.astype(int),
+            fmt="%i",
+        )
         print(f"Saved too hard index at {path_waum / f'too_hard_{alpha}.txt'}")
     elif method.lower() == "WAUMstacked".lower():
         from peerannot.models.WAUM_stacked import WAUM_stacked
@@ -307,9 +361,9 @@ def identify(folderpath, n_classes, method, **kwargs):
             optimizer,
             n_epochs,
             verbose=True,
-            use_pleiss=kwargs["use_pleiss"],
             maxiterDS=kwargs["maxiter_ds"],
-            **kwargs,
+            use_pleiss=kwargs["use_pleiss"],
+            n_workers=kwargs["n_workers"],
         )
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
         waum.run(alpha=kwargs["alpha"])
@@ -317,20 +371,23 @@ def identify(folderpath, n_classes, method, **kwargs):
             path_folders / "identification" / f"waum_stacked_{alpha}_{who}"
         )
         path_waum.mkdir(exist_ok=True, parents=True)
-        with open(path_waum / "waum.json", "w") as f:
-            dump(waum.waum, f)
-        print(f"Saved WAUM stacked values at {path_waum / 'waum.json'}")
-        with open(path_waum / "score_per_worker", "w") as f:
+        waum.waum.to_csv(path_waum / "waum.csv", index=False)
+        print(f"Saved WAUM stacked values at {path_waum / 'waum.csv'}")
+        with open(path_waum / "score_per_worker.json", "w") as f:
             dump(waum.score_per_worker, f, level=2)
         print(
             f"Saved score per worker values at {path_waum / 'score_per_worker.json'}"
         )
-        with open(path_waum / "aum_per_worker", "w") as f:
+        with open(path_waum / "aum_per_worker.json", "w") as f:
             dump(waum.aum_per_worker, f, level=2)
         print(
             f"Saved AUM per worker values at {path_waum / 'aum_per_worker.json'}"
         )
-        np.savetxt(path_waum / f"too_hard_{alpha}.txt", waum.too_hard)
+        np.savetxt(
+            path_waum / f"too_hard_{alpha}.txt",
+            waum.too_hard.astype(int),
+            fmt="%i",
+        )
         print(f"Saved too hard index at {path_waum / f'too_hard_{alpha}.txt'}")
 
     if method.startswith("WAUM"):

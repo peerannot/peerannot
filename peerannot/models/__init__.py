@@ -7,6 +7,7 @@ from .WAUM import WAUM
 from .WAUM_stacked import WAUM_stacked
 from .CoNAL import CoNAL
 from .Crowdlayer import Crowdlayer
+from .AUM import AUM
 
 agg_strategies = {
     "MV": MV,
@@ -16,4 +17,5 @@ agg_strategies = {
     "GLAD": GLAD,
     "CoNAL": CoNAL,
     "CrowdLayer": Crowdlayer,
+    "AUM": AUM,
 }

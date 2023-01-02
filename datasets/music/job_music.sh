@@ -5,7 +5,7 @@
 #SBATCH --gres-flags=enforce-binding
 #SBATCH -o /home/tlefort/warm/phd/peerannot/datasets/music/outputs/output_music.out
 #SBATCH --error /home/tlefort/warm/phd/peerannot/datasets/music/errors/error_music.out
-#SBATCH -J "ptlbm"
+#SBATCH -J "ptmusic"
 path=/home/tlefort/warm/phd/peerannot/datasets/music/run_all.sh
 
 srun $path
