@@ -294,13 +294,14 @@ def identify(folderpath, n_classes, method, **kwargs):
             test=False,
             n_classes=n_classes,
         )
+        kwargs["model"] = kwargs["model"].lower()
         logger["train_accuracy"] = logger["val_accuracy"]
         logger["train_loss"] = logger["val_loss"]
         del logger["val_accuracy"]
         del logger["val_loss"]
         print(logger)
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
-        path_aum = path_folders / "identification" / "aum"
+        path_aum = path_folders / "identification" / "aum" / kwargs["model"]
         path_aum.mkdir(exist_ok=True, parents=True)
         aum.AUM_recorder.to_csv(path_aum / "full_aum_records.csv", index=False)
         print(f"Saved full log at {path_aum / 'full_aum_records.csv'}")
@@ -326,7 +327,10 @@ def identify(folderpath, n_classes, method, **kwargs):
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
         waum.run(alpha=kwargs["alpha"])
         path_waum = (
-            path_folders / "identification" / f"waum_{alpha}_{who}"
+            path_folders
+            / "identification"
+            / kwargs["model"]
+            / f"waum_{alpha}_{who}"
         ).resolve()
         path_waum.mkdir(exist_ok=True, parents=True)
         waum.waum.to_csv(path_waum / "waum.csv", index=False)
@@ -368,7 +372,10 @@ def identify(folderpath, n_classes, method, **kwargs):
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
         waum.run(alpha=kwargs["alpha"])
         path_waum = (
-            path_folders / "identification" / f"waum_stacked_{alpha}_{who}"
+            path_folders
+            / "identification"
+            / kwargs["model"]
+            / f"waum_stacked_{alpha}_{who}"
         )
         path_waum.mkdir(exist_ok=True, parents=True)
         waum.waum.to_csv(path_waum / "waum.csv", index=False)

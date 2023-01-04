@@ -63,7 +63,7 @@ class Crowdlayer_net(nn.Module):
         )
 
     def forward(self, x, labels):
-        z_pred = self.classifier(x).unsqueeze(-1)
+        z_pred = self.classifier(x).softmax(1).unsqueeze(-1)
         pm = self.confusion
         wh = torch.where(labels != -1)
         ann_pred = torch.einsum(

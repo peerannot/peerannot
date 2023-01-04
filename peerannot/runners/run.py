@@ -217,6 +217,12 @@ def aggregate_deep(**kwargs):
     default="answers.json",
     help="Name (with json extension) of the path to the crowdsourced labels",
 )
+@click.option(
+    "--path-remove",
+    type=click.Path(),
+    default=None,
+    help="Path to file of index to prune from the training set",
+)
 def aggregate(**kwargs):
     """Aggregate labels from a dictionnary of crowdsourced tasks according to a given strategy
 

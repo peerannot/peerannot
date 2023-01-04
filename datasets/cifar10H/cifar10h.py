@@ -65,6 +65,7 @@ class CIFAR10H:
             ("train", "val", "test"), [train_path, valid_path, test_path]
         ):
             print(f"- {set}: {path}")
+        print("Handling crowdsourced labels")
         self.get_crowd_labels()
         print(f"Train crowd labels are in {self.DIR / 'answers.json'}")
         print(
@@ -84,7 +85,8 @@ class CIFAR10H:
         df = pd.read_csv(self.DIR / "downloads" / csvfile, na_values="-9999")
         df = df[df.is_attn_check == 0]
         res_train, res_valid = {}, {}
-        for t in df.cifar10_test_test_idx.unique():
+        uni = df.cifar10_test_test_idx.unique()
+        for t in tqdm(uni, desc="Task", total=len(uni)):
             tmp = df[df.cifar10_test_test_idx == t]
             if t < 9500:
                 res = res_train

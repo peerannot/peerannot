@@ -1,0 +1,6 @@
+{
+    "name": "cifar-10h",
+    "n_classes": 10,
+    "n_workers": 2571,
+    "n_task": 9500
+}

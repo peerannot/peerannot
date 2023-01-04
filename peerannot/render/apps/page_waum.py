@@ -51,6 +51,7 @@ COLORMAPSAMPLE = sample_colorscale(
 
 def image_to_base64(img_src):
     im = Image.open(img_src)
+    im = im.convert("RGB")
     buffer = io.BytesIO()
     im.save(buffer, format="jpeg")
     encoded_image = base64.b64encode(buffer.getvalue()).decode()

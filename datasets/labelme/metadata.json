@@ -1,0 +1,5 @@
+{
+    "name": "labelme",
+    "n_classes": 8,
+    "n_workers": 77
+}

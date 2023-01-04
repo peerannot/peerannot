@@ -396,8 +396,8 @@ class WAUM_stacked(CrowdModel):
         baseline = np.zeros((len(self.answers), self.n_classes))
         self.answers = dict(sorted(self.answers.items()))
         for task_id, tt in enumerate(list(self.answers.keys())):
-            if tt in self.answers_waum.keys():
-                task = self.answers_waum[tt]
+            if tt not in self.too_hard[:, 1]:
+                task = self.answers[tt]
                 for worker, vote in task.items():
                     baseline[task_id, int(vote)] += self.pi[
                         self.ds.converter.table_worker[int(worker)]

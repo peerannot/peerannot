@@ -1,0 +1,5 @@
+{
+    "name": "music",
+    "n_classes": 10,
+    "n_workers": 44
+}

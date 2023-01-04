@@ -27,6 +27,7 @@ class MV(CrowdModel):
 
         super().__init__(answers)
         self.n_classes = n_classes
+        self.original_answers = self.answers
         if kwargs.get("path_remove", None):
             to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
             self.answers_modif = {}
