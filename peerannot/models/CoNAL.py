@@ -143,6 +143,7 @@ class CoNAL(CrowdModel):
         with open(self.answers, "r") as ans:
             self.answers = json.load(ans)
         super().__init__(self.answers)
+        self.answers_orig = self.answers
         if kwargs.get("path_remove", None):
             to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
             self.answers_modif = {}
@@ -152,7 +153,6 @@ class CoNAL(CrowdModel):
                     self.answers_modif[i] = val
                     i += 1
             self.answers = self.answers_modif
-
         kwargs["labels"] = None  # to prevent any loading of labels
         self.trainset, self.valset, self.testset = load_all_data(
             self.tasks_path, labels_path=None, **kwargs
@@ -163,6 +163,7 @@ class CoNAL(CrowdModel):
             n_classes=n_classes,
             pretrained=pretrained,
             cifar="cifar" in tasks_path.lower(),
+            freeze=kwargs.get("freeze", False),
         )
         self.n_classes = n_classes
         self.n_epochs = n_epochs
@@ -186,7 +187,8 @@ class CoNAL(CrowdModel):
     def setup(self, **kwargs):
         # get correct training labels
         targets, ll = [], []
-        self.numpyans = reformat_labels(self.answers, self.n_workers)
+        print(len(self.answers), len(self.trainset.samples))
+        self.numpyans = reformat_labels(self.answers_orig, self.n_workers)
         for i, samp in enumerate(self.trainset.samples):
             img, true_label = samp
             num = int(img.split("-")[-1].split(".")[0])

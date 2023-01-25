@@ -82,7 +82,7 @@ class CIFAR10H:
             zip_ref.extractall(self.DIR / "downloads")
 
         csvfile = "cifar10h-raw.csv"
-        df = pd.read_csv(self.DIR / "downloads" / csvfile, na_values="-9999")
+        df = pd.read_csv(self.DIR / "downloads" / csvfile, na_values="-99999")
         df = df[df.is_attn_check == 0]
         res_train, res_valid = {}, {}
         uni = df.cifar10_test_test_idx.unique()

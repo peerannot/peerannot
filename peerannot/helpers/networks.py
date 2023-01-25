@@ -37,7 +37,9 @@ class Classifier_labelme(nn.Module):
         return x
 
 
-def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
+def networks(
+    name, n_classes, n_params=None, pretrained=False, cifar=False, freeze=False
+):
     """Load model as pytorch module
 
     :param name: name of the model: currently one available from the pytorch/vision repository
@@ -67,16 +69,26 @@ def networks(name, n_classes, n_params=None, pretrained=False, cifar=False):
     elif name == "modellabelme":
         model = Classifier_labelme(0.5, 128, 8)
     elif name == "modelmusic":
-        model = Classifier_music(0.5, 128, 10)
+        model = Classifier_labelme(0.5, 128, 10)
     if "resnet" in name:
         if model.fc.out_features != n_classes:
             model.fc = nn.Linear(model.fc.in_features, n_classes)
+        if freeze:
+            for parameter in model.parameters():
+                parameter.requires_grad = False
+            for param in model.fc.parameters():
+                param.requires_grad = True
 
     elif "vgg" in name:
         if model.classifier[6].out_features != n_classes:
             model.classifier[6] = nn.Linear(
                 model.classifier[6].in_features, n_classes
             )
+        if freeze:
+            for parameter in model.parameters():
+                parameter.requires_grad = False
+            for param in model.classifier[6].parameters():
+                param.requires_grad = True
     elif name not in ["modellabelme", "modelmusic"]:
         raise NotImplementedError("Not implemented yet, sorry")
     print(f"Successfully loaded {name} with n_classes={n_classes}")

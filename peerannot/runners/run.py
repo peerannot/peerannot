@@ -148,6 +148,13 @@ def agginfo():
     default=None,
     help="Path to the metadata of the dataset if different than default",
 )
+@click.option(
+    "--freeze",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Freeze all layers of the network except for the last one",
+)
 def aggregate_deep(**kwargs):
     print("Running the following configuration:")
     print("-" * 10)
@@ -245,7 +252,9 @@ def aggregate(**kwargs):
     print(f"Running aggregation {strat_name} with options {options}")
     if strat_name in list(map(lambda x: x.lower(), ["MV", "NaiveSoft"])):
         strat = strat(answers, metadata["n_classes"], **kwargs)
-    elif strat_name in list(map(lambda x: x.lower(), ["DS", "GLAD", "DSwc"])):
+    elif strat_name in list(
+        map(lambda x: x.lower(), ["DS", "GLAD", "DSwc", "WDS"])
+    ):
         strat = strat(answers, metadata["n_classes"], **options, **kwargs)
         strat.run()
     else:

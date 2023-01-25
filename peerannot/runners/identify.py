@@ -68,11 +68,11 @@ def adapt_dataset_to_method(dataset, method, n_classes, votes=None):
         dataset.targets = targets
         # the dataset should return the index id
         dataset = DatasetWithIndex(dataset)
-    elif method.lower() == "WAUM".lower():
+    elif method.lower() == "WAUMperworker".lower():
         dataset = DatasetWithIndex(dataset)
-    elif method.lower() == "WAUMstacked".lower():
+    elif method.lower() == "WAUM".lower():
         # extend the dataset with task x answers
-        assert votes, "WAUMstacked need the full json of votes"
+        assert votes, "WAUM need the full json of votes"
         ll = []
         targets = []
         imgs = []
@@ -103,7 +103,7 @@ def adapt_dataset_to_method(dataset, method, n_classes, votes=None):
 def identificationinfo():
     print("Available methods for ambiguity identification")
     print("-" * 10)
-    for meth in ["AUM", "WAUM", "WAUMstacked"]:
+    for meth in ["AUM", "WAUM", "WAUMperworker"]:
         print(f"- {meth}")
     print("-" * 10)
     return
@@ -135,12 +135,17 @@ def dump(js, file, level=1):
     type=click.Path(exists=True),
 )
 @click.option(
+    "--hard-labels",
+    type=None,
+    help="Path to file of hard labels (only for AUM)",
+)
+@click.option(
     "--n-classes", "-K", default=2, type=int, help="Number of classes"
 )
 @click.option(
     "--method",
     type=str,
-    default="WAUMstacked",
+    default="WAUM",
     help="Method to find ambiguous tasks",
 )
 @click.option(
@@ -217,6 +222,13 @@ def dump(js, file, level=1):
     show_default=True,
     help="Perform data augmentation on training set with a random choice between RandomAffine(shear=15), RandomHorizontalFlip(0.5) and RandomResizedCrop",
 )
+@click.option(
+    "--freeze",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Freeze all layers of the network except for the last one",
+)
 def identify(folderpath, n_classes, method, **kwargs):
     print("Running the following configuration:")
     print("-" * 10)
@@ -239,10 +251,16 @@ def identify(folderpath, n_classes, method, **kwargs):
             with open(votes, "r") as f:
                 votes = json.load(f)
             votes = dict(sorted({int(k): v for k, v in votes.items()}.items()))
+        labels_to_load = None
     else:
         votes = None
+        labels_to_load = kwargs.get("hard_labels", None)
+        if labels_to_load:
+            labels_to_load = Path(labels_to_load).resolve()
     path_folders = Path(folderpath).resolve()
-    trainset = ptrain.load_data(path_folders / "train", None, **kwargs)
+    trainset = ptrain.load_data(
+        path_folders / "train", labels_to_load, **kwargs
+    )
 
     trainset = adapt_dataset_to_method(trainset, method, n_classes, votes)
     print(f"Train set: {len(trainset)} tasks")
@@ -252,6 +270,7 @@ def identify(folderpath, n_classes, method, **kwargs):
         n_params=kwargs["n_params"],
         pretrained=kwargs["pretrained"],
         cifar="cifar" in str(path_folders).lower(),
+        freeze=kwargs.get("freeze", False),
     )
     optimizer, _ = get_optimizer(model, **kwargs)
     model = model.to(DEVICE)
@@ -310,9 +329,9 @@ def identify(folderpath, n_classes, method, **kwargs):
         print(f"Saved AUM values at {path_aum / 'aum_values.csv'}")
 
     elif method.lower() == "WAUM".lower():
-        from peerannot.models.WAUM import WAUM
+        from peerannot.models.WAUM_perworker import WAUM_perworker
 
-        waum = WAUM(
+        waum = WAUM_perworker(
             trainset,
             votes,
             n_classes,
@@ -330,11 +349,11 @@ def identify(folderpath, n_classes, method, **kwargs):
             path_folders
             / "identification"
             / kwargs["model"]
-            / f"waum_{alpha}_{who}"
+            / f"waum_perworker_{alpha}_{who}"
         ).resolve()
         path_waum.mkdir(exist_ok=True, parents=True)
         waum.waum.to_csv(path_waum / "waum.csv", index=False)
-        print(f"Saved WAUM values at {path_waum / 'waum.csv'}")
+        print(f"Saved WAUM per worker values at {path_waum / 'waum.csv'}")
         with open(path_waum / "score_per_worker.json", "w") as f:
             dump(waum.score_per_worker, f, level=2)
         print(
@@ -351,10 +370,10 @@ def identify(folderpath, n_classes, method, **kwargs):
             fmt="%i",
         )
         print(f"Saved too hard index at {path_waum / f'too_hard_{alpha}.txt'}")
-    elif method.lower() == "WAUMstacked".lower():
-        from peerannot.models.WAUM_stacked import WAUM_stacked
+    elif method.lower() == "WAUM".lower():
+        from peerannot.models.WAUM import WAUM
 
-        waum = WAUM_stacked(
+        waum = WAUM(
             DataLoader(
                 trainset, batch_size=64, pin_memory=True, num_workers=1
             ),
@@ -375,11 +394,11 @@ def identify(folderpath, n_classes, method, **kwargs):
             path_folders
             / "identification"
             / kwargs["model"]
-            / f"waum_stacked_{alpha}_{who}"
+            / f"waum_{alpha}_{who}"
         )
         path_waum.mkdir(exist_ok=True, parents=True)
         waum.waum.to_csv(path_waum / "waum.csv", index=False)
-        print(f"Saved WAUM stacked values at {path_waum / 'waum.csv'}")
+        print(f"Saved WAUM values at {path_waum / 'waum.csv'}")
         with open(path_waum / "score_per_worker.json", "w") as f:
             dump(waum.score_per_worker, f, level=2)
         print(

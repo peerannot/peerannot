@@ -3,11 +3,12 @@ from .Soft import Soft
 from .DS import Dawid_Skene
 from .DS_clust import Dawid_Skene_clust
 from .GLAD import GLAD
+from .WAUM_perworker import WAUM_perworker
 from .WAUM import WAUM
-from .WAUM_stacked import WAUM_stacked
 from .CoNAL import CoNAL
 from .Crowdlayer import Crowdlayer
 from .AUM import AUM
+from .WDS import WDS
 
 agg_strategies = {
     "MV": MV,
@@ -15,6 +16,7 @@ agg_strategies = {
     "DS": Dawid_Skene,
     "DSWC": Dawid_Skene_clust,
     "GLAD": GLAD,
+    "WDS": WDS,
     "CoNAL": CoNAL,
     "CrowdLayer": Crowdlayer,
     "AUM": AUM,

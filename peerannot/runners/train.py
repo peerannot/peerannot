@@ -45,13 +45,23 @@ def load_all_data(folderpath, labels_path, **kwargs):
 
 
 def get_model(
-    model_name, n_classes, n_params=None, pretrained=False, cifar=False
+    model_name,
+    n_classes,
+    n_params=None,
+    pretrained=False,
+    cifar=False,
+    freeze=False,
 ):
     assert (
         model_name.lower() in nethelp.get_all_models()
     ), "The neural network asked is not one of available networks, please run `peerannot modelinfo` to get the list of available models"
     model = nethelp.networks(
-        model_name, n_classes, n_params=None, pretrained=False, cifar=cifar
+        model_name,
+        n_classes,
+        n_params=None,
+        pretrained=False,
+        cifar=cifar,
+        freeze=freeze,
     )
     return model
 
@@ -187,6 +197,13 @@ def get_optimizer(net, optimizer, **kwargs):
 )
 @click.option("--num-workers", type=int, default=1, help="Number of workers")
 @click.option("--batch-size", default=64, type=int, help="Batch size")
+@click.option(
+    "--freeze",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Freeze all layers of the network except for the last one",
+)
 def train(datapath, output_name, n_classes, **kwargs):
     # load datasets and create folders
     print("Running the following configuration:")
@@ -239,6 +256,7 @@ def train(datapath, output_name, n_classes, **kwargs):
         n_params=kwargs["n_params"],
         pretrained=kwargs["pretrained"],
         cifar="cifar" in datapath.lower(),
+        freeze=kwargs.get("freeze", False),
     )
     model.to(DEVICE)
     criterion = nn.CrossEntropyLoss()

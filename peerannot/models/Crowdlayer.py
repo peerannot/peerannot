@@ -41,44 +41,51 @@ def reformat_labels(votes, n_workers):
     return np.array(answers)
 
 
+class DatasetWithIndexAndWorker(Dataset):
+    """A wrapper to make dataset return the task index
+
+    :param Dataset: Dataset with tasks to handle
+    :type Dataset: torch.Dataset
+    """
+
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, index):
+        return (
+            *self.dataset[index],
+            self.dataset.workers[index],
+            self.dataset.true_index[index],
+            index,
+        )
+
+
 class Crowdlayer_net(nn.Module):
     def __init__(
         self,
         n_class,
         n_annotator,
         classifier,
-        scale,
-        criterion,
     ):
         super().__init__()
 
         self.classifier = classifier
         self.n_worker = n_annotator
         self.n_classes = n_class
-        self.scale = scale
-        self.criterion = criterion
         self.workers = [torch.eye(n_class) for _ in range(self.n_worker)]
         self.confusion = nn.Parameter(
             torch.stack(self.workers), requires_grad=True
         )
 
-    def forward(self, x, labels):
-        z_pred = self.classifier(x).softmax(1).unsqueeze(-1)
-        pm = self.confusion
-        wh = torch.where(labels != -1)
+    def forward(self, x, workers):
+        z_pred = self.classifier(x).softmax(1)
         ann_pred = torch.einsum(
-            "mik,mkl->mil",
-            pm[wh[1], :],
-            z_pred[wh[1], :],
+            "mik,mkl->mil", self.confusion[workers], z_pred.unsqueeze(-1)
         ).squeeze()
-
-        reg = torch.zeros(1).to(DEVICE)
-        for i in range(self.n_worker):
-            reg += pm[i, 0, 0].log()
-
-        labels = labels[wh].long().view(-1)
-        loss = self.criterion(ann_pred, labels) + self.scale * reg
-        return loss
+        return ann_pred
 
 
 class Crowdlayer(CrowdModel):
@@ -128,6 +135,7 @@ class Crowdlayer(CrowdModel):
             n_classes=n_classes,
             pretrained=pretrained,
             cifar="cifar" in tasks_path.lower(),
+            freeze=kwargs.get("freeze", False),
         )
         self.n_classes = n_classes
         self.n_epochs = n_epochs
@@ -139,8 +147,6 @@ class Crowdlayer(CrowdModel):
             self.n_classes,
             self.n_workers,
             self.model,
-            self.scale,
-            self.criterion,
         )
         self.optimizer, self.scheduler = get_optimizer(
             self.crowdlayer_net.classifier, optimizer, **kwargs
@@ -156,18 +162,27 @@ class Crowdlayer(CrowdModel):
 
     def setup(self, **kwargs):
         # get correct training labels
-        targets, ll = [], []
-        self.numpyans = reformat_labels(self.answers, self.n_workers)
+        ll = []
+        targets = []
+        imgs = []
         workers = []
+        true_idx = []
+        self.trainset.base_samples = self.trainset.samples
         for i, samp in enumerate(self.trainset.samples):
-            img, true_label = samp
+            img, label = samp
             num = int(img.split("-")[-1].split(".")[0])
-            ll.append((img, self.numpyans[num]))
-            targets.append(self.numpyans[num])
-            workers.append(list(map(int, list(self.answers[num].keys()))))
-        self.trainset.samples = ll
-        self.trainset.workers = workers
+            for worker, worker_vote in self.answers[num].items():
+                ll.append((img, worker_vote))
+                targets.append(worker_vote)
+                workers.append(int(worker))
+                true_idx.append(i)
+                imgs.append(img)
         self.trainset.targets = targets
+        self.trainset.samples = ll
+        self.trainset.true_index = true_idx
+        self.trainset.workers = workers
+        self.trainset.imgs = imgs
+        self.trainset = DatasetWithIndexAndWorker(self.trainset)
 
         self.trainloader, self.testloader = DataLoader(
             self.trainset,
@@ -282,16 +297,20 @@ class Crowdlayer(CrowdModel):
     ):
         model.train()
         total_loss = 0.0
-        for inputs, labels in trainloader:
+        for (inputs, labels, workers, dd, idx) in trainloader:
             # move to device
             inputs = inputs.to(DEVICE)
             labels = labels.to(DEVICE)
+            ww = list(map(int, workers.tolist()))
 
             # zero out gradients
             optimizer.zero_grad()  # model.zero_grad() to be Xtra safe
 
             # compute the loss directly !!!!!
-            loss = model(inputs, labels)
+            ann_pred = model(inputs, ww)
+
+            labels = labels.type(torch.long)
+            loss = criterion(ann_pred, labels)
 
             # gradient step
             loss.backward()

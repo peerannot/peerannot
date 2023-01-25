@@ -21,6 +21,7 @@ import scipy as sp
 import scipy.stats
 import scipy.optimize
 from tqdm.auto import tqdm
+from pathlib import Path
 
 
 def sigmoid(x):
@@ -319,3 +320,12 @@ class GLAD(CrowdModel):
         return np.vectorize(self.converter.inv_labels.get)(
             np.argmax(self.get_probas(), axis=1)
         )
+
+    def save_difficulty(self, path):
+        path = Path(exist_ok=True).resolve()
+        difficulties = []
+        for tt in self.answers.keys():
+            difficulties.append([tt, self.beta[tt]])
+        difficulties = np.array(difficulties)
+        np.save(path, difficulties)
+        print(f"Task difficulty coefficients saved at {path}")
