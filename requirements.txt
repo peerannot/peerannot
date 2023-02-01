@@ -1,6 +1,6 @@
-torch>=1.10.2
-torchmetrics>=0.11.0
-torchvision==0.14.1
+torch
+torchmetrics
+torchvision
 click>=8.0.0
 dash>=2.7.1
 dash-bootstrap-components>=1.1.0
