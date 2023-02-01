@@ -38,7 +38,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
-    "sphinx_gallery.gen_gallery",
+    # "sphinx_gallery.gen_gallery",
     "numpydoc",
 ]
 
@@ -86,7 +86,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = False
 
 # generate autosummary even if no references
 autosummary_generate = True
@@ -189,11 +188,10 @@ texinfo_documents = [
 ]
 
 
-sphinx_gallery_conf = {
-    "doc_module": "peerannot",
-    "reference_url": {
-        "peerannot": None,
-    },
-    "backreferences_dir": "generated",
-    "examples_dirs": "../examples",
-}
+# sphinx_gallery_conf = {
+#     "doc_module": "peerannot",
+#     "reference_url": {
+#         "peerannot": None,
+#     },
+#     "backreferences_dir": "generated",
+# }

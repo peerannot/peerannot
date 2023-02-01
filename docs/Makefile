@@ -15,7 +15,6 @@ help:
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)/*
-	rm -rf ./auto_examples/*
 	rm -rf ./generated/*
 
 .PHONY: html
