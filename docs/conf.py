@@ -117,7 +117,7 @@ html_theme_options = {
 }
 
 html_sidebars = {"**": ["localtoc.html"]}
-
+html_logo = "https://avatars.githubusercontent.com/u/118831295?s=200&v=4"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
