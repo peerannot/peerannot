@@ -1,6 +1,8 @@
+--find-links https://download.pytorch.org/whl/torch_stable.html
 torch
-torchmetrics
+--find-links https://download.pytorch.org/whl/torch_stable.html
 torchvision
+torchmetrics
 click>=8.0.0
 dash>=2.7.1
 dash-bootstrap-components>=1.1.0
