@@ -187,6 +187,14 @@ texinfo_documents = [
     ),
 ]
 
+# cf https://github.com/pydata/pydata-sphinx-theme/issues/1094
+html_theme_options = {
+    "logo": {
+        "image_light": html_logo,
+        "image_dark": html_logo,
+    }
+}
+
 
 # sphinx_gallery_conf = {
 #     "doc_module": "peerannot",
