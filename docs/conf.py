@@ -110,7 +110,6 @@ html_theme = "pydata_sphinx_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "navbar_start": ["navbar-logo"],
     "navbar_center": ["navbar-nav"],
     "navbar_end": ["navbar-icon-links", "theme-switcher"],
     "navbar_align": "content",
