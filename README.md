@@ -1,5 +1,7 @@
 # Welcome to Peerannot!
 
+[![Pypi](https://github.com/peerannot/peerannot/actions/workflows/python-publish.yml/badge.svg?branch=main)](https://github.com/peerannot/peerannot/actions/workflows/python-publish.yml)
+
 The `peerannot` library was created to handle crowdsourced labels in classification problems.
 
 ## Installation

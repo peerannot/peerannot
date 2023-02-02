@@ -1,5 +1,5 @@
 from .MV import MV
-from .Soft import Soft
+from .NaiveSoft import NaiveSoft
 from .DS import Dawid_Skene
 from .DS_clust import Dawid_Skene_clust
 from .GLAD import GLAD
@@ -12,7 +12,7 @@ from .WDS import WDS
 
 agg_strategies = {
     "MV": MV,
-    "NaiveSoft": Soft,
+    "NaiveSoft": NaiveSoft,
     "DS": Dawid_Skene,
     "DSWC": Dawid_Skene_clust,
     "GLAD": GLAD,

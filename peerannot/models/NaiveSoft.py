@@ -7,7 +7,7 @@ from .template import CrowdModel
 import numpy as np
 
 
-class Soft(CrowdModel):
+class NaiveSoft(CrowdModel):
     def __init__(self, answers, n_classes=2, **kwargs):
         """Naive soft: Frequency distribution of labels
 
