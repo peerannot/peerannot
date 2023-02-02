@@ -53,8 +53,7 @@ class Dawid_Skene(CrowdModel):
         Returns:
             p: (p_j)_j probabilities that instance has true response j if drawn
         at random (class marginals)
-            pi: number of times worker k records l when j is correct / number
-        of instandon’t think it will work as it’s not in the open-vsx registry. Extensions from the Microsoft VS Code extension marketplace only works on the Microsoft VS Codeces seen by worker k where j is correct
+            pi: number of times worker k records l when j is correct
         """
         p = self.T.sum(0) / self.n_task
         pi = np.zeros((self.n_workers, self.n_classes, self.n_classes))
@@ -93,7 +92,7 @@ class Dawid_Skene(CrowdModel):
         self.get_crowd_matrix()
         self.init_T()
         ll = []
-        k, eps = 0, 1e1
+        k, eps = 0, np.inf
         pbar = tqdm(total=maxiter, desc="Dawid and Skene")
         while k < maxiter and eps > epsilon:
             self.m_step()
