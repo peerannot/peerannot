@@ -186,3 +186,23 @@ datasets/cifar10H/best_models/
 datasets/labelme/data/
 
 *.pth
+
+datasets/cifar10H/errors/
+
+datasets/cifar10H/identification/
+
+datasets/cifar10H/outputs/
+
+datasets/labelme/errors/
+
+datasets/labelme/identification/
+
+datasets/labelme/outputs/
+
+datasets/labelmecorr/
+
+datasets/music/errors/
+
+datasets/music/identification/
+
+datasets/music/outputs/

@@ -1,13 +1,28 @@
-# Welcome to Peerannot
+# Welcome to Peerannot!
 
 The `peerannot` library was created to handle crowdsourced labels in classification problems.
 
+## Installation
+
+To install the `peerannot` library and reproduce results, use `cd` to be located in the directory of the `setup.py` file and then
+
+```bash
+$ pip install peerannot
+```
+
+Installing the library gives access to the Command Line Interface using the keyword `peerannot` in a bash terminal.
+
 ## Quick start
 
-Let us consider how we would work with, for example, the `cifar10H` dataset.
-We assume that we are in the `cifar10H` directory containing the `cifar10H.py` file.
+We demonstrate how `peerannot` works with the `cifar10H` dataset.
+We assume that the current working directory is the `cifar10H` directory containing the `cifar10H.py` file.
 
-First, install the dataset with `peerannot install ./cifar10h.py`.
+First, install the dataset with
+
+```bash
+$ peerannot install ./cifar10h.py
+```
+
 Then, we can try classical label aggregation strategies as follows:
 
 ```bash
@@ -19,7 +34,7 @@ done
 ```
 
 This will create a new folder names `labels` containing the labels in the `labels_cifar10H_${strat}.npy` file.
-Once we have the labels, we can train a neural network with `pytorch` as follows:
+Once the labels are available, we can train a neural network with `PyTorch` as follows. In a terminal:
 
 ```bash
 for strat in MV NaiveSoft DS GLAD WDS
@@ -41,7 +56,7 @@ done
 As the `WAUM` purpose is to identify ambiguous tasks, the command to run the identification is:
 
 ```bash
-peerannot identify . -K 10 --method WAUM \
+$ peerannot identify . -K 10 --method WAUM \
                      --labels ./answers.json \
                      --model resnet18 --n-epochs 50 \
                      --lr=0.1 --img-size=32 \
@@ -50,9 +65,10 @@ peerannot identify . -K 10 --method WAUM \
 ```
 
 Then, one can train on the pruned dataset with any aggregation strategy as follows:
+
 ```bash
 # run WAUM + DS strategy
-peerannot train . -o cifar10H_waum_0.01_DS \
+$ peerannot train . -o cifar10H_waum_0.01_DS \
                 -K 10 \
                 --labels= ./labels/labels_cifar-10h_ds.npy \
                 --model resnet18 --img-size=32 \
@@ -64,7 +80,7 @@ peerannot train . -o cifar10H_waum_0.01_DS \
 Finally, for the end-to-end strategies using deep learning (as CoNAL or CrowdLayer), the command line is:
 
 ```bash
-peerannot aggregate-deep . -o cifar10h_crowdlayer \
+$ peerannot aggregate-deep . -o cifar10h_crowdlayer \
                          --answers ./answers.json \
                          --model resnet18 -K=10 \
                          --n-epochs 150 --lr 0.1 --optimizer sgd \
@@ -77,7 +93,7 @@ For CoNAL, the hyperparameter scaling can be provided as `-s CoNAL[scale=1e-4]`.
 
 ## Peerannot and crowdsourcing formatting
 
-In `peerannot`, one of our goal is to make crowdsourced datasets under the same format so that it is easy to switch from one learning or aggregation strategy without having to code once again the algorithms for each dataset.
+In `peerannot`, one of our goals is to make crowdsourced datasets under the same format so that it is easy to switch from one learning or aggregation strategy without having to code once again the algorithms for each dataset.
 
 So, what is a crowdsourced dataset? We define each dataset as:
 
@@ -108,18 +124,21 @@ The crowdsourced labels for each training task are contained in the `anwers.json
 }
 ```
 
-Note that because the task index in the `answers.json` file might not match the order of tasks in the `train` folder, each task has in its name the associated index in the votes file.
-The number of tasks in the `train` folder **must** match the number of entry keys into the `answers.json` file.
+Note that the task index in the `answers.json` file might not match the order of tasks in the `train` folder... Thence, each task's name contains the associated votes file index.
+The number of tasks in the `train` folder **must** match the number of entry keys in the `answers.json` file.
 
 The `metadata.json` file contains general information about the dataset. A minimal example would be:
+
 ```json
 {
     "name": <dataset>,
     "n_classes": K,
-    "n_workers": <n_workers>
+    "n_workers": <n_workers>,
 }
 ```
-The `dataset.py` is not mandatory, but is here to facilitate the dataset's installation procedure. A minimal example is:
+
+The `dataset.py` is not mandatory but is here to facilitate the dataset's installation procedure. A minimal example:
+
 ```python
 class mydataset:
     def __init__(self):
