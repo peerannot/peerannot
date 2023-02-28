@@ -6,9 +6,10 @@ from peerannot.runners.datasets import datasets
 from peerannot.runners.train import trainmod
 from peerannot.runners.identify import identification
 from peerannot.runners.show import show
+from peerannot.runners.simulate import simulation
 
-SOURCES = [run, datasets, trainmod, identification, show]
-CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+SOURCES = [run, datasets, trainmod, identification, show, simulation]
+CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"], show_default=True)
 
 
 @click.command(

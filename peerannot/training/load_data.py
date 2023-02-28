@@ -35,16 +35,6 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
             "truck": 9,
         }
     elif "labelme" in str(path).lower():
-        # dataset.real_class_to_idx = {
-        #     "highway": 0,
-        #     "insidecity": 1,
-        #     "tallbuilding": 2,
-        #     "street": 3,
-        #     "forest": 4,
-        #     "coast": 5,
-        #     "mountain": 6,
-        #     "opencountry": 7,
-        # }
         dataset.real_class_to_idx = dataset.class_to_idx
     elif "music" in str(path).lower():
         dataset.real_class_to_idx = dataset.class_to_idx
