@@ -34,11 +34,13 @@ def with_confusion(
         possible_workers = np.where(loads < workerload)[0]
         # print(i, loads, feeds)
         howmany = min(min(workerload, len(possible_workers)), feedback)
-        feeds[i] += howmany
         if howmany == 0:
             raise ValueError(
                 f"Could not satisfy conditions:\n \t n_task={n_task}, \n\t workerload = {workerload}, \n\tfeedback effort={feedback}\n\t n_worker={n_worker}."
             )
+        if kwargs["imbalance_votes"]:
+            howmany = rng.choice(range(howmany)) + 1  # range: (0: howmany -1)
+        feeds[i] += howmany
         workers = rng.choice(
             possible_workers,
             replace=False,

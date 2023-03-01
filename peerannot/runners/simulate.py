@@ -69,6 +69,12 @@ simulation = click.Group(
     help="Upper bound on the number of tasks answered per worker",
 )
 @click.option(
+    "--imbalance-votes",
+    is_flag=True,
+    default=False,
+    help="If set, the number of votes per task is randomly chosen between 1 and the possible number of votes considering the constraint on the workerload and feedback force.",
+)
+@click.option(
     "--seed", type=int, default=0, help="Randome state for reproducibility"
 )
 def simulate(**kwargs):
