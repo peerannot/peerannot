@@ -1,0 +1,42 @@
+﻿peerannot.models
+================
+
+.. automodule:: peerannot.models
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   peerannot.models.AUM
+   peerannot.models.CoNAL
+   peerannot.models.Crowdlayer
+   peerannot.models.DS
+   peerannot.models.DS_clust
+   peerannot.models.GLAD
+   peerannot.models.MV
+   peerannot.models.NaiveSoft
+   peerannot.models.WAUM
+   peerannot.models.WAUM_perworker
+   peerannot.models.WDS
+   peerannot.models.template
+

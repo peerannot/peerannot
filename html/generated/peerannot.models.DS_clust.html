@@ -1,0 +1,598 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>peerannot.models.DS_clust &#8212; peerannot  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/peerannot.models.DS_clust';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="peerannot.models.GLAD" href="peerannot.models.GLAD.html" />
+    <link rel="prev" title="peerannot.models.DS" href="peerannot.models.DS.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  <div class="navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="https://avatars.githubusercontent.com/u/118831295?s=200&v=4" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="https://avatars.githubusercontent.com/u/118831295?s=200&v=4" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../strategies.html">
+                        Strategies
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../datasets.html">
+                        Datasets
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../strategies.html">
+                        Strategies
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../datasets.html">
+                        Datasets
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">peerannot.models.DS_clust</a><ul>
+<li><a class="reference internal" href="#dawid-and-skene-model-with-worker-clustering-imomura-et-al-2018">Dawid and skene model with worker clustering (Imomura et. al 2018)</a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust</span></code></a><ul>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.__init__"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.convergence_condition"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.convergence_condition()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.elbo"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.elbo()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_answers"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.get_answers()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_crowd_matrix"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.get_crowd_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_probas"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.get_probas()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.hyper_parameter_update"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.hyper_parameter_update()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.initialize_parameter"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.initialize_parameter()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.one_iteration"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.one_iteration()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.run"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.run()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust.variational_update"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.variational_update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumbs">
+  <ul class="bd-breadcrumbs" role="navigation" aria-label="Breadcrumb">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../strategies.html" class="nav-link">Strategies</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="peerannot.models.html" class="nav-link">peerannot.models</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">peerannot.models.DS_clust</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="module-peerannot.models.DS_clust">
+<span id="peerannot-models-ds-clust"></span><h1>peerannot.models.DS_clust<a class="headerlink" href="#module-peerannot.models.DS_clust" title="Permalink to this heading">#</a></h1>
+<section id="dawid-and-skene-model-with-worker-clustering-imomura-et-al-2018">
+<h2>Dawid and skene model with worker clustering (Imomura et. al 2018)<a class="headerlink" href="#dawid-and-skene-model-with-worker-clustering-imomura-et-al-2018" title="Permalink to this heading">#</a></h2>
+<p>Assumptions:
+- clusters of workers</p>
+<p>Using:
+- Variational inference</p>
+<p>Estimating:
+- One confusion matrix per cluster of workers</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#peerannot.models.DS_clust.Dawid_Skene_clust" title="peerannot.models.DS_clust.Dawid_Skene_clust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dawid_Skene_clust</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">peerannot.models.DS_clust.</span></span><span class="sig-name descname"><span class="pre">Dawid_Skene_clust</span></span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">answers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.__init__" title="Permalink to this definition">#</a></dt>
+<dd><p>Dawid and Skene model with clusterized confusion matrices using variational inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>answers</strong> – Dictionnary of workers answers with format</p>
+</dd>
+</dl>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nx">task0</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">worker0</span><span class="o">:</span><span class="w"> </span><span class="nx">label</span><span class="p">,</span><span class="w"> </span><span class="nx">worker1</span><span class="o">:</span><span class="w"> </span><span class="nx">label</span><span class="p">},</span>
+<span class="w">    </span><span class="nx">task1</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">worker1</span><span class="o">:</span><span class="w"> </span><span class="nx">label</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_classes</strong> (<em>int</em>) – Number of possible classes</p></li>
+<li><p><strong>L</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of clusters of workers, defaults to 2</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.convergence_condition">
+<span class="sig-name descname"><span class="pre">convergence_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elbo_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elbo_old</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.convergence_condition" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.elbo">
+<span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.elbo" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.get_answers">
+<span class="sig-name descname"><span class="pre">get_answers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_answers" title="Permalink to this definition">#</a></dt>
+<dd><p>Argmax of soft labels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Hard labels</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy.ndarray(n_task)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.get_crowd_matrix">
+<span class="sig-name descname"><span class="pre">get_crowd_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_crowd_matrix" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute matrix of size (n_task, n_workers, n_classes) to
+store proposed votes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.get_probas">
+<span class="sig-name descname"><span class="pre">get_probas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_probas" title="Permalink to this definition">#</a></dt>
+<dd><p>Get soft labels distribution for each task</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Estimated soft labels for each task</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy.ndarray(n_task, n_classes)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.hyper_parameter_update">
+<span class="sig-name descname"><span class="pre">hyper_parameter_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.hyper_parameter_update" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.initialize_parameter">
+<span class="sig-name descname"><span class="pre">initialize_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.initialize_parameter" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.one_iteration">
+<span class="sig-name descname"><span class="pre">one_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.one_iteration" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.run" title="Permalink to this definition">#</a></dt>
+<dd><p>Run variational inference for the worker-clusterized DS model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epsilon</strong> (<em>float</em><em>, </em><em>optional</em>) – convergence tolerance between two elbo values, defaults to 1e-4</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of iterations, defaults to 100</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>hard labels, (confusion matrices, prevalence), number of iterations</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>tuple(
+np.ndarray(n_task, n_classes),
+tuple(</p>
+<blockquote>
+<div><p>np.ndarray(n_worker, n_task, n_task),
+np.ndarray(n_classes)
+),</p>
+</div></blockquote>
+<p>int)</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.DS_clust.Dawid_Skene_clust.variational_update">
+<span class="sig-name descname"><span class="pre">variational_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.DS_clust.Dawid_Skene_clust.variational_update" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="peerannot.models.DS.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">peerannot.models.DS</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="peerannot.models.GLAD.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">peerannot.models.GLAD</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dawid-and-skene-model-with-worker-clustering-imomura-et-al-2018">Dawid and skene model with worker clustering (Imomura et. al 2018)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.__init__"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.convergence_condition"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.convergence_condition()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.elbo"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.elbo()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_answers"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.get_answers()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_crowd_matrix"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.get_crowd_matrix()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.get_probas"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.get_probas()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.hyper_parameter_update"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.hyper_parameter_update()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.initialize_parameter"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.initialize_parameter()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.one_iteration"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.one_iteration()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.run"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.run()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.DS_clust.Dawid_Skene_clust.variational_update"><code class="docutils literal notranslate"><span class="pre">Dawid_Skene_clust.variational_update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="../_sources/generated/peerannot.models.DS_clust.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner"></div>
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://sphinx-doc.org/">Sphinx</a> 6.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

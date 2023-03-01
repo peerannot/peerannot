@@ -1,0 +1,33 @@
+peerannot.models.WAUM\_perworker
+================================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: WAUM_perworker
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~WAUM_perworker.__init__
+      ~WAUM_perworker.cut_lowests
+      ~WAUM_perworker.get_answers
+      ~WAUM_perworker.get_aum
+      ~WAUM_perworker.get_probas
+      ~WAUM_perworker.get_psi1_waum
+      ~WAUM_perworker.get_psi5_waum
+      ~WAUM_perworker.get_psuccess
+      ~WAUM_perworker.make_step
+      ~WAUM_perworker.reset
+      ~WAUM_perworker.run
+      ~WAUM_perworker.run_DS
+   
+   
+
+   
+   
+   

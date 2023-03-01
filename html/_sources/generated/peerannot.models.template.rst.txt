@@ -1,0 +1,29 @@
+peerannot.models.template
+=========================
+
+.. automodule:: peerannot.models.template
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CrowdModel
+   
+   
+
+   
+   
+   
+
+
+

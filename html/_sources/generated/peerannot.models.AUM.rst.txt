@@ -1,0 +1,26 @@
+peerannot.models.AUM
+====================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: AUM
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~AUM.__init__
+      ~AUM.compute_aum
+      ~AUM.get_aum
+      ~AUM.make_step
+      ~AUM.run
+   
+   
+
+   
+   
+   

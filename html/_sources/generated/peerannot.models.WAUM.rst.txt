@@ -1,0 +1,33 @@
+peerannot.models.WAUM
+=====================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: WAUM
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~WAUM.__init__
+      ~WAUM.cut_lowests
+      ~WAUM.get_answers
+      ~WAUM.get_aum
+      ~WAUM.get_probas
+      ~WAUM.get_psi1_waum
+      ~WAUM.get_psi5_waum
+      ~WAUM.get_psuccess
+      ~WAUM.make_step
+      ~WAUM.reset
+      ~WAUM.run
+      ~WAUM.run_DS
+   
+   
+
+   
+   
+   

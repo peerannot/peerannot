@@ -1,0 +1,24 @@
+peerannot.models.NaiveSoft
+==========================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: NaiveSoft
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~NaiveSoft.__init__
+      ~NaiveSoft.get_answers
+      ~NaiveSoft.get_probas
+   
+   
+
+   
+   
+   

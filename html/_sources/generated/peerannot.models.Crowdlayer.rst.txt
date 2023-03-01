@@ -1,0 +1,25 @@
+peerannot.models.Crowdlayer
+===========================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: Crowdlayer
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Crowdlayer.__init__
+      ~Crowdlayer.run
+      ~Crowdlayer.run_epoch
+      ~Crowdlayer.setup
+   
+   
+
+   
+   
+   

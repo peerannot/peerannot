@@ -1,0 +1,25 @@
+peerannot.models.WDS
+====================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: WDS
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~WDS.__init__
+      ~WDS.get_answers
+      ~WDS.get_probas
+      ~WDS.run
+   
+   
+
+   
+   
+   

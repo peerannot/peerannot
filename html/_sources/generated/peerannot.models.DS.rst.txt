@@ -1,0 +1,29 @@
+peerannot.models.DS
+===================
+
+.. automodule:: peerannot.models.DS
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Dawid_Skene
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,39 @@
+peerannot.models.GLAD
+=====================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: GLAD
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~GLAD.EM
+      ~GLAD.EStep
+      ~GLAD.MStep
+      ~GLAD.__init__
+      ~GLAD.calcLogProbL
+      ~GLAD.computeQ
+      ~GLAD.dAlpha
+      ~GLAD.dBeta
+      ~GLAD.df
+      ~GLAD.f
+      ~GLAD.getBoundsX
+      ~GLAD.get_answers
+      ~GLAD.get_probas
+      ~GLAD.gradientQ
+      ~GLAD.packX
+      ~GLAD.run
+      ~GLAD.save_difficulty
+      ~GLAD.unpackX
+   
+   
+
+   
+   
+   

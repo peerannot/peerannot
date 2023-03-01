@@ -1,0 +1,29 @@
+peerannot.models.DS\_clust
+==========================
+
+.. automodule:: peerannot.models.DS_clust
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Dawid_Skene_clust
+   
+   
+
+   
+   
+   
+
+
+

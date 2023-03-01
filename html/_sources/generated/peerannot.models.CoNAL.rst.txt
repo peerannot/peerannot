@@ -1,0 +1,25 @@
+peerannot.models.CoNAL
+======================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: CoNAL
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CoNAL.__init__
+      ~CoNAL.run
+      ~CoNAL.run_epoch
+      ~CoNAL.setup
+   
+   
+
+   
+   
+   

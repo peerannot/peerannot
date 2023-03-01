@@ -1,0 +1,716 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>peerannot.models.GLAD &#8212; peerannot  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/peerannot.models.GLAD';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="peerannot.models.MV" href="peerannot.models.MV.html" />
+    <link rel="prev" title="peerannot.models.DS_clust" href="peerannot.models.DS_clust.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  <div class="navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="https://avatars.githubusercontent.com/u/118831295?s=200&v=4" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="https://avatars.githubusercontent.com/u/118831295?s=200&v=4" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../strategies.html">
+                        Strategies
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../datasets.html">
+                        Datasets
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../strategies.html">
+                        Strategies
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../datasets.html">
+                        Datasets
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">peerannot.models.GLAD</a><ul>
+<li><a class="reference internal" href="#peerannot.models.GLAD"><code class="docutils literal notranslate"><span class="pre">GLAD</span></code></a><ul>
+<li><a class="reference internal" href="#peerannot.models.GLAD.__init__"><code class="docutils literal notranslate"><span class="pre">GLAD.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.EM"><code class="docutils literal notranslate"><span class="pre">GLAD.EM()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.EStep"><code class="docutils literal notranslate"><span class="pre">GLAD.EStep()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.MStep"><code class="docutils literal notranslate"><span class="pre">GLAD.MStep()</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">GLAD.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.calcLogProbL"><code class="docutils literal notranslate"><span class="pre">GLAD.calcLogProbL()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.computeQ"><code class="docutils literal notranslate"><span class="pre">GLAD.computeQ()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.dAlpha"><code class="docutils literal notranslate"><span class="pre">GLAD.dAlpha()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.dBeta"><code class="docutils literal notranslate"><span class="pre">GLAD.dBeta()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.df"><code class="docutils literal notranslate"><span class="pre">GLAD.df()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.f"><code class="docutils literal notranslate"><span class="pre">GLAD.f()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.getBoundsX"><code class="docutils literal notranslate"><span class="pre">GLAD.getBoundsX()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.get_answers"><code class="docutils literal notranslate"><span class="pre">GLAD.get_answers()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.get_probas"><code class="docutils literal notranslate"><span class="pre">GLAD.get_probas()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.gradientQ"><code class="docutils literal notranslate"><span class="pre">GLAD.gradientQ()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.packX"><code class="docutils literal notranslate"><span class="pre">GLAD.packX()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.run"><code class="docutils literal notranslate"><span class="pre">GLAD.run()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.save_difficulty"><code class="docutils literal notranslate"><span class="pre">GLAD.save_difficulty()</span></code></a></li>
+<li><a class="reference internal" href="#peerannot.models.GLAD.unpackX"><code class="docutils literal notranslate"><span class="pre">GLAD.unpackX()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumbs">
+  <ul class="bd-breadcrumbs" role="navigation" aria-label="Breadcrumb">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../strategies.html" class="nav-link">Strategies</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="peerannot.models.html" class="nav-link">peerannot.models</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">peerannot.models.GLAD</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="peerannot-models-glad">
+<h1>peerannot.models.GLAD<a class="headerlink" href="#peerannot-models-glad" title="Permalink to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="peerannot.models.GLAD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">peerannot.models.</span></span><span class="sig-name descname"><span class="pre">GLAD</span></span><a class="headerlink" href="#peerannot.models.GLAD" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">answers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.__init__" title="Permalink to this definition">#</a></dt>
+<dd><p>Aggregate labels with a bilinear trust score using a scalar per task indicating the difficulty and a scalar per worker indicating the worker ability</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>answers</strong> – <p>Dictionnary of workers answers with format
+.. code-block:: javascript</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>task0: {worker0: label, worker1: label},
+task1: {worker1: label}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">type answers<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">param n_classes<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of possible classes</p>
+</dd>
+<dt class="field-odd">type n_classes<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">EM</span></code>(epsilon, maxiter)</p></td>
+<td><p>Infer true labels, tasks' difficulty and workers' ability</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">EStep</span></code>()</p></td>
+<td><p>Evaluate the posterior probability of true labels given observed labels and parameters</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">MStep</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(answers, n_classes, **kwargs)</p></td>
+<td><p>Aggregate labels with a bilinear trust score using a scalar per task indicating the difficulty and a scalar per worker indicating the worker ability</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">calcLogProbL</span></code>(item, *args)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">computeQ</span></code>()</p></td>
+<td><p>Calculate the expectation of the joint likelihood</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dAlpha</span></code>(item, *args)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dBeta</span></code>(item, *args)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">df</span></code>(x)</p></td>
+<td><p>Return gradient vector</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">f</span></code>(x)</p></td>
+<td><p>Return the value of the objective function</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">getBoundsX</span></code>([alpha, beta])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_answers</span></code>()</p></td>
+<td><p>Argmax of soft labels.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_probas</span></code>()</p></td>
+<td><p>Get soft labels distribution for each task</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">gradientQ</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">packX</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code>([epsilon, maxiter])</p></td>
+<td><p>Run the label aggregation via EM algorithm</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_difficulty</span></code>(path)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unpackX</span></code>(x)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.EM">
+<span class="sig-name descname"><span class="pre">EM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.EM" title="Permalink to this definition">#</a></dt>
+<dd><p>Infer true labels, tasks’ difficulty and workers’ ability</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.EStep">
+<span class="sig-name descname"><span class="pre">EStep</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.EStep" title="Permalink to this definition">#</a></dt>
+<dd><p>Evaluate the posterior probability of true labels given observed labels and parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.MStep">
+<span class="sig-name descname"><span class="pre">MStep</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.MStep" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">answers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition">#</a></dt>
+<dd><p>Aggregate labels with a bilinear trust score using a scalar per task indicating the difficulty and a scalar per worker indicating the worker ability</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>answers</strong> – <p>Dictionnary of workers answers with format
+.. code-block:: javascript</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>task0: {worker0: label, worker1: label},
+task1: {worker1: label}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">type answers<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">param n_classes<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of possible classes</p>
+</dd>
+<dt class="field-odd">type n_classes<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.calcLogProbL">
+<span class="sig-name descname"><span class="pre">calcLogProbL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.calcLogProbL" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.computeQ">
+<span class="sig-name descname"><span class="pre">computeQ</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.computeQ" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate the expectation of the joint likelihood</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.dAlpha">
+<span class="sig-name descname"><span class="pre">dAlpha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.dAlpha" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.dBeta">
+<span class="sig-name descname"><span class="pre">dBeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.dBeta" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.df">
+<span class="sig-name descname"><span class="pre">df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.df" title="Permalink to this definition">#</a></dt>
+<dd><p>Return gradient vector</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.f">
+<span class="sig-name descname"><span class="pre">f</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.f" title="Permalink to this definition">#</a></dt>
+<dd><p>Return the value of the objective function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.getBoundsX">
+<span class="sig-name descname"><span class="pre">getBoundsX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-100,</span> <span class="pre">100)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-100,</span> <span class="pre">100)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.getBoundsX" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.get_answers">
+<span class="sig-name descname"><span class="pre">get_answers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.get_answers" title="Permalink to this definition">#</a></dt>
+<dd><p>Argmax of soft labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Hard labels</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.get_probas">
+<span class="sig-name descname"><span class="pre">get_probas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.get_probas" title="Permalink to this definition">#</a></dt>
+<dd><p>Get soft labels distribution for each task</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Soft labels</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy.ndarray(n_task, n_classes)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.gradientQ">
+<span class="sig-name descname"><span class="pre">gradientQ</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.gradientQ" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.packX">
+<span class="sig-name descname"><span class="pre">packX</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.packX" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.run" title="Permalink to this definition">#</a></dt>
+<dd><p>Run the label aggregation via EM algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epsilon</strong> (<em>float</em><em>, </em><em>optional</em>) – tolerance hyperparameter, relative change in likelihood, defaults to 1e-5</p></li>
+<li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of iterations, defaults to 100</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.save_difficulty">
+<span class="sig-name descname"><span class="pre">save_difficulty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.save_difficulty" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="peerannot.models.GLAD.unpackX">
+<span class="sig-name descname"><span class="pre">unpackX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#peerannot.models.GLAD.unpackX" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="peerannot.models.DS_clust.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">peerannot.models.DS_clust</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="peerannot.models.MV.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">peerannot.models.MV</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD"><code class="docutils literal notranslate"><span class="pre">GLAD</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.__init__"><code class="docutils literal notranslate"><span class="pre">GLAD.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.EM"><code class="docutils literal notranslate"><span class="pre">GLAD.EM()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.EStep"><code class="docutils literal notranslate"><span class="pre">GLAD.EStep()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.MStep"><code class="docutils literal notranslate"><span class="pre">GLAD.MStep()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">GLAD.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.calcLogProbL"><code class="docutils literal notranslate"><span class="pre">GLAD.calcLogProbL()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.computeQ"><code class="docutils literal notranslate"><span class="pre">GLAD.computeQ()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.dAlpha"><code class="docutils literal notranslate"><span class="pre">GLAD.dAlpha()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.dBeta"><code class="docutils literal notranslate"><span class="pre">GLAD.dBeta()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.df"><code class="docutils literal notranslate"><span class="pre">GLAD.df()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.f"><code class="docutils literal notranslate"><span class="pre">GLAD.f()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.getBoundsX"><code class="docutils literal notranslate"><span class="pre">GLAD.getBoundsX()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.get_answers"><code class="docutils literal notranslate"><span class="pre">GLAD.get_answers()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.get_probas"><code class="docutils literal notranslate"><span class="pre">GLAD.get_probas()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.gradientQ"><code class="docutils literal notranslate"><span class="pre">GLAD.gradientQ()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.packX"><code class="docutils literal notranslate"><span class="pre">GLAD.packX()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.run"><code class="docutils literal notranslate"><span class="pre">GLAD.run()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.save_difficulty"><code class="docutils literal notranslate"><span class="pre">GLAD.save_difficulty()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#peerannot.models.GLAD.unpackX"><code class="docutils literal notranslate"><span class="pre">GLAD.unpackX()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="../_sources/generated/peerannot.models.GLAD.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner"></div>
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://sphinx-doc.org/">Sphinx</a> 6.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

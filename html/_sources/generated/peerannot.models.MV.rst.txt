@@ -1,0 +1,25 @@
+peerannot.models.MV
+===================
+
+.. currentmodule:: peerannot.models
+
+.. autoclass:: MV
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MV.__init__
+      ~MV.compute_baseline
+      ~MV.get_answers
+      ~MV.get_probas
+   
+   
+
+   
+   
+   
