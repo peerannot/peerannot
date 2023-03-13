@@ -10,6 +10,8 @@ import peerannot.models as pmod
 # import peerannot.helpers as phelp
 
 agg_strategies = pmod.agg_strategies
+agg_deep_strategies = pmod.agg_deep_strategies
+agg_deep_strategies = {k.lower(): v for k, v in agg_deep_strategies.items()}
 agg_strategies = {k.lower(): v for k, v in agg_strategies.items()}
 run = click.Group(
     name="Running peerannot",
@@ -33,6 +35,10 @@ def agginfo():
     print("Available aggregation scheme with `peerannot aggregate`:")
     print("-" * 10)
     for agg in agg_strategies.keys():
+        print(f"- {agg}")
+    print("-" * 10)
+    print("Available aggregation scheme with `peerannot aggregate-deep`:")
+    for agg in agg_deep_strategies.keys():
         print(f"- {agg}")
     print("-" * 10)
     return
@@ -175,7 +181,7 @@ def aggregate_deep(**kwargs):
 
     strat_name, options = get_options(kwargs["strategy"])
     if strat_name.lower() == "conal" or strat_name.lower() == "crowdlayer":
-        strat = agg_strategies[strat_name]
+        strat = agg_deep_strategies[strat_name]
         strat = strat(
             tasks_path=kwargs["dataset"],
             scale=options.get("scale", 1e-4),
@@ -253,7 +259,7 @@ def aggregate(**kwargs):
     if strat_name in list(map(lambda x: x.lower(), ["MV", "NaiveSoft"])):
         strat = strat(answers, metadata["n_classes"], **kwargs)
     elif strat_name in list(
-        map(lambda x: x.lower(), ["DS", "GLAD", "DSwc", "WDS"])
+        map(lambda x: x.lower(), ["DS", "GLAD", "DSWC", "WDS"])
     ):
         strat = strat(answers, metadata["n_classes"], **options, **kwargs)
         strat.run()
@@ -261,7 +267,7 @@ def aggregate(**kwargs):
         raise ValueError(
             f"Strategy {strat_name} is not one of {list(agg_strategies.keys())}"
         )
-    filename = f"labels_{metadata['name']}_{strat_name}"
+    filename = f"labels_{metadata['name']}_{kwargs['strategy'].lower()}"
     if kwargs["hard"]:
         yhat = strat.get_answers()
         filename += "_hard"

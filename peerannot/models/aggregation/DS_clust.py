@@ -13,7 +13,7 @@ Estimating:
 - One confusion matrix per cluster of workers
 """
 
-from .template import CrowdModel
+from ..template import CrowdModel
 import numpy as np
 
 

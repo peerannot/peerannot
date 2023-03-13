@@ -8,7 +8,7 @@ from pathlib import Path
 import json
 from torchvision import transforms
 from peerannot.training.load_data import load_data
-from peerannot.models.Soft import Soft
+from peerannot.models import Soft
 import plotly.express as px
 import plotly.graph_objs as go
 from tqdm.auto import tqdm

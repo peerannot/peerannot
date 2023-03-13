@@ -19,7 +19,7 @@ from torchvision import transforms
 import torch.nn.functional as F
 import torch.nn as nn
 from collections.abc import Iterable
-from .template import CrowdModel
+from ..template import CrowdModel
 from pathlib import Path
 from tqdm.auto import tqdm
 import json

@@ -1,11 +1,11 @@
 """
-===================================
-Naive soft: Frequency distribution
-===================================
+===============================================================
+WDS: Weighted Naive Soft Distribution from Dawid and Skene
+===============================================================
 """
-from .template import CrowdModel
+from ..template import CrowdModel
 import numpy as np
-from peerannot.models.DS import Dawid_Skene
+from peerannot.models.aggregation.DS import Dawid_Skene
 
 
 class WDS(CrowdModel):

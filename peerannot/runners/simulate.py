@@ -42,7 +42,7 @@ simulation = click.Group(
     "-r",
     type=float,
     default=0.1,
-    help="Number in (0,1) representing the ratio of spammers/students/goodw workers amongst total number of workers (depending on the strategy used)",
+    help="Number in (0,1) representing the ratio of spammers/students/good workers amongst total number of workers (depending on the strategy used)",
 )
 @click.option(
     "--ratio-diff",
@@ -60,13 +60,13 @@ simulation = click.Group(
     "--workerload",
     "-wl",
     type=int,
-    help="Upper bound on the number of labels per task",
+    help="Upper bound on the number of tasks answered per worker",
 )
 @click.option(
     "--feedback",
     "-fb",
     type=int,
-    help="Upper bound on the number of tasks answered per worker",
+    help="Upper bound on the number of labels per task",
 )
 @click.option(
     "--imbalance-votes",
@@ -76,6 +76,9 @@ simulation = click.Group(
 )
 @click.option(
     "--seed", type=int, default=0, help="Randome state for reproducibility"
+)
+@click.option(
+    "--verbose", is_flag=True, default=False, help="Display more information"
 )
 def simulate(**kwargs):
     n_worker, n_task, K, path_ = (
@@ -98,6 +101,15 @@ def simulate(**kwargs):
     answers = strat(n_worker, true_labels, K, rng, **kwargs)
     with open(path_ / "answers.json", "w") as f:
         json.dump(answers, f, indent=3)
+    metadata = {
+        "name": kwargs["strategy"],
+        "n_workers": n_worker,
+        "n_classes": K,
+        "n_task": n_task,
+        **kwargs,
+    }
+    with open(path_ / "metadata.json", "w") as f:
+        json.dump(metadata, f, indent=3)
     np.save(path_ / "ground_truth.npy", true_labels)
     print(
         f"""

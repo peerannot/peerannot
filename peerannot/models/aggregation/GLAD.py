@@ -15,7 +15,7 @@ Using:
 """
 # Adapted from https://github.com/notani/python-glad
 
-from .template import CrowdModel
+from ..template import CrowdModel
 import numpy as np
 import scipy as sp
 import scipy.stats
@@ -279,17 +279,14 @@ class GLAD(CrowdModel):
                 self.probZ[:, k],
             )
 
-            dQdBeta += (
-                np.apply_along_axis(
-                    self.dBeta,
-                    1,
-                    sigma[1:],
-                    (self.labels == k + 1),
-                    (self.labels == 0),
-                    self.probZ[:, k],
-                )
-                * np.exp(self.beta)
-            )
+            dQdBeta += np.apply_along_axis(
+                self.dBeta,
+                1,
+                sigma[1:],
+                (self.labels == k + 1),
+                (self.labels == 0),
+                self.probZ[:, k],
+            ) * np.exp(self.beta)
 
         return dQdAlpha, dQdBeta
 

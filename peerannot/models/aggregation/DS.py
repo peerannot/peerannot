@@ -13,7 +13,7 @@ Estimating:
 - One confusion matrix for each workers
 """
 
-from .template import CrowdModel
+from ..template import CrowdModel
 import numpy as np
 from tqdm.auto import tqdm
 
