@@ -161,7 +161,13 @@ def agginfo():
     show_default=True,
     help="Freeze all layers of the network except for the last one",
 )
+@click.option("--seed", type=int, default=0, help="random state")
 def aggregate_deep(**kwargs):
+    import torch
+
+    torch.manual_seed(kwargs["seed"])
+    np.random.seed(kwargs["seed"])
+
     print("Running the following configuration:")
     print("-" * 10)
     print(

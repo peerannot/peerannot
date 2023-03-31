@@ -236,8 +236,17 @@ def dump(js, file, level=1):
     show_default=True,
     help="Freeze all layers of the network except for the last one",
 )
+@click.option(
+    "--matrix-file",
+    type=click.Path(),
+    default=None,
+    help="Path to confusion matrices saved with an aggregation method like DS. If not provided, run DS model",
+)
+@click.option("--seed", default=0, type=int, help="random seed")
 def identify(folderpath, n_classes, method, **kwargs):
     print("Running the following configuration:")
+    torch.manual_seed(kwargs["seed"])
+    np.random.seed(kwargs["seed"])
     print("-" * 10)
     print(f"- Data at {folderpath}")
     print(f"- number of classes: {n_classes}")

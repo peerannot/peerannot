@@ -80,11 +80,9 @@ class Crowdlayer_net(nn.Module):
             torch.stack(self.workers), requires_grad=True
         )
 
-    def forward(self, x, workers):
+    def forward(self, x):
         z_pred = self.classifier(x).softmax(1)
-        ann_pred = torch.einsum(
-            "mik,mkl->mil", self.confusion[workers], z_pred.unsqueeze(-1)
-        ).squeeze()
+        ann_pred = torch.einsum("ik,jkl->ijl", z_pred, self.confusion)
         return ann_pred
 
 
@@ -100,7 +98,7 @@ class Crowdlayer(CrowdModel):
         scale=0,
         verbose=True,
         pretrained=False,
-        output_name="conal",
+        output_name="crowdlayer",
         **kwargs,
     ):
         from peerannot.runners.train import (
@@ -115,6 +113,8 @@ class Crowdlayer(CrowdModel):
         with open(self.answers, "r") as ans:
             self.answers = json.load(ans)
         super().__init__(self.answers)
+        self.answers_orig = self.answers
+
         if kwargs.get("path_remove", None):
             to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
             self.answers_modif = {}
@@ -142,7 +142,7 @@ class Crowdlayer(CrowdModel):
         self.verbose = verbose
         self.n_workers = kwargs["n_workers"]
         self.output_name = output_name
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
         self.crowdlayer_net = Crowdlayer_net(
             self.n_classes,
             self.n_workers,
@@ -162,27 +162,16 @@ class Crowdlayer(CrowdModel):
 
     def setup(self, **kwargs):
         # get correct training labels
-        ll = []
-        targets = []
-        imgs = []
-        workers = []
-        true_idx = []
-        self.trainset.base_samples = self.trainset.samples
+        targets, ll = [], []
+        print(len(self.answers), len(self.trainset.samples))
+        self.numpyans = reformat_labels(self.answers_orig, self.n_workers)
         for i, samp in enumerate(self.trainset.samples):
-            img, label = samp
+            img, true_label = samp
             num = int(img.split("-")[-1].split(".")[0])
-            for worker, worker_vote in self.answers[num].items():
-                ll.append((img, worker_vote))
-                targets.append(worker_vote)
-                workers.append(int(worker))
-                true_idx.append(i)
-                imgs.append(img)
-        self.trainset.targets = targets
+            ll.append((img, self.numpyans[num]))
+            targets.append(self.numpyans[num])
         self.trainset.samples = ll
-        self.trainset.true_index = true_idx
-        self.trainset.workers = workers
-        self.trainset.imgs = imgs
-        self.trainset = DatasetWithIndexAndWorker(self.trainset)
+        self.trainset.targets = targets
 
         self.trainloader, self.testloader = DataLoader(
             self.trainset,
@@ -204,6 +193,8 @@ class Crowdlayer(CrowdModel):
 
     def run(self, **kwargs):
         from peerannot.runners.train import evaluate
+
+        print(f"Running on {DEVICE}")
 
         self.crowdlayer_net = self.crowdlayer_net.to(DEVICE)
         path_best = self.tasks_path / "best_models"
@@ -297,19 +288,19 @@ class Crowdlayer(CrowdModel):
     ):
         model.train()
         total_loss = 0.0
-        for (inputs, labels, workers, dd, idx) in trainloader:
+        for inputs, labels in trainloader:
             # move to device
             inputs = inputs.to(DEVICE)
             labels = labels.to(DEVICE)
-            ww = list(map(int, workers.tolist()))
 
             # zero out gradients
             optimizer.zero_grad()  # model.zero_grad() to be Xtra safe
 
             # compute the loss directly !!!!!
-            ann_pred = model(inputs, ww)
+            ann_pred = model(inputs)
+            ann_pred = torch.reshape(ann_pred, (-1, self.n_classes))
 
-            labels = labels.type(torch.long)
+            labels = labels.view(-1).type(torch.long)
             loss = criterion(ann_pred, labels)
 
             # gradient step

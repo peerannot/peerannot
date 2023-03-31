@@ -217,7 +217,7 @@ class CoNAL(CrowdModel):
 
     def run(self, **kwargs):
         from peerannot.runners.train import evaluate
-
+        print(f"Running on {DEVICE}")
         self.conal_net = self.conal_net.to(DEVICE)
         path_best = self.tasks_path / "best_models"
         path_best.mkdir(exist_ok=True)
