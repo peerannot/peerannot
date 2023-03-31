@@ -8,7 +8,7 @@ from pathlib import Path
 import json
 from torchvision import transforms
 from peerannot.training.load_data import load_data
-from peerannot.models.NaiveSoft import NaiveSoft as Soft
+from peerannot.models.aggregation import NaiveSoft as Soft
 import plotly.express as px
 import plotly.graph_objs as go
 import dash_daq as daq

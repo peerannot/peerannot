@@ -15,7 +15,7 @@ Using:
 """
 # Adapted from https://github.com/notani/python-glad
 
-from .template import CrowdModel
+from ..template import CrowdModel
 import numpy as np
 import scipy as sp
 import scipy.stats
@@ -85,6 +85,7 @@ class GLAD(CrowdModel):
         for task, ans in self.answers.items():
             for worker, lab in ans.items():
                 self.labels[task, worker] = lab + 1
+        self.folder = kwargs["dataset"]
 
         # Initialize Probs
         self.priorZ = np.array([1 / n_classes] * n_classes)
@@ -279,17 +280,14 @@ class GLAD(CrowdModel):
                 self.probZ[:, k],
             )
 
-            dQdBeta += (
-                np.apply_along_axis(
-                    self.dBeta,
-                    1,
-                    sigma[1:],
-                    (self.labels == k + 1),
-                    (self.labels == 0),
-                    self.probZ[:, k],
-                )
-                * np.exp(self.beta)
-            )
+            dQdBeta += np.apply_along_axis(
+                self.dBeta,
+                1,
+                sigma[1:],
+                (self.labels == k + 1),
+                (self.labels == 0),
+                self.probZ[:, k],
+            ) * np.exp(self.beta)
 
         return dQdAlpha, dQdBeta
 
@@ -302,6 +300,10 @@ class GLAD(CrowdModel):
         :type maxiter: int, optional
         """
         self.EM(epsilon, maxiter)
+        path = self.folder / "identification" / "glad"
+        path.mkdir(exist_ok=True, parents=True)
+        self.save_difficulty(path)
+        self.save_ability(path)
 
     def get_probas(self):
         """Get soft labels distribution for each task
@@ -322,10 +324,19 @@ class GLAD(CrowdModel):
         )
 
     def save_difficulty(self, path):
-        path = Path(exist_ok=True).resolve()
+        path_diff = Path(path, exist_ok=True).resolve() / "difficulties.npy"
         difficulties = []
         for tt in self.answers.keys():
             difficulties.append([tt, self.beta[tt]])
         difficulties = np.array(difficulties)
-        np.save(path, difficulties)
-        print(f"Task difficulty coefficients saved at {path}")
+        np.save(path_diff, difficulties)
+        print(f"Task difficulty coefficients saved at {path_diff}")
+
+    def save_ability(self, path):
+        path_ab = Path(path, exist_ok=True).resolve() / "abilities.npy"
+        abilities = []
+        for tt in range(self.n_workers):
+            abilities.append([tt, self.alpha[tt]])
+        abilities = np.array(abilities)
+        np.save(path_ab, abilities)
+        print(f"Worker ability coefficients saved at {path_ab}")

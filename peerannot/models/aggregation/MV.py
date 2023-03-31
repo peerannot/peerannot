@@ -4,7 +4,7 @@ Majority voting
 =========================
 Most answered label per task
 """
-from .template import CrowdModel
+from ..template import CrowdModel
 import numpy as np
 
 

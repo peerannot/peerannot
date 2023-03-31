@@ -9,6 +9,12 @@ from torch.utils.data import Dataset
 import numpy as np
 import pandas as pd
 import json
+import peerannot.models as pmod
+
+identification_strategies = pmod.identification_strategies
+identification_strategies = {
+    k.lower(): v for k, v in identification_strategies.items()
+}
 
 identification = click.Group(
     name="Running task identification with peerannot",
@@ -101,9 +107,9 @@ def adapt_dataset_to_method(dataset, method, n_classes, votes=None):
     help="Display available method to identify ambiguous tasks"
 )
 def identificationinfo():
-    print("Available methods for ambiguity identification")
+    print("Available methods for identification")
     print("-" * 10)
-    for meth in ["AUM", "WAUM", "WAUMperworker"]:
+    for meth in identification_strategies.keys():
         print(f"- {meth}")
     print("-" * 10)
     return
@@ -144,6 +150,7 @@ def dump(js, file, level=1):
 )
 @click.option(
     "--method",
+    "-s",
     type=str,
     default="WAUM",
     help="Method to find ambiguous tasks",
@@ -229,8 +236,17 @@ def dump(js, file, level=1):
     show_default=True,
     help="Freeze all layers of the network except for the last one",
 )
+@click.option(
+    "--matrix-file",
+    type=click.Path(),
+    default=None,
+    help="Path to confusion matrices saved with an aggregation method like DS. If not provided, run DS model",
+)
+@click.option("--seed", default=0, type=int, help="random seed")
 def identify(folderpath, n_classes, method, **kwargs):
     print("Running the following configuration:")
+    torch.manual_seed(kwargs["seed"])
+    np.random.seed(kwargs["seed"])
     print("-" * 10)
     print(f"- Data at {folderpath}")
     print(f"- number of classes: {n_classes}")
@@ -245,7 +261,7 @@ def identify(folderpath, n_classes, method, **kwargs):
     with open(kwargs["metadata_path"], "r") as metadata:
         metadata = json.load(metadata)
     kwargs["n_workers"] = metadata["n_workers"]
-    if method != "AUM":
+    if method.lower() != "AUM".lower():
         votes = Path(kwargs["labels"]).resolve() if kwargs["labels"] else None
         if votes:
             with open(votes, "r") as f:
@@ -258,6 +274,12 @@ def identify(folderpath, n_classes, method, **kwargs):
         if labels_to_load:
             labels_to_load = Path(labels_to_load).resolve()
     path_folders = Path(folderpath).resolve()
+
+    if "aum" not in method.lower():
+        strategy = identification_strategies[method.lower()]
+        strat = strategy(votes, n_classes=n_classes, **kwargs)
+        strat.run(path=folderpath)
+        return
     trainset = ptrain.load_data(
         path_folders / "train", labels_to_load, **kwargs
     )
@@ -279,8 +301,8 @@ def identify(folderpath, n_classes, method, **kwargs):
     alpha = kwargs["alpha"]
     print(f"Running identification with method: {method}")
     logger = {"val_loss": [], "val_accuracy": []}  # pretend it's val
-    if method == "AUM":
-        from peerannot.models.AUM import AUM
+    if method.lower() == "aum":
+        from peerannot.models import AUM
 
         aum = AUM(
             DataLoader(
@@ -328,8 +350,8 @@ def identify(folderpath, n_classes, method, **kwargs):
         aum.aums.to_csv(path_aum / "aum_values.csv", index=False)
         print(f"Saved AUM values at {path_aum / 'aum_values.csv'}")
 
-    elif method.lower() == "WAUM".lower():
-        from peerannot.models.WAUM_perworker import WAUM_perworker
+    elif method.lower() == "WAUM_perworker".lower():
+        from peerannot.models import WAUM_perworker
 
         waum = WAUM_perworker(
             trainset,
@@ -371,7 +393,7 @@ def identify(folderpath, n_classes, method, **kwargs):
         )
         print(f"Saved too hard index at {path_waum / f'too_hard_{alpha}.txt'}")
     elif method.lower() == "WAUM".lower():
-        from peerannot.models.WAUM import WAUM
+        from peerannot.models import WAUM
 
         waum = WAUM(
             DataLoader(

@@ -204,7 +204,11 @@ def get_optimizer(net, optimizer, **kwargs):
     show_default=True,
     help="Freeze all layers of the network except for the last one",
 )
+@click.option("--seed", type=int, default=0, help="random state")
 def train(datapath, output_name, n_classes, **kwargs):
+    torch.manual_seed(kwargs["seed"])
+    np.random.seed(kwargs["seed"])
+
     # load datasets and create folders
     print("Running the following configuration:")
     print("-" * 10)
@@ -258,6 +262,7 @@ def train(datapath, output_name, n_classes, **kwargs):
         cifar="cifar" in datapath.lower(),
         freeze=kwargs.get("freeze", False),
     )
+    print(f"Running on {DEVICE}")
     model.to(DEVICE)
     criterion = nn.CrossEntropyLoss()
 

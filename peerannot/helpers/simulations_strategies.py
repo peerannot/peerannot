@@ -1,5 +1,5 @@
 import numpy as np
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from pathlib import Path
 
 
@@ -28,7 +28,11 @@ def with_confusion(
     feedback = kwargs.get("feedback", n_worker)
     loads = np.array([0] * n_worker)
     feeds = np.array([0] * n_task)
-    for i in tqdm(range(n_task), total=n_task, desc="Task"):
+    for i in (
+        tqdm(range(n_task), total=n_task, desc="Task", leave=True, position=0)
+        if kwargs["verbose"]
+        else range(n_task)
+    ):
         y_istar = true_labels[i]
         ans = {}
         possible_workers = np.where(loads < workerload)[0]
@@ -109,9 +113,14 @@ def student_teacher(n_worker, true_labels, K, rng, **kwargs):
         matrices = np.load(kwargs["matrix_file"])[:n_teacher, :, :]
     else:
         alpha = [1] * K
-        matrices = np.stack(
-            [rng.dirichlet(alpha, size=K) for _ in range(n_teacher)]
-        )  # (n_teacher, K, K)
+        matrices = []
+        arr = np.arange(K)
+        for j in range(n_teacher):
+            mat = rng.dirichlet(alpha, size=K)
+            argmax_ = np.argmax(mat, axis=1)
+            mat[arr, arr], mat[arr, argmax_] = mat[arr, argmax_], mat[arr, arr]
+            matrices.append(mat)
+        matrices = np.stack(matrices)  # (n_teacher, K, K)
     # assign each student to one teacher
     following = rng.choice(n_teacher, replace=True, size=n_student)
     matrices = np.vstack([matrices, matrices[following, :, :]])
@@ -150,9 +159,14 @@ def matrix_independent(n_worker, true_labels, K, rng, **kwargs):
         matrices = np.load(kwargs["matrix_file"])
     else:
         alpha = [1] * K
-        matrices = np.stack(
-            [rng.dirichlet(alpha, size=K) for _ in range(n_worker)]
-        )  # (n_worker, K, K)
+        arr = np.arange(K)
+        matrices = []
+        for j in range(n_worker):
+            mat = rng.dirichlet(alpha, size=K)
+            argmax_ = np.argmax(mat, axis=1)
+            mat[arr, arr], mat[arr, argmax_] = mat[arr, argmax_], mat[arr, arr]
+            matrices.append(mat)
+        matrices = np.stack(matrices)
     answers = with_confusion(n_worker, true_labels, K, matrices, rng, **kwargs)
     np.save(Path(kwargs["folder"]) / "matrices.npy", matrices)
     return answers
@@ -176,7 +190,7 @@ def discrete_difficuty(n_worker, true_labels, K, rng, **kwargs):
     :return: answers in the peerannot format {task: {worker: label}}
     :rtype: dictionnary of length n_task
     """
-    ratio = kwargs.get("ratio")  # ratio of good workers amongst the bad
+    ratio = kwargs.get("ratio")  # ratio of good workers amongst all
     ratio_diff = kwargs.get("ratio_diff", 1)  # easy tasks amongst hard
     good_workers = int(ratio * n_worker)
     bad_workers = n_worker - good_workers
@@ -205,7 +219,7 @@ def discrete_difficuty(n_worker, true_labels, K, rng, **kwargs):
             good_matrices.append(mat)
         matrix_good = np.stack(good_matrices)  # (good_worker, K, K)
         matrix_bad = np.stack(
-            [rng.dirichlet([1] * K, size=K) for _ in range(bad_workers)]
+            [rng.dirichlet([5.0] * K, size=K) for _ in range(bad_workers)]
         )  # (bad_worker, K, K)
         matrices = np.vstack((matrix_good, matrix_bad))
     answers = with_confusion(
