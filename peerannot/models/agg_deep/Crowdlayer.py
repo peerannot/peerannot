@@ -295,6 +295,7 @@ class Crowdlayer(CrowdModel):
 
             # zero out gradients
             optimizer.zero_grad()  # model.zero_grad() to be Xtra safe
+            optimizer2.zero_grad()
 
             # compute the loss directly !!!!!
             ann_pred = model(inputs)

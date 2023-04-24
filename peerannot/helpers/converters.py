@@ -67,11 +67,23 @@ class Converter:
                 int(val): i for i, val in self.table_labels.items()
             }
 
+    def check_index(self):
+        keys = self.answers.keys()
+        if set(map(type, keys)) == {int}:
+            min_ = min(keys)
+        else:
+            min_ = min([int(x) for x in keys])
+        if min_ > 0:
+            self.recall = min_
+        else:
+            self.recall = 0
+
     def transform(self):
         all_ans = {}
         self.map_string()
+        self.check_index()
         for task in self.answers:
-            all_ans[int(task)] = {
+            all_ans[int(task) - self.recall] = {
                 int(key): int(value)
                 for key, value in self.answers[task].items()
             }

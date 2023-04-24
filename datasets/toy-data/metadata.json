@@ -1,0 +1,6 @@
+{
+    "name": "toy-data",
+    "n_classes": 2,
+    "n_workers": 4,
+    "n_tasks": 3
+}
