@@ -67,7 +67,7 @@ def networks(
             weight = None
         model = torch.hub.load("pytorch/vision", name, weights=weight)
     elif name == "modellabelme":
-        model = Classifier_labelme(0.5, 128, 8)
+        model = Classifier_labelme(0.5, 128, n_classes)
     elif name == "modelmusic":
         model = Classifier_labelme(0.5, 128, 10)
     if "resnet" in name:
@@ -89,6 +89,17 @@ def networks(
                 parameter.requires_grad = False
             for param in model.classifier[6].parameters():
                 param.requires_grad = True
+    elif "vit" in name:
+        if model.heads.head.out_features != n_classes:
+            model.heads.head = nn.Linear(
+                model.heads.head.in_features, n_classes
+            )
+        if freeze:
+            for parameter in model.parameters():
+                parameter.requires_grad = False
+            for param in model.heads.head.parameters():
+                param.requires_grad = True
+
     elif name not in ["modellabelme", "modelmusic"]:
         raise NotImplementedError("Not implemented yet, sorry")
     print(f"Successfully loaded {name} with n_classes={n_classes}")

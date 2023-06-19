@@ -85,13 +85,21 @@ def get_optimizer(net, optimizer, **kwargs):
         )
     else:
         raise ValueError("Not implemented yet")
-    if kwargs["scheduler"]:
+    if kwargs["scheduler"] == "cosine":
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+            optimizer,
+            T_0=kwargs["milestones"][0],
+            T_mult=1,
+            eta_min=1e-4,
+            last_epoch=-1,
+        )
+    elif kwargs["scheduler"] == "multistep":
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
             optimizer, milestones=milestones, gamma=kwargs["lr_decay"]
         )
     else:
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, [1e6], gamma=1
+            optimizer, [1e10], gamma=1
         )
     return optimizer, scheduler
 
@@ -170,10 +178,9 @@ def get_optimizer(net, optimizer, **kwargs):
 )
 @click.option(
     "--scheduler",
-    is_flag=True,
     show_default=True,
-    default=False,
-    help="Use a multistep scheduler for the learning rate",
+    default="multistep",
+    help="Use a multistepscheduler for the learning rate by default. To use the cosine annealing use the keyword 'cosine'",
 )
 @click.option(
     "--milestones",
@@ -250,8 +257,8 @@ def train(datapath, output_name, n_classes, **kwargs):
         )
         print(f"Validation set: {len(valloader.dataset)} tasks")
 
-    path_best = path_folders / "best_models"
-    path_best.mkdir(exist_ok=True)
+    path_best = path_folders / "best_models" / kwargs["model"]
+    path_best.mkdir(exist_ok=True, parents=True)
 
     # get model and loss
     model = get_model(
@@ -307,7 +314,7 @@ def train(datapath, output_name, n_classes, **kwargs):
         if epoch in kwargs["milestones"]:
             print()
             print(
-                f"Adjusting learning rate to = {scheduler.optimizer.param_groups[0]['lr']:.4f}"
+                f"Learning rate = {scheduler.optimizer.param_groups[0]['lr']:.4f}"
             )
 
     # load and test model
@@ -383,7 +390,6 @@ def run_epoch(model, trainloader, criterion, optimizer, logger):
         # move to device
         inputs = inputs.to(DEVICE)
         labels = labels.to(DEVICE)
-
         # zero out gradients
         optimizer.zero_grad()
 

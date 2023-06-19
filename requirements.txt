@@ -4,9 +4,6 @@ torch
 torchvision
 torchmetrics
 click>=8.0.0
-dash>=2.7.1
-dash-bootstrap-components>=1.1.0
-dash-daq>=0.5.0
 numpy>=1.22.1
 pandas>=1.5.2
 Pillow>=9.4.0
