@@ -101,10 +101,9 @@ def agginfo():
 )
 @click.option(
     "--scheduler",
-    is_flag=True,
     show_default=True,
-    default=False,
-    help="Use a multistep scheduler for the learning rate",
+    default="multistep",
+    help="Use a multistepscheduler for the learning rate by default. To use the cosine annealing use the keyword 'cosine'",
 )
 @click.option(
     "--milestones",

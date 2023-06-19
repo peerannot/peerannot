@@ -342,7 +342,7 @@ def identify(folderpath, n_classes, method, **kwargs):
         del logger["val_loss"]
         print(logger)
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
-        path_aum = path_folders / "identification" / "aum" / kwargs["model"]
+        path_aum = path_folders / "identification" / kwargs["model"] / "aum"
         path_aum.mkdir(exist_ok=True, parents=True)
         aum.AUM_recorder.to_csv(path_aum / "full_aum_records.csv", index=False)
         print(f"Saved full log at {path_aum / 'full_aum_records.csv'}")
