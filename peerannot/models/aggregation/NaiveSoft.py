@@ -11,7 +11,7 @@ class NaiveSoft(CrowdModel):
     def __init__(self, answers, n_classes=2, **kwargs):
         """Naive soft: Frequency distribution of labels
 
-        :param answers: Dictionnary of workers answers with format
+        :param answers: Dictionary of workers answers with format
         .. code-block:: javascript
 
             {

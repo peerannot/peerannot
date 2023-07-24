@@ -53,7 +53,7 @@ class WAUM(CrowdModel):
         :param tasks: Loader for dataset of tasks as
             (x_i, y_i^(j), w^(j), y_i^*, i)_(i,j)
         :type tasks: torch Dataset
-        :param answers: Dictionnary of workers answers with format
+        :param answers: Dictionary of workers answers with format
         .. code-block:: javascript
 
             {
