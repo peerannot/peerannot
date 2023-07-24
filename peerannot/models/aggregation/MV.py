@@ -12,7 +12,7 @@ class MV(CrowdModel):
     def __init__(self, answers, n_classes=2, **kwargs):
         """Majority voting strategy: most answered label
 
-        :param answers: Dictionnary of workers answers with format
+        :param answers: Dictionary of workers answers with format
         .. code-block:: javascript
 
             {

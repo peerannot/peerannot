@@ -55,7 +55,7 @@ class GLAD(CrowdModel):
     ):
         """Aggregate labels with a bilinear trust score using a scalar per task indicating the difficulty and a scalar per worker indicating the worker ability
 
-        :param answers: Dictionnary of workers answers with format
+        :param answers: Dictionary of workers answers with format
          .. code-block:: javascript
 
              {

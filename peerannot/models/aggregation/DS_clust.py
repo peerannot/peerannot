@@ -21,7 +21,7 @@ class Dawid_Skene_clust(CrowdModel):
     def __init__(self, answers, n_classes, L=2, **kwargs):
         """Dawid and Skene model with clusterized confusion matrices using variational inference.
 
-        :param answers: Dictionnary of workers answers with format
+        :param answers: Dictionary of workers answers with format
         .. code-block:: javascript
 
             {
