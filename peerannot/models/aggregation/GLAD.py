@@ -65,6 +65,8 @@ class GLAD(CrowdModel):
          :type answers: dict
          :param n_classes: Number of possible classes
          :type n_classes: int
+         :param dataset: path to where model estimated parameters are stores Defaults to the current directory
+         :type dataset: path
         """
         super().__init__(answers)
         self.n_classes = n_classes
@@ -85,7 +87,7 @@ class GLAD(CrowdModel):
         for task, ans in self.answers.items():
             for worker, lab in ans.items():
                 self.labels[task, worker] = lab + 1
-        self.folder = kwargs["dataset"]
+        self.folder = kwargs.get("dataset", ".")
 
         # Initialize Probs
         self.priorZ = np.array([1 / n_classes] * n_classes)
