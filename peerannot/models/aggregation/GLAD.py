@@ -65,7 +65,7 @@ class GLAD(CrowdModel):
          :type answers: dict
          :param n_classes: Number of possible classes
          :type n_classes: int
-         :param dataset: path to where model estimated parameters are stores
+         :param dataset: path to where model estimated parameters are stores Defaults to the current directory
          :type dataset: path
         """
         super().__init__(answers)
