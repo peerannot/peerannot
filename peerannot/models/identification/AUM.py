@@ -220,7 +220,23 @@ class AUM:
             tasks["AUM_pleiss"].append(np.mean(margin_values_pleiss))
         self.aums = pd.DataFrame(tasks)
 
-    def run(self):
+    def cut_lowests(self, alpha=0.01):
+        quantile = np.nanquantile(
+            list(self.aums["AUM_pleiss"].to_numpy()), alpha
+        )
+        too_hard = self.aums[self.aums["AUM_pleiss"] <= quantile]
+        self.index_too_hard = too_hard["sample_id"].to_numpy()
+        self.tasks_too_hard = [
+            int(filename.split("-")[-1].split(".")[0])
+            for filename in too_hard["filename"].to_numpy()
+        ]
+        self.quantile = quantile
+        self.too_hard = np.column_stack(
+            (self.index_too_hard, self.tasks_too_hard)
+        ).astype(int)
+
+    def run(self, alpha=0.01):
         """Run AUM identification"""
         self.get_aum()
         self.compute_aum()
+        self.cut_lowests(alpha)
