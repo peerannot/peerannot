@@ -242,6 +242,12 @@ def dump(js, file, level=1):
     default=None,
     help="Path to confusion matrices saved with an aggregation method like DS. If not provided, run DS model",
 )
+@click.option(
+    "--hard-labels",
+    type=click.Path(),
+    default=None,
+    help="Path to file of hard labels",
+)
 @click.option("--seed", default=0, type=int, help="random seed")
 def identify(folderpath, n_classes, method, **kwargs):
     print("Running the following configuration:")
@@ -349,6 +355,12 @@ def identify(folderpath, n_classes, method, **kwargs):
 
         aum.aums.to_csv(path_aum / "aum_values.csv", index=False)
         print(f"Saved AUM values at {path_aum / 'aum_values.csv'}")
+        np.savetxt(
+            path_aum / f"too_hard_{alpha}.txt",
+            aum.too_hard.astype(int),
+            fmt="%i",
+        )
+        print(f"Saved too hard index at {path_aum / f'too_hard_{alpha}.txt'}")
 
     elif method.lower() == "WAUM_perworker".lower():
         from peerannot.models import WAUM_perworker
