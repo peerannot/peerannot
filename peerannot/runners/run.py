@@ -261,7 +261,7 @@ def aggregate(**kwargs):
     strat_name, options = get_options(kwargs["strategy"])
     strat = agg_strategies[strat_name]
     print(f"Running aggregation {strat_name} with options {options}")
-    if strat_name in list(map(lambda x: x.lower(), ["MV", "NaiveSoft"])):
+    if not hasattr(strat, "run"):
         strat = strat(answers, metadata["n_classes"], **kwargs)
     elif strat_name in list(
         map(lambda x: x.lower(), list(agg_strategies.keys()))
