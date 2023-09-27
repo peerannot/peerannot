@@ -43,6 +43,10 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
     if path_remove:
         path_remove = Path(path_remove).resolve()
         rm_idx = np.loadtxt(path_remove, dtype=int)[:, 0]
+        flag_rm = False
+        if rm_idx[0] == -1:  # path_remove comes from an aggregation strat
+            rm_idx = np.loadtxt(path_remove, dtype=int)[:, 1]
+            flag_rm = True  # flag that column is based on answers.json number
     else:
         rm_idx = []
     if path_labels:
@@ -51,17 +55,35 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
         targets = []
         imgs = []
         true_labels = []
-        for i, samp in enumerate(dataset.samples):
-            if i not in rm_idx:
+        if not flag_rm:
+            for i, samp in enumerate(dataset.samples):
+                if i not in rm_idx:
+                    img, true_label = samp
+                    true_label = dataset.real_class_to_idx[
+                        dataset.inv_class_to_idx[true_label]
+                    ]
+                    true_labels.append(true_label)
+                    num = int(img.split("-")[-1].split(".")[0])
+                    ll.append((img, labs[num]))
+                    imgs.append(img)
+                    targets.append(labs[num])
+        else:
+            to_save = []
+            for i, samp in enumerate(dataset.samples):
                 img, true_label = samp
                 true_label = dataset.real_class_to_idx[
                     dataset.inv_class_to_idx[true_label]
                 ]
-                true_labels.append(true_label)
                 num = int(img.split("-")[-1].split(".")[0])
-                ll.append((img, labs[num]))
-                imgs.append(img)
-                targets.append(labs[num])
+                if num not in rm_idx:
+                    true_labels.append(true_label)
+                    ll.append((img, labs[num]))
+                    imgs.append(img)
+                    targets.append(labs[num])
+                else:
+                    to_save.append([i, num])
+            # save the matching pairs for too_hard identification
+            np.savetxt(path_remove, np.array(to_save), fmt="%1i")
     else:
         labs = dataset.targets
         ll = []

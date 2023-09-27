@@ -66,6 +66,7 @@ class Converter:
             self.inv_labels = {
                 int(val): i for i, val in self.table_labels.items()
             }
+        self.inv_labels[-1] = -1
 
     def check_index(self):
         keys = self.answers.keys()
