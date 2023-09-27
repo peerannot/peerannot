@@ -1,18 +1,33 @@
 import json
 from pathlib import Path
-from download import download
 import numpy as np
+from urllib import request
+import tarfile
 
 
 class LabelMe:
     def __init__(self):
         self.DIR = Path(__file__).parent.resolve()
-        download(
-            "http://fprodrigues.com/deep_LabelMe.tar.gz",
-            self.DIR / "data",
-            replace=False,
-            kind="tar.gz",
-        )
+        filename = self.DIR / "downloads" / "labelme_raw.tar.gz"
+        filename.parent.mkdir(exist_ok=True)
+        target_path = self.DIR / "data"
+        target_path.mkdir(exist_ok=True)
+        if not filename.exists():
+            with request.urlopen(
+                request.Request(
+                    "http://fprodrigues.com/deep_LabelMe.tar.gz",
+                    headers={  # not a bot
+                        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    },
+                ),
+                timeout=60.0,
+            ) as response:
+                if response.status == 200:
+                    with open(filename, "wb") as f:
+                        f.write(response.read())
+            with tarfile.open(filename, "r:gz") as tar:
+                tar.extractall(path=target_path)
 
     def setfolders(self):
         print(f"Loading data folders at {self.DIR}")

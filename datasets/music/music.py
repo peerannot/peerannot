@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
-from download import download
-import numpy as npy
 import zipfile
 import pandas as pd
 import shutil
+from urllib import request
+import tarfile
 
 
 class Music:
@@ -14,12 +14,25 @@ class Music:
         assert (
             self.DIR / "downloads" / "kaggle_dataset.zip"
         ).exists(), "Please download the archive dataset from kaggle at https://www.kaggle.com/datasets/andradaolteanu/gtzan-dataset-music-genre-classification?resource=download and rename it `kaggle_dataset.zip`"
-        download(
-            "http://fprodrigues.com/mturk-datasets.tar.gz",
-            self.DIR / "downloads" / "mturk",
-            replace=False,
-            kind="tar.gz",
-        )
+        filename = self.DIR / "downloads" / "mturk" / "mturk-datasets.tar.gz"
+        filename.parent.mkdir(exist_ok=True)
+        if not filename.exists() or True:
+            with request.urlopen(
+                request.Request(
+                    "http://fprodrigues.com/mturk-datasets.tar.gz",
+                    headers={  # not a bot
+                        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    },
+                ),
+                timeout=60.0,
+            ) as response:
+                if response.status == 200:
+                    with open(filename, "wb") as f:
+                        f.write(response.read())
+            with tarfile.open(filename, "r:gz") as tar:
+                tar.extractall(path=filename.parent)
+
         with zipfile.ZipFile(
             self.DIR / "downloads" / "kaggle_dataset.zip", "r"
         ) as zip_ref:
