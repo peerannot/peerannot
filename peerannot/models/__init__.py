@@ -11,6 +11,7 @@ from .identification.AUM import AUM
 from .identification.trace_confusion import Trace_confusion
 from .identification.Spam_score import Spam_Score
 from .identification.entropy import Entropy
+from .identification.krippendorff_alpha import Krippendorff_Alpha
 from .agg_deep.CoNAL import CoNAL
 from .agg_deep.Crowdlayer import Crowdlayer
 
@@ -36,4 +37,5 @@ identification_strategies = {
     "entropy": Entropy,
     "trace_confusion": Trace_confusion,
     "spam_score": Spam_Score,
+    "krippendorffAlpha": Krippendorff_Alpha,
 }
