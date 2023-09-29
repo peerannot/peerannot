@@ -206,3 +206,9 @@ datasets/music/errors/
 datasets/music/identification/
 
 datasets/music/outputs/
+
+datasets/krippendorff-data/errors/
+
+datasets/krippendorff-data/identification/
+
+datasets/krippendorff-data/outputs/
