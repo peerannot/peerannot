@@ -45,8 +45,10 @@ def test_spamscore():
 def test_krippendorff():
     from peerannot.models import Krippendorff_Alpha
 
-    krippendorff = Krippendorff_Alpha(ANSWERS_KRIPPENDORFF,n_classes=2, n_workers=3)
+    krippendorff = Krippendorff_Alpha(ANSWERS_KRIPPENDORFF, n_classes=2, n_workers=3)
     krippendorff.run(dir_krippendorffdata)
-    krippendorffAlpha = np.load(dir_krippendorffdata / "identification" / "krippendorff_alpha.npy")
+    krippendorffAlpha = np.load(
+        dir_krippendorffdata / "identification" / "krippendorff_alpha.npy"
+    )
     print(krippendorffAlpha)
-    assert krippendorffAlpha==0.691358024691358
+    assert krippendorffAlpha == 0.691358024691358
