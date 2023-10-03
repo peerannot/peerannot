@@ -1,0 +1,5 @@
+{
+    "name": "krippendorffAlpha_Test",
+    "n_classes": 4,
+    "n_workers": 3
+}
