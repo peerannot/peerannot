@@ -15,6 +15,7 @@ import peerannot.models as pmod
 import peerannot.training.load_data as ptrain
 from collections.abc import Iterable
 from peerannot.helpers import networks as nethelp
+from torchmetrics.classification import MulticlassAccuracy
 
 trainmod = click.Group(
     name="Running peerannot training",
@@ -355,6 +356,36 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
         norm="l1",
         num_classes=n_classes,
     )
+    if n_classes >= 10:
+        accuracies_topk = [
+            torchmetrics.classification.Accuracy(
+                task="multiclass",
+                num_classes=n_classes,
+                top_k=5,
+                average="micro",
+            ),
+            torchmetrics.classification.Accuracy(
+                task="multiclass",
+                num_classes=n_classes,
+                top_k=10,
+                average="micro",
+            ),
+            torchmetrics.classification.Accuracy(
+                task="multiclass",
+                num_classes=n_classes,
+                top_k=5,
+                average="macro",
+            ),
+            torchmetrics.classification.Accuracy(
+                task="multiclass",
+                num_classes=n_classes,
+                top_k=10,
+                average="macro",
+            ),
+        ]
+        for metric in accuracies_topk:
+            metric = metric.to(DEVICE)
+
     with torch.no_grad():
         for inputs, labels in loader:
             # move to device
@@ -362,6 +393,9 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
             labels = labels.to(DEVICE)
             # logits
             outputs = model(inputs)
+            if n_classes >= 10:
+                for metric in accuracies_topk:
+                    _ = metric(outputs, labels)
             loss = criterion(outputs, labels)
             total_loss += loss.item() * inputs.size(0)
             total_accuracy += get_accuracy(outputs, labels)
@@ -369,17 +403,30 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
     # compute final metrics and log them
     avg_loss = total_loss / len(loader.dataset)
     accuracy = 100 * total_accuracy / len(loader.dataset)
+    if n_classes >= 10:
+        all_micro_macro_topk = []
+        for metric in accuracies_topk:
+            all_micro_macro_topk.append(
+                (metric.compute() * 100).to("cpu").item()
+            )
+
     if test:  # also measure the calibration errors
         logger["test_loss"] = avg_loss
         logger["test_accuracy"] = accuracy
+        if n_classes >= 10:
+            logger["test_micro_top5"] = all_micro_macro_topk[0]
+            logger["test_micro_top10"] = all_micro_macro_topk[1]
+            logger["test_macro_top5"] = all_micro_macro_topk[2]
+            logger["test_macro_top10"] = all_micro_macro_topk[3]
         logger["test_ece"] = (total_calibration / len(loader.dataset)).item()
-        # logger["test_class_ece"] = np.mean(
-        #     compute_ece_by_class(model, loader).cpu().numpy()
-        # ).item()
-        # print(logger)
     else:  # validation
         logger["val_loss"].append(avg_loss)
         logger["val_accuracy"].append(accuracy)
+        if n_classes >= 10:
+            logger["val_micro_top5"] = all_micro_macro_topk[0]
+            logger["val_micro_top10"] = all_micro_macro_topk[1]
+            logger["val_macro_top5"] = all_micro_macro_topk[2]
+            logger["val_macro_top10"] = all_micro_macro_topk[3]
     return logger
 
 
