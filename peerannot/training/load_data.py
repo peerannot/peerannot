@@ -49,6 +49,7 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
             flag_rm = True  # flag that column is based on answers.json number
     else:
         rm_idx = []
+        flag_rm = False
     if path_labels:
         labs = np.load(path_labels)
         ll = []
