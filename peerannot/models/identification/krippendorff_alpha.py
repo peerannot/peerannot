@@ -14,32 +14,21 @@ class Krippendorff_Alpha(CrowdModel):
     def nominal_metric(self, a, b):
         return a != b
 
-    def interval_metric(self, a, b):
-        return (a - b) ** 2
-
-    def ratio_metric(self, a, b):
-        return ((a - b) / (a + b)) ** 2
-
     def __init__(self, answers, **kwargs):
-        self.n_classes = kwargs["n_classes"]
         self.answers = answers
-        self.n_workers = kwargs["n_workers"]
         self.metric = self.nominal_metric
 
     def run(self, path):
         # Create pair values to compare
         units = dict(
-            (it, list(d.values())) for it, d in self.answers.items() if len(d) > 1
+            (it, list(d.values()))
+            for it, d in self.answers.items()
+            if len(d) > 1
         )  # units with pairable values
 
         n = sum(len(pv) for pv in units.values())
         if n == 0:
-            raise ValueError("No items to compare.")
-
-        np_metric = (np is not None) and (
-            self.metric
-            in (self.interval_metric, self.nominal_metric, self.ratio_metric)
-        )
+            raise ValueError("No tasks to compare.")
 
         alpha = -1.0
         Do = 0.0
@@ -69,4 +58,4 @@ class Krippendorff_Alpha(CrowdModel):
             filesave,
             alpha,
         )
-        print(f"alpha saved at {filesave}")
+        print(f"alpha saved at {filesave} \n {alpha=}")
