@@ -84,8 +84,11 @@ class Converter:
         self.map_string()
         self.check_index()
         for task in self.answers:
-            all_ans[int(task) - self.recall] = {
-                int(key): int(value)
-                for key, value in self.answers[task].items()
-            }
+            n_ = int(task) - self.recall
+            all_ans[n_] = {}
+            for key, value in self.answers[task].items():
+                if key != "AI":
+                    all_ans[n_][int(key)] = value
+                else:
+                    all_ans[n_]["AI"] = value
         return all_ans

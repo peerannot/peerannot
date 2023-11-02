@@ -7,10 +7,11 @@ from ..template import CrowdModel
 import numpy as np
 import warnings
 from pathlib import Path
+from tqdm.auto import tqdm
 
 
 class TwoThird(CrowdModel):
-    def __init__(self, answers, n_classes=2, **kwargs):
+    def __init__(self, answers, n_classes=2, sparse=False, **kwargs):
         """Two Third agreement: accept label reaching two third consensus
 
         :param answers: Dictionary of workers answers with format
@@ -27,6 +28,7 @@ class TwoThird(CrowdModel):
         """
         super().__init__(answers)
         self.n_classes = n_classes
+        self.sparse = sparse
         if kwargs.get("dataset", None):
             self.path_save = (
                 Path(kwargs["dataset"]) / "identification" / "twothird"
@@ -67,24 +69,35 @@ class TwoThird(CrowdModel):
         :return: Hard labels and None when no consensus is reached
         :rtype: numpy.ndarray
         """
-        baseline = np.zeros((len(self.answers), self.n_classes))
-        for task_id in list(self.answers.keys()):
-            task = self.answers[task_id]
-            for vote in list(task.values()):
-                baseline[task_id, vote] += 1
-        sum_ = baseline.sum(axis=1).reshape(-1, 1)
-        self.baseline = baseline
-        enough_votes = np.where(sum_ >= 2, 1, 0).flatten()
-        # enough_agreement = np.where(baseline / sum_ >= 2 / 3, 1, 0).flatten()
-        ans = [
-            np.random.choice(
-                np.flatnonzero(self.baseline[i] == self.baseline[i].max())
-            )
-            if enough_votes[i] == 1
-            and self.baseline[i].max() / sum_[i] >= 2 / 3
-            else -1
-            for i in range(len(self.answers))
-        ]
+        if not self.sparse:
+            baseline = np.zeros((len(self.answers), self.n_classes))
+            for task_id in list(self.answers.keys()):
+                task = self.answers[task_id]
+                for vote in list(task.values()):
+                    baseline[task_id, vote] += 1
+            sum_ = baseline.sum(axis=1).reshape(-1, 1)
+            self.baseline = baseline
+            enough_votes = np.where(sum_ >= 2, 1, 0).flatten()
+            ans = [
+                np.random.choice(
+                    np.flatnonzero(self.baseline[i] == self.baseline[i].max())
+                )
+                if enough_votes[i] == 1
+                and self.baseline[i].max() / sum_[i] >= 2 / 3
+                else -1
+                for i in range(len(self.answers))
+            ]
+        else:  # sparse
+            ans = -np.ones(len(self.answers))
+            for task_id in tqdm(self.answers.keys()):
+                task = self.answers[task_id]
+                count = np.bincount(np.array(list(task.values())))
+                n_votes = len(task)
+                max_ = count.max()
+                if n_votes >= 2 and max_ / n_votes >= 2 / 3:
+                    ans[int(task_id)] = np.random.choice(
+                        np.flatnonzero(count == max_)
+                    )
         self.ans = ans
         if self.path_save:
             noconsensus = np.where(np.array(ans) == -1)[0]

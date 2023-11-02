@@ -5,6 +5,7 @@ from .aggregation.DS_clust import Dawid_Skene_clust
 from .aggregation.GLAD import GLAD
 from .aggregation.WDS import WDS
 from .aggregation.twothird import TwoThird
+from .aggregation.plantnet import PlantNet
 from .identification.WAUM_perworker import WAUM_perworker
 from .identification.WAUM import WAUM
 from .identification.AUM import AUM
@@ -22,6 +23,7 @@ agg_strategies = {
     "DSWC": Dawid_Skene_clust,
     "GLAD": GLAD,
     "WDS": WDS,
+    "PlantNet": PlantNet,
     "TwoThird": TwoThird,
 }
 
