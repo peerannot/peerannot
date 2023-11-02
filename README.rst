@@ -79,7 +79,7 @@ For CoNAL, the hyperparameter scaling can be provided as ``-s CoNAL[scale=1e-4]`
 
 
 Peerannot and the crowdsourcing formatting
--------------
+----------------------------------------------
 
 In ``peerannot``, one of our goals is to make crowdsourced datasets under the same format so that it is easy to switch from one learning or aggregation strategy without having to code once again the algorithms for each dataset.
 
