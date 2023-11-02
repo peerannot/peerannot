@@ -106,7 +106,7 @@ So, what is a crowdsourced dataset? We define each dataset as:
 
 The crowdsourced labels for each training task are contained in the ``anwers.json`` file. They are formatted as follows:
 
-.. code-block:: json
+.. code-block:: bash
 
     {
         0: {<worker_id>: <label>, <another_worker_id>: <label>},
@@ -118,12 +118,12 @@ The number of tasks in the ``train`` folder must match the number of entry keys 
 
 The ``metadata.json`` file contains general information about the dataset. A minimal example would be:
 
-.. code-block:: json
+.. code-block:: bash
 
     {
-    "name": <dataset>,
-    "n_classes": K,
-    "n_workers": <n_workers>,
+        "name": <dataset>,
+        "n_classes": K,
+        "n_workers": <n_workers>,
     }
 
 
@@ -166,7 +166,7 @@ The ``dataset.py`` is not mandatory but is here to facilitate the dataset's inst
 
 .. |Pypi Status| image:: https://github.com/peerannot/peerannot/actions/workflows/python-publish.yml/badge.svg?branch=main
    :target: https://github.com/peerannot/peerannot/actions/workflows/python-publish.yml
-.. |Python 3.8+| image:: https://img.shields.io/badge/Test%20python-3.8%2B
+.. |Python 3.8+| image:: https://github.com/peerannot/peerannot/actions/workflows/pytest.yml/badge.svg
    :target: https://github.com/peerannot/peerannot/actions/workflows/pytest.yml
-.. |Documentation| image:: https://img.shields.io/badge/Documentation?style=plastic
+.. |Documentation| image:: https://github.com/peerannot/peerannot.github.io/actions/workflows/deploy-jekyll.yml/badge.svg
    :target: https://peerannot.github.io
