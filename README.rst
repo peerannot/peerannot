@@ -89,7 +89,6 @@ So, what is a crowdsourced dataset? We define each dataset as:
 
     dataset
     ├── train
-    │     ├── class1
     │     ├── ...
     │     ├── data as imagename-<key>.png
     │     └── ...
