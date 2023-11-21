@@ -85,7 +85,7 @@ In ``peerannot``, one of our goals is to make crowdsourced datasets under the sa
 
 So, what is a crowdsourced dataset? We define each dataset as:
 
-.. code-block:: bash
+.. code-block:: default
 
     dataset
     ├── train
