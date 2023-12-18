@@ -25,20 +25,125 @@ datasets = click.Group(
     "path",
     type=click.Path(),
 )
-def install(path):
+@click.option(
+    "--answers_format",
+    default=0,
+    type=click.INT,
+    help="annotation file format",
+    # 0 == Rodriguez matrix format, 1 == JSON answers/worker format, 2 == JSON worker/answers format
+)
+@click.option(
+    "--answers",
+    default="",
+    type=click.Path(exists=False),
+    help="annotation file",
+)
+@click.option(
+    "--metadata",
+    default="",
+    type=click.Path(exists=False),
+    help="metadata information file",
+)
+@click.option(
+    "--label_names",
+    default="",
+    type=click.Path(exists=False),
+    help="path to label names files",
+)
+@click.option(
+    "--files_path",
+    default="",
+    type=click.Path(exists=False),
+    help="path to train filenames",
+)
+@click.option(
+    "--train_path",
+    default="",
+    type=click.Path(exists=False),
+    help="path to train data",
+)
+@click.option(
+    "--test_ground_truth",
+    default="",
+    type=click.Path(exists=False),
+    help="test ground truth file",
+)
+@click.option(
+    "--test_path",
+    default="",
+    type=click.Path(exists=False),
+    help="path to test data",
+)
+@click.option(
+    "--val_path",
+    default="",
+    type=click.Path(exists=False),
+    help="path to val data",
+)
+def install(
+    path,
+    answers_format,
+    answers,
+    metadata,
+    label_names,
+    files_path,
+    train_path,
+    test_ground_truth,
+    test_path,
+    val_path,
+):
     """Download and install dataset
 
     :param path: path to python file including the class with method `setfolders` to install the data
     :type path: click.Path
     """
-    spec = importlib.util.spec_from_file_location("dataset", path)
-    mydata = importlib.util.module_from_spec(spec)
-    sys.modules["dataset"] = mydata
-    spec.loader.exec_module(mydata)
-    mm = [
-        (name, cls)
-        for name, cls in inspect.getmembers(mydata, inspect.isclass)
-        if cls.__module__ == "dataset"
-    ][0]
-    df = mm[1]()
-    df.setfolders()
+    pathFilename = Path(path).resolve().as_posix().split("/")[-1].split(".")[0]
+
+    if pathFilename == "customDataset":
+        if train_path == "":
+            click.echo("Please provide a valid train path")
+            sys.exit(1)
+        if test_path == "":
+            click.echo("Please provide a valid test path")
+            sys.exit(1)
+        if files_path == "":
+            click.echo("Please provide a valid filenames path")
+            sys.exit(1)
+        if answers == "":
+            click.echo("Please provide a valid answers file")
+            sys.exit(1)
+        spec = importlib.util.spec_from_file_location("dataset", path)
+        mydata = importlib.util.module_from_spec(spec)
+        sys.modules["dataset"] = mydata
+        spec.loader.exec_module(mydata)
+        mm = [
+            (name, cls)
+            for name, cls in inspect.getmembers(mydata, inspect.isclass)
+            if cls.__module__ == "dataset"
+        ][0]
+        df = mm[1]()
+        df.setfolders(
+            answers_format,
+            answers,
+            metadata,
+            label_names,
+            files_path,
+            train_path,
+            test_ground_truth,
+            test_path,
+            val_path,
+        )
+
+        print("customDataset")
+    else:
+        spec = importlib.util.spec_from_file_location("dataset", path)
+        mydata = importlib.util.module_from_spec(spec)
+        sys.modules["dataset"] = mydata
+        spec.loader.exec_module(mydata)
+        mm = [
+            (name, cls)
+            for name, cls in inspect.getmembers(mydata, inspect.isclass)
+            if cls.__module__ == "dataset"
+        ][0]
+        df = mm[1]()
+        df.setfolders()
