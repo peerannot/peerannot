@@ -133,8 +133,6 @@ def install(
             test_path,
             val_path,
         )
-
-        print("customDataset")
     else:
         spec = importlib.util.spec_from_file_location("dataset", path)
         mydata = importlib.util.module_from_spec(spec)
