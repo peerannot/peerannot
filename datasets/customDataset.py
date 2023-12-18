@@ -1,17 +1,15 @@
-# %%
 import click
 import json
 import sys
 from pathlib import Path
 import os
 import numpy as np
-import random
 
 
-# %%
 class CustomDataset:
     def __init__(self):
         self.DIR = Path(__file__).parent.resolve()
+        self.val_ratio = 0.2
 
     def computeJsonAnswers(self, answersPath, metadataPath, outputname):
         with open(answersPath, "r") as f:
@@ -49,8 +47,6 @@ class CustomDataset:
         ) as answ:
             json.dump(res_train, answ, ensure_ascii=False, indent=3)
 
-    # %%
-
     def writeSymlink(self, folder, file, currentPath, position):
         parent = file.parent.name
         currentFile = currentPath / folder / parent / f"{file.stem}-{position}.jpg"
@@ -65,7 +61,6 @@ class CustomDataset:
             currentPath / folder / parent / f"{file.stem}-{position}.jpg",
         )
 
-    # %%
     def setfolders(
         self,
         answers_format,
@@ -128,17 +123,20 @@ class CustomDataset:
             self.writeSymlink("test", file, currentPath, i)
             i += 1
 
-        random.seed(0)
+        random_seed = 12345
+        rng = np.random.default_rng(random_seed)  # can be called without a seed
         for j, file in enumerate(trainPath.glob("*/*")):
-            rand_num = random.uniform(0, 100)
-            if rand_num < 20:
-                self.writeSymlink(
-                    "val", file, currentPath, np.where(orig_name == file.name)[0][0]
-                )
-            else:
-                self.writeSymlink(
-                    "train", file, currentPath, np.where(orig_name == file.name)[0][0]
-                )
+            rand_val = rng.random()
+            file_destination = "train"
+            if rand_val < self.val_ratio:
+                file_destination = "val"
+
+            self.writeSymlink(
+                file_destination,
+                file,
+                currentPath,
+                np.where(orig_name == file.name)[0][0],
+            )
 
         if test_ground_truth == "":
             testPath = Path("./test/")
@@ -171,5 +169,3 @@ class CustomDataset:
                     metadataPath = Path(metadata)
                     self.computeJsonAnswers(answersPath, metadataPath)
             print("TODO : Test ground truth provided")
-
-    # %%
