@@ -11,6 +11,7 @@ class CustomDataset:
         self.DIR = Path(__file__).parent.resolve()
         self.val_ratio = 0.2
 
+    ### Functions to compute answers.json from different sources
     def computeJsonAnswers(self, answersPath, metadataPath, outputname):
         with open(answersPath, "r") as f:
             answers = json.load(f)
@@ -34,7 +35,7 @@ class CustomDataset:
         ) as answ:
             json.dump(answers, answ, ensure_ascii=False, indent=3)
 
-    def computeRodriguezAnswers(self, answersPath, outputname):
+    def computeRodriguesAnswers(self, answersPath, outputname):
         crowdlabels = np.loadtxt(answersPath)
         res_train = {task: {} for task in range(crowdlabels.shape[0])}
         for id_, task in enumerate(crowdlabels):
@@ -46,6 +47,8 @@ class CustomDataset:
             "w",
         ) as answ:
             json.dump(res_train, answ, ensure_ascii=False, indent=3)
+
+    ############################################################################
 
     def writeSymlink(self, folder, file, currentPath, position):
         parent = file.parent.name
@@ -61,6 +64,7 @@ class CustomDataset:
             currentPath / folder / parent / f"{file.stem}-{position}.jpg",
         )
 
+    # Main function, called by the executable
     def setfolders(
         self,
         answers_format,
@@ -76,7 +80,7 @@ class CustomDataset:
         answersPath = Path(answers)
 
         if answers_format == 0:
-            self.computeRodriguezAnswers(answersPath, "answers.json")
+            self.computeRodriguesAnswers(answersPath, "answers.json")
         elif answers_format == 1:
             if metadata == "":
                 click.echo("Please provide a valid metadata file")
@@ -153,19 +157,22 @@ class CustomDataset:
                 json.dump(res_test, answ, ensure_ascii=False, indent=3)
         else:
             if answers_format == 0:
-                self.computeRodriguezAnswers(answersPath, "test_groundTruth.json")
+                self.computeRodriguesAnswers(answersPath, "test_groundTruth.json")
             elif answers_format == 1:
                 if metadata == "":
                     click.echo("Please provide a valid metadata file")
                     sys.exit(1)
                 else:
                     metadataPath = Path(metadata)
-                    self.computeJsonAnswers(answersPath, metadataPath)
+                    self.computeJsonAnswers(
+                        answersPath, metadataPath, "test_groundTruth.json"
+                    )
             elif answers_format == 2:
                 if metadata == "":
                     click.echo("Please provide a valid metadata file")
                     sys.exit(1)
                 else:
                     metadataPath = Path(metadata)
-                    self.computeJsonAnswers(answersPath, metadataPath)
-            print("TODO : Test ground truth provided")
+                    self.computeJsonAnswers(
+                        answersPath, metadataPath, "test_groundTruth.json"
+                    )
