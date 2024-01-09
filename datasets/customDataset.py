@@ -12,7 +12,7 @@ class CustomDataset:
         self.val_ratio = 0.2
 
     ### Functions to compute answers.json from different sources
-    def computeJsonAnswers(self, answersPath, metadataPath, outputname):
+    def computeJsonAnswers(self, answersPath, outputname):
         with open(answersPath, "r") as f:
             answers = json.load(f)
         with open(
@@ -21,7 +21,7 @@ class CustomDataset:
         ) as answ:
             json.dump(answers, answ, ensure_ascii=False, indent=3)
 
-    def computeInvertJsonAnswers(self, answersPath, metadataPath, outputname):
+    def computeInvertJsonAnswers(self, answersPath, outputname):
         with open(answersPath, "r") as f:
             answers = json.load(f)
         workerAnswers = {}
@@ -67,50 +67,43 @@ class CustomDataset:
     # Main function, called by the executable
     def setfolders(
         self,
+        no_task,
         answers_format,
         answers,
         metadata,
         label_names,
         files_path,
         train_path,
+        test_ground_truth_format,
         test_ground_truth,
         test_path,
         val_path,
     ):
+        # Compute the answers.json file from different sources
         answersPath = Path(answers)
-
         if answers_format == 0:
             self.computeRodriguesAnswers(answersPath, "answers.json")
         elif answers_format == 1:
-            if metadata == "":
-                click.echo("Please provide a valid metadata file")
-                sys.exit(1)
-            else:
-                metadataPath = Path(metadata)
-                self.computeJsonAnswers(answersPath, metadataPath, "answers.json")
+            self.computeJsonAnswers(answersPath, "answers.json")
         elif answers_format == 2:
-            if metadata == "":
-                click.echo("Please provide a valid metadata file")
-                sys.exit(1)
-            else:
-                metadataPath = Path(metadata)
-                self.computeInvertJsonAnswers(answersPath, metadataPath, "answers.json")
+            self.computeInvertJsonAnswers(answersPath, "answers.json")
 
         ##################################################################
         ## From now on, "./answers.json" is complete                    ##
         ##################################################################
 
-        os.makedirs("train/", exist_ok=True)  # TODO : change to false
-        os.makedirs("val/", exist_ok=True)  # TODO : change to false
-        os.makedirs("test/", exist_ok=True)  # TODO : change to false
+        if no_task:
+            return
 
-        with open("./answers.json", "r") as f:
-            answersJson = json.load(f)
+        # Create train, val and test folders and load files to copy the task data
+        os.makedirs("train/", exist_ok=True)
+        os.makedirs("val/", exist_ok=True)
+        os.makedirs("test/", exist_ok=True)
 
         filenameTrainPath = Path(files_path)
         orig_name = np.loadtxt(filenameTrainPath, dtype=str)
+
         labelNamesPath = Path(label_names)
-        print(labelNamesPath)
         label_namesTab = np.loadtxt(labelNamesPath, dtype=str)
 
         if val_path == "":
@@ -118,30 +111,39 @@ class CustomDataset:
                 "No val path provided, samples from the train set will be used instead"
             )
 
+        # Create symlinks in the train, val and test folders
         currentPath = Path(".")
         trainPath = Path(train_path)
         testPath = Path(test_path)
 
-        i = orig_name.shape[0]
-        for j, file in enumerate(testPath.glob("*/*")):
-            self.writeSymlink("test", file, currentPath, i)
-            i += 1
-
         random_seed = 12345
-        rng = np.random.default_rng(random_seed)  # can be called without a seed
+        rng = np.random.default_rng(random_seed)
+        taskMaxId = 0
         for j, file in enumerate(trainPath.glob("*/*")):
             rand_val = rng.random()
             file_destination = "train"
             if rand_val < self.val_ratio:
                 file_destination = "val"
 
+            taskId = np.where(orig_name == file.name)[0][0]
+            taskMaxId = max(taskId, taskMaxId)
             self.writeSymlink(
                 file_destination,
                 file,
                 currentPath,
-                np.where(orig_name == file.name)[0][0],
+                taskId,
             )
 
+        i = taskMaxId + 1
+        for j, file in enumerate(testPath.glob("*/*")):
+            self.writeSymlink("test", file, currentPath, i)
+            i += 1
+
+        ########################################################################
+        # From now on the Train, Val and Test folders are complete            ##
+        ########################################################################
+
+        # Create the test_groundTruth.json file
         if test_ground_truth == "":
             testPath = Path("./test/")
             res_test = {task: {} for task in range(orig_name.shape[0], i)}
@@ -156,23 +158,9 @@ class CustomDataset:
             ) as answ:
                 json.dump(res_test, answ, ensure_ascii=False, indent=3)
         else:
-            if answers_format == 0:
-                self.computeRodriguesAnswers(answersPath, "test_groundTruth.json")
-            elif answers_format == 1:
-                if metadata == "":
-                    click.echo("Please provide a valid metadata file")
-                    sys.exit(1)
-                else:
-                    metadataPath = Path(metadata)
-                    self.computeJsonAnswers(
-                        answersPath, metadataPath, "test_groundTruth.json"
-                    )
-            elif answers_format == 2:
-                if metadata == "":
-                    click.echo("Please provide a valid metadata file")
-                    sys.exit(1)
-                else:
-                    metadataPath = Path(metadata)
-                    self.computeJsonAnswers(
-                        answersPath, metadataPath, "test_groundTruth.json"
-                    )
+            if test_ground_truth_format == 0:
+                self.computeRodriguesAnswers(test_ground_truth, "test_groundTruth.json")
+            elif test_ground_truth_format == 1:
+                self.computeJsonAnswers(test_ground_truth, "test_groundTruth.json")
+            elif test_ground_truth_format == 2:
+                self.computeJsonAnswers(test_ground_truth, "test_groundTruth.json")
