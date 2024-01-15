@@ -26,13 +26,13 @@ datasets = click.Group(
     type=click.Path(),
 )
 @click.option(
-    "--no_task",
+    "--no-task",
     is_flag=True,
     help="True if no task is associated with the dataset",
     # (only an answers file as in the krippendorff example dataset)
 )
 @click.option(
-    "--answers_format",
+    "--answers-format",
     default=0,
     type=click.INT,
     help="annotation file format",
@@ -51,44 +51,44 @@ datasets = click.Group(
     help="metadata information file",
 )
 @click.option(
-    "--label_names",
+    "--label-names",
     default="",
     type=click.Path(exists=False),
     help="path to label names files",
 )
 @click.option(
-    "--files_path",
+    "--files-path",
     default="",
     type=click.Path(exists=False),
     help="path to train filenames",
 )
 @click.option(
-    "--train_path",
+    "--train-path",
     default="",
     type=click.Path(exists=False),
     help="path to train data",
 )
 @click.option(
-    "--test_ground_truth_format",
+    "--test-ground-truth-format",
     default=-1,
     type=click.INT,
     help="annotation file format",
     # 0 == Rodrigues matrix format, 1 == JSON answers/worker format, 2 == JSON worker/answers format
 )
 @click.option(
-    "--test_ground_truth",
+    "--test-ground-truth",
     default="",
     type=click.Path(exists=False),
     help="test ground truth file",
 )
 @click.option(
-    "--test_path",
+    "--test-path",
     default="",
     type=click.Path(exists=False),
     help="path to test data",
 )
 @click.option(
-    "--val_path",
+    "--val-path",
     default="",
     type=click.Path(exists=False),
     help="path to val data",
