@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 import os
 import numpy as np
+from datetime import datetime
 
 
 class CustomDataset:
@@ -63,6 +64,14 @@ class CustomDataset:
             file.absolute(),
             currentPath / folder / parent / f"{file.stem}-{position}.jpg",
         )
+
+    def numberWorkers(self, answers_path):
+        # We compute how many workers there are in the answers.json file
+        with open(answers_path, "r") as f:
+            answers = json.load(f)
+        answersList = [list(x) for x in answers.values()]
+        workersSet = sorted(set(int(x) for xs in answersList for x in xs))
+        return workersSet[-1]
 
     # Main function, called by the executable
     def setfolders(
@@ -164,3 +173,28 @@ class CustomDataset:
                 self.computeJsonAnswers(test_ground_truth, "test_groundTruth.json")
             elif test_ground_truth_format == 2:
                 self.computeJsonAnswers(test_ground_truth, "test_groundTruth.json")
+
+        # Verify that the metadata.json file exists or is complete. Create it if not
+        if metadata == "":
+            metadata = {
+                "name": datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
+                "n_classes": len(label_namesTab),
+                "n_workers": self.numberWorkers(Path("./answers.json")),
+            }
+            with open("./metadata.json", "w") as answ:
+                json.dump(metadata, answ, ensure_ascii=False, indent=3)
+        else:
+            with open(metadata, "r") as f:
+                metadata = json.load(f)
+
+            if not "name" in metadata.keys():
+                metadata["name"] = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+
+            if not "n_classes" in metadata.keys():
+                metadata["n_classes"] = len(label_namesTab)
+
+            if not "n_workers" in metadata.keys():
+                metadata["n_workers"] = self.numberWorkers(Path("./answers.json"))
+
+            with open("./metadata.json", "w") as answ:
+                json.dump(metadata, answ, ensure_ascii=False, indent=3)
