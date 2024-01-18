@@ -1,0 +1,5 @@
+{
+    "name": "BirdAudio",
+    "n_classes": 2,
+    "n_workers": 206
+}
