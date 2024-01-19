@@ -166,4 +166,4 @@ The ``dataset.py`` is not mandatory but is here to facilitate the dataset's inst
 .. |Documentation| image:: https://github.com/peerannot/peerannot.github.io/actions/workflows/deploy-jekyll.yml/badge.svg
    :target: https://peerannot.github.io
 .. |Codecov| .. image:: https://codecov.io/gh/peerannot/peerannot/graph/badge.svg?token=3U77QPSODB 
- :target: https://codecov.io/gh/peerannot/peerannot
+   :target: https://codecov.io/gh/peerannot/peerannot
