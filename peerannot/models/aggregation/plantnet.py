@@ -7,7 +7,11 @@ from ..template import CrowdModel
 import numpy as np
 import warnings
 from pathlib import Path
+import json
 from tqdm.auto import tqdm
+
+THETACONF = 2
+THETAACC = 0.7
 
 
 class PlantNet(CrowdModel):
@@ -19,8 +23,9 @@ class PlantNet(CrowdModel):
         parrots="ignored",
         alpha=1,
         beta=1,
-        IAweight=1,  # if AI is fixed
+        AIweight=1,  # if AI is fixed or invalidating
         authors=None,  # path to txt file containing authors id for each task
+        scores=None,  # path to txt file containing scores for each task
         **kwargs,
     ):
         """Two Third agreement: accept label reaching two third consensus
@@ -36,7 +41,7 @@ class PlantNet(CrowdModel):
         :type answers: dict
         :param n_classes: Number of possible classes, defaults to 2
         :type n_classes: int, optional
-        :param AI: AI mode, defaults to "ignored" in (ignored, worker, fixed)
+        :param AI: AI mode, defaults to "ignored" in (ignored, worker, fixed, invalidating or confident)
         :type AI: str, optional
         """
         self.AI = AI
@@ -51,29 +56,32 @@ class PlantNet(CrowdModel):
                     k: v for k, v in self.answers[task].items() if k != "AI"
                 }
             self.weight_AI = -1
-        elif self.IA == "worker":
+        elif self.AI == "worker":
             self.n_workers += 1
             for task in self.answers:
                 for worker, label in self.answers[task].items():
                     if worker == "AI":
-                        self.answers[task][self.n_workers] = self.answers[
-                            task
-                        ]["AI"].pop(worker)
+                        self.answers[task][self.n_workers] = self.answers[task][
+                            "AI"
+                        ].pop(worker)
             self.weight_AI = -1
-        elif self.IA == "fixed":
-            self.weight_AI = IAweight
-            ans_ai = -np.ones(len(self.answers))
+        elif self.AI == "fixed" or self.AI == "invalidating":
+            self.weight_AI = AIweight
+            ans_ai = -np.ones(len(self.answers), dtype=int)
             for i, task in enumerate(self.answers):
                 for worker, label in self.answers[task].items():
                     if worker == "AI":
-                        ans_ai[i] = label
+                        ans_ai[i] = int(label)
                 self.answers[task] = {
                     k: v for k, v in self.answers[task].items() if k != "AI"
                 }
             self.ans_ai = ans_ai
+        elif self.AI == "confident":
+            with open(scores, "r") as f:
+                self.scores = json.load(f)
         else:
             raise ValueError(
-                f"Option {self.AI} should be one of worker, fixed or ignored"
+                f"Option {self.AI} should be one of worker, fixed, invalidating, confident or ignored"
             )
         self.n_classes = n_classes
         self.authors = authors
@@ -82,9 +90,7 @@ class PlantNet(CrowdModel):
         else:
             self.authors = np.loadtxt(self.authors, dtype=int)
         if kwargs.get("dataset", None):
-            self.path_save = (
-                Path(kwargs["dataset"]) / "identification" / "plantnet"
-            )
+            self.path_save = Path(kwargs["dataset"]) / "identification" / "plantnet"
         else:
             self.path_save = None
         if kwargs.get("path_remove", None):
@@ -112,7 +118,7 @@ class PlantNet(CrowdModel):
             for i in range(self.n_task):
                 init = np.zeros(self.n_classes)
                 for worker, label in self.answers[i].items():
-                    init[label] += weights[int(worker) - 1]
+                    init[label] += weights[int(worker)]
                 if self.ans_ai[i] != -1:
                     init[self.ans_ai[i]] += self.weight_AI
                 yhat[i] = np.argmax(init)
@@ -120,7 +126,7 @@ class PlantNet(CrowdModel):
             for i in range(self.n_task):
                 init = np.zeros(self.n_classes)
                 for worker, label in self.answers[i].items():
-                    init[label] += weights[int(worker) - 1]
+                    init[label] += weights[int(worker)]
                 yhat[i] = np.argmax(init)
         return yhat
 
@@ -130,22 +136,23 @@ class PlantNet(CrowdModel):
         for i in range(self.n_task):
             sum_weights = 0
             for worker, label in self.answers[i].items():
-                sum_weights += weights[int(worker) - 1]
-                conf[i] += weights[int(worker) - 1] * label == yhat[i]
+                if worker != "AI":
+                    sum_weights += weights[int(worker)]
+                    conf[i] += weights[int(worker)] * (label == yhat[i])
+                if self.AI == "fixed":
+                    sum_weights += self.weight_AI
+                    conf[i] += self.weight_AI * (self.ans_ai[i] == yhat[i])
+                if self.AI == "invalidating":
+                    if conf[i] / (sum_weights + self.weight_AI) < THETAACC:
+                        sum_weights += self.weight_AI
             acc[i] = conf[i] / sum_weights
         return acc, conf
 
-    def get_valid_tasks(self, valid, acc, conf):
-        mask = np.where((conf > 2) & (acc > 0.7), 1, 0)
+    def get_valid_tasks(self, acc, conf):
+        valid = np.zeros(self.n_task)
+        mask = np.where((conf > THETACONF) & (acc > THETAACC), True, False)
         valid[mask] = 1
-        valid[~mask] = 0
         return valid
-
-    def is_author(self, task, worker):
-        if self.authors[int(task)] == int(worker):
-            return 1
-        else:
-            return 1 / 10
 
     def get_weights(self):
         return self.n_j**self.alpha - self.n_j**self.beta + np.log(2.1)
@@ -153,19 +160,28 @@ class PlantNet(CrowdModel):
     def get_n(self, valid, yhat):
         taxa_obs = np.zeros(self.n_workers)
         taxa_votes = np.zeros(self.n_workers)
-        for (task_id, label_task) in zip(self.answers.keys(), yhat):
+        dico_labs_workers = {k: {} for k in range(self.n_workers)}
+        for task_id, label_task in zip(self.answers.keys(), yhat):
             for worker, lab_worker in self.answers[task_id].items():
-                if lab_worker == label_task:
-                    if self.is_author(task_id, worker):
-                        if valid[int(task_id)]:
-                            taxa_obs[int(worker) - 1] += 1
-                    else:
-                        taxa_votes[int(worker) - 1] += 1
+                if worker != "AI":
+                    if lab_worker == label_task:
+                        if self.authors[int(task_id)] == int(worker):
+                            if valid[int(task_id)] == 1:
+                                if (
+                                    dico_labs_workers[int(worker)].get(lab_worker, None)
+                                    is None
+                                ):
+                                    taxa_obs[int(worker)] += 1
+                                    dico_labs_workers[int(worker)][lab_worker] = 1
+        for task_id, label_task in zip(self.answers.keys(), yhat):
+            for worker, lab_worker in self.answers[task_id].items():
+                if worker != "AI":
+                    if lab_worker == label_task:
+                        if dico_labs_workers[int(worker)].get(lab_worker, None) is None:
+                            taxa_votes[int(worker)] += 1 / 10
+                            dico_labs_workers[int(worker)][lab_worker] = 1
         self.n_j = np.array(
-            [
-                taxa_obs[w] + np.round(taxa_votes[w])
-                for w in range(self.n_workers)
-            ]
+            [taxa_obs[w] + np.round(taxa_votes[w]) for w in range(self.n_workers)]
         )
 
     def run(self, maxiter=100, epsilon=1e-5):  # epsilon = diff in weights
@@ -176,23 +192,22 @@ class PlantNet(CrowdModel):
         init_yhat = self.get_wmv(weights)
         # print("Begin acc, conf init")
         acc, conf = self.get_conf_acc(init_yhat, weights)
-        valid = self.get_valid_tasks(valid, acc, conf)
+        valid = self.get_valid_tasks(acc, conf)
         self.get_n(valid, init_yhat)
         for step in tqdm(range(maxiter)):
             n_j = self.n_j
             weights = self.get_weights()
             yhat = self.get_wmv(weights)
             acc, conf = self.get_conf_acc(init_yhat, weights)
-            valid = self.get_valid_tasks(valid, acc, conf)
+            valid = self.get_valid_tasks(acc, conf)
             self.get_n(valid, init_yhat)
-            if (
-                np.sum(np.abs(self.n_j - n_j)) / self.n_task <= epsilon
-                and step > 5
-            ):
+            if np.sum(np.abs(self.n_j - n_j)) / self.n_task <= epsilon and step > 5:
                 break
         self.labels_hat = yhat
         self.valid = valid
         self.weights = weights
+        self.conf = conf
+        self.acc = acc
 
     def get_answers(self):
         """

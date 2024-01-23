@@ -6,6 +6,7 @@ from .aggregation.GLAD import GLAD
 from .aggregation.WDS import WDS
 from .aggregation.twothird import TwoThird
 from .aggregation.plantnet import PlantNet
+from .aggregation.Wawa import Wawa
 from .identification.WAUM_perworker import WAUM_perworker
 from .identification.WAUM import WAUM
 from .identification.AUM import AUM
@@ -25,6 +26,7 @@ agg_strategies = {
     "WDS": WDS,
     "PlantNet": PlantNet,
     "TwoThird": TwoThird,
+    "Wawa": Wawa,
 }
 
 agg_deep_strategies = {
