@@ -119,9 +119,6 @@ def install(
             if train_path == "":
                 click.echo("Please provide a valid train path")
                 sys.exit(1)
-            if test_path == "":
-                click.echo("Please provide a valid test path")
-                sys.exit(1)
             if files_path == "":
                 click.echo("Please provide a valid filenames path")
                 sys.exit(1)
