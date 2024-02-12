@@ -26,6 +26,7 @@ class PlantNet(CrowdModel):
         AIweight=1,  # if AI is fixed or invalidating
         authors=None,  # path to txt file containing authors id for each task
         scores=None,  # path to txt file containing scores for each task
+        threshold_scores=None,  # threshold for scores
         **kwargs,
     ):
         """Two Third agreement: accept label reaching two third consensus
@@ -77,8 +78,20 @@ class PlantNet(CrowdModel):
                 }
             self.ans_ai = ans_ai
         elif self.AI == "confident":
+            self.weight_AI = AIweight
+            ans_ai = -np.ones(len(self.answers), dtype=int)
+            for i, task in enumerate(self.answers):
+                for worker, label in self.answers[task].items():
+                    if worker == "AI":
+                        ans_ai[i] = int(label)
+                self.answers[task] = {
+                    k: v for k, v in self.answers[task].items() if k != "AI"
+                }
+            self.ans_ai = ans_ai
             with open(scores, "r") as f:
                 self.scores = json.load(f)
+            self.scores = np.array(list(self.scores.values()))
+            self.scores_threshold = threshold_scores
         else:
             raise ValueError(
                 f"Option {self.AI} should be one of worker, fixed, invalidating, confident or ignored"
@@ -113,39 +126,50 @@ class PlantNet(CrowdModel):
         return self.get_answers()
 
     def get_wmv(self, weights):
-        yhat = -np.ones(self.n_task)
-        if self.AI == "fixed":
-            for i in range(self.n_task):
-                init = np.zeros(self.n_classes)
-                for worker, label in self.answers[i].items():
-                    init[label] += weights[int(worker)]
-                if self.ans_ai[i] != -1:
-                    init[self.ans_ai[i]] += self.weight_AI
-                yhat[i] = np.argmax(init)
-        else:
-            for i in range(self.n_task):
-                init = np.zeros(self.n_classes)
-                for worker, label in self.answers[i].items():
-                    init[label] += weights[int(worker)]
-                yhat[i] = np.argmax(init)
+        def calculate_init():
+            init = np.zeros(self.n_classes)
+            for worker, label in self.answers[i].items():
+                init[label] += weights[int(worker)]
+            return init
+
+        def calculate_yhat(i):
+            init = calculate_init()
+            if (
+                self.AI == "fixed"
+                or (self.AI == "confident" and self.scores[i] >= self.scores_threshold)
+            ) and self.ans_ai[i] != -1:
+                init[self.ans_ai[i]] += self.weight_AI
+            return np.argmax(init)
+
+        yhat = np.zeros(self.n_task)
+        for i in range(self.n_task):
+            yhat[i] = calculate_yhat(i)
         return yhat
 
     def get_conf_acc(self, yhat, weights):
-        conf = np.zeros(self.n_task)
-        acc = np.zeros(self.n_task)
-        for i in range(self.n_task):
+        def calculate_conf_acc(i):
             sum_weights = 0
+            conf = 0
             for worker, label in self.answers[i].items():
                 if worker != "AI":
                     sum_weights += weights[int(worker)]
-                    conf[i] += weights[int(worker)] * (label == yhat[i])
+                    conf += weights[int(worker)] * (label == yhat[i])
                 if self.AI == "fixed":
                     sum_weights += self.weight_AI
-                    conf[i] += self.weight_AI * (self.ans_ai[i] == yhat[i])
+                    conf += self.weight_AI * (self.ans_ai[i] == yhat[i])
                 if self.AI == "invalidating":
-                    if conf[i] / (sum_weights + self.weight_AI) < THETAACC:
+                    if conf / (sum_weights + self.weight_AI) < THETAACC:
                         sum_weights += self.weight_AI
-            acc[i] = conf[i] / sum_weights
+                if self.AI == "confident" and self.scores[i] >= self.scores_threshold:
+                    sum_weights += self.weight_AI
+                    conf += self.weight_AI * (self.ans_ai[i] == yhat[i])
+            acc = conf / sum_weights
+            return acc, conf
+
+        acc = np.zeros(self.n_task)
+        conf = np.zeros(self.n_task)
+        for i in range(self.n_task):
+            acc[i], conf[i] = calculate_conf_acc(i)
         return acc, conf
 
     def get_valid_tasks(self, acc, conf):
@@ -187,7 +211,7 @@ class PlantNet(CrowdModel):
     def run(self, maxiter=100, epsilon=1e-5):  # epsilon = diff in weights
         self.n_task = len(self.answers)
         valid = np.ones(self.n_task)
-        weights = np.ones(self.n_workers)
+        weights = np.log(2.1) * np.ones(self.n_workers)
         # print("Begin WMV init")
         init_yhat = self.get_wmv(weights)
         # print("Begin acc, conf init")
