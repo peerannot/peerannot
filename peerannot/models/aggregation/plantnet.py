@@ -3,6 +3,7 @@
 PlantNet consensus
 ===================================
 """
+
 from ..template import CrowdModel
 import numpy as np
 import warnings
@@ -99,7 +100,7 @@ class PlantNet(CrowdModel):
         self.n_classes = n_classes
         self.authors = authors
         if self.authors is None:
-            self.authors = -np.ones(self.n_workers)
+            self.authors = -np.ones(len(self.answers), dtype=int)
         else:
             self.authors = np.loadtxt(self.authors, dtype=int)
         if kwargs.get("dataset", None):
@@ -227,7 +228,7 @@ class PlantNet(CrowdModel):
             self.get_n(valid, init_yhat)
             if np.sum(np.abs(self.n_j - n_j)) / self.n_task <= epsilon and step > 5:
                 break
-        self.labels_hat = yhat
+        self.labels_hat = yhat if maxiter > 1 else init_yhat
         self.valid = valid
         self.weights = weights
         self.conf = conf
