@@ -15,12 +15,14 @@ ANSWERS = load_json(dir_toydata / "answers.json")
 
 
 def test_mv():
+    sparse = [True, False]
     from peerannot.models import MV
 
-    mv = MV(ANSWERS, n_classses=2)
-    y = mv.get_answers()
-    expected = np.array([1, 0, 1])
-    assert all([e == y_ for e, y_ in zip(expected, y)])
+    for sparse_ in sparse:
+        mv = MV(ANSWERS, n_classses=2, sparse=sparse_)
+        y = mv.get_answers()
+        expected = np.array([1, 0, 1])
+        assert all([e == y_ for e, y_ in zip(expected, y)])
 
 
 def test_ns():
@@ -51,12 +53,25 @@ def test_ds():
 def test_wawa():
     from peerannot.models import Wawa
 
-    wawa = Wawa(ANSWERS, n_classses=2, n_workers=4, sparse=True)
-    wawa.run()
-    y = wawa.get_answers()
-    expected = np.array([1, 0, 1])
-    assert np.isclose((wawa.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(), 0)
-    assert all([e == y_ for e, y_ in zip(expected, y)])
+    sparse = [True, False]
+    for sparse_ in sparse:
+        wawa = Wawa(ANSWERS, n_classses=2, n_workers=4, sparse=sparse_)
+        wawa.run()
+        y = wawa.get_answers()
+        expected = np.array([1, 0, 1])
+        assert np.isclose((wawa.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(), 0)
+        assert all([e == y_ for e, y_ in zip(expected, y)])
+
+
+def test_twothird():
+    from peerannot.models import TwoThird
+
+    sparse = [True, False]
+    for sparse_ in sparse:
+        two = TwoThird(ANSWERS, n_classses=2, n_workers=4, sparse=sparse_)
+        y = two.get_answers()
+        expected = np.array([1, 0, 1])
+        assert all([e == y_ for e, y_ in zip(expected, y)])
 
 
 def test_glad():
