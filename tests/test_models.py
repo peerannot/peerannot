@@ -89,3 +89,22 @@ def test_glad():
         len(list((dir_toydata / "temp" / "identification" / "glad").glob("*.npy"))) == 2
     )
     shutil.rmtree(dir_toydata / "temp")  # cleanup
+
+
+def test_plantnet():
+    from peerannot.models import PlantNet
+
+    pn = PlantNet(
+        ANSWERS,
+        n_classes=2,
+        n_workers=4,
+        alpha=0.5,
+        beta=0.2,
+        AI="ignored",
+        authors=None,
+    )
+    pn.run(maxiter=2)
+    y = pn.get_answers()
+    expected = np.array([1, 0, 1])
+    assert y.shape == (3,)
+    assert all([e == y_ for e, y_ in zip(expected, y)])
