@@ -180,6 +180,7 @@ def dump(js, file, level=1):
 @click.option(
     "--alpha", type=float, default=0.01, help="Cutoff hyperparameter"
 )
+@click.option("--topk", type=int, default=0, help="Use TopK WAUM with k=XXX")
 @click.option(
     "--n-params",
     type=int,
@@ -418,6 +419,7 @@ def identify(folderpath, n_classes, method, **kwargs):
             optimizer,
             n_epochs,
             verbose=True,
+            topk=kwargs["topk"],
             maxiterDS=kwargs["maxiter_ds"],
             use_pleiss=kwargs["use_pleiss"],
             n_workers=kwargs["n_workers"],

@@ -33,6 +33,7 @@ class AUM:
         criterion,
         optimizer,
         n_epoch,
+        topk=False,
         verbose=False,
         use_pleiss=False,
         **kwargs,
@@ -73,6 +74,11 @@ class AUM:
             "model": self.model.state_dict(),
             "optimizer": self.optimizer.state_dict(),
         }
+        if topk is False:
+            self.topk = 1
+        else:
+            self.topk = int(topk)
+
         self.filenames = np.array(
             [Path(samp[0]).name for samp in self.tasks.dataset.dataset.samples]
         )
@@ -167,8 +173,8 @@ class AUM:
                 )
 
                 # s[2] ans P[2]
-                second_logit = torch.sort(out, axis=1)[0][:, -2]
-                second_prob = torch.sort(probs, axis=1)[0][:, -2]
+                second_logit = torch.sort(out, axis=1)[0][:, -(self.topk + 1)]
+                second_prob = torch.sort(probs, axis=1)[0][:, -(self.topk + 1)]
                 AUM_recorder["secondlogit"].extend(second_logit.tolist())
                 AUM_recorder["secondprob"].extend(second_prob.tolist())
                 for cl in range(self.n_classes):
@@ -224,7 +230,10 @@ class AUM:
         quantile = np.nanquantile(
             list(self.aums["AUM_pleiss"].to_numpy()), alpha
         )
-        too_hard = self.aums[self.aums["AUM_pleiss"] <= quantile]
+        if self.use_pleiss:
+            too_hard = self.aums[self.aums["AUM_pleiss"] <= quantile]
+        else:
+            too_hard = self.aums[self.aums["AUM_yang"] <= quantile]
         self.index_too_hard = too_hard["sample_id"].to_numpy()
         self.tasks_too_hard = [
             int(filename.split("-")[-1].split(".")[0])
