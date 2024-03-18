@@ -356,30 +356,30 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
         norm="l1",
         num_classes=n_classes,
     )
-    if n_classes >= 10:
+    if n_classes >= 8:
         accuracies_topk = [
             torchmetrics.classification.Accuracy(
                 task="multiclass",
                 num_classes=n_classes,
-                top_k=5,
-                average="micro",
-            ),
-            torchmetrics.classification.Accuracy(
-                task="multiclass",
-                num_classes=n_classes,
-                top_k=10,
+                top_k=2,
                 average="micro",
             ),
             torchmetrics.classification.Accuracy(
                 task="multiclass",
                 num_classes=n_classes,
                 top_k=5,
+                average="micro",
+            ),
+            torchmetrics.classification.Accuracy(
+                task="multiclass",
+                num_classes=n_classes,
+                top_k=2,
                 average="macro",
             ),
             torchmetrics.classification.Accuracy(
                 task="multiclass",
                 num_classes=n_classes,
-                top_k=10,
+                top_k=5,
                 average="macro",
             ),
         ]
@@ -393,7 +393,7 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
             labels = labels.to(DEVICE)
             # logits
             outputs = model(inputs)
-            if n_classes >= 10:
+            if n_classes >= 8:
                 for metric in accuracies_topk:
                     _ = metric(outputs, labels)
             loss = criterion(outputs, labels)
@@ -403,7 +403,7 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
     # compute final metrics and log them
     avg_loss = total_loss / len(loader.dataset)
     accuracy = 100 * total_accuracy / len(loader.dataset)
-    if n_classes >= 10:
+    if n_classes >= 8:
         all_micro_macro_topk = []
         for metric in accuracies_topk:
             all_micro_macro_topk.append(
@@ -413,20 +413,20 @@ def evaluate(model, loader, criterion, logger, test=True, n_classes=10):
     if test:  # also measure the calibration errors
         logger["test_loss"] = avg_loss
         logger["test_accuracy"] = accuracy
-        if n_classes >= 10:
-            logger["test_micro_top5"] = all_micro_macro_topk[0]
-            logger["test_micro_top10"] = all_micro_macro_topk[1]
-            logger["test_macro_top5"] = all_micro_macro_topk[2]
-            logger["test_macro_top10"] = all_micro_macro_topk[3]
+        if n_classes >= 8:
+            logger["test_micro_top2"] = all_micro_macro_topk[0]
+            logger["test_micro_top5"] = all_micro_macro_topk[1]
+            logger["test_macro_top2"] = all_micro_macro_topk[2]
+            logger["test_macro_top5"] = all_micro_macro_topk[3]
         logger["test_ece"] = (total_calibration / len(loader.dataset)).item()
     else:  # validation
         logger["val_loss"].append(avg_loss)
         logger["val_accuracy"].append(accuracy)
-        if n_classes >= 10:
-            logger["val_micro_top5"] = all_micro_macro_topk[0]
-            logger["val_micro_top10"] = all_micro_macro_topk[1]
-            logger["val_macro_top5"] = all_micro_macro_topk[2]
-            logger["val_macro_top10"] = all_micro_macro_topk[3]
+        if n_classes >= 8:
+            logger["val_micro_top2"] = all_micro_macro_topk[0]
+            logger["val_micro_top5"] = all_micro_macro_topk[1]
+            logger["val_macro_top2"] = all_micro_macro_topk[2]
+            logger["val_macro_top5"] = all_micro_macro_topk[3]
     return logger
 
 

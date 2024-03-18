@@ -6,10 +6,11 @@ Most answered label per task
 """
 from ..template import CrowdModel
 import numpy as np
+from tqdm.auto import tqdm
 
 
 class MV(CrowdModel):
-    def __init__(self, answers, n_classes=2, **kwargs):
+    def __init__(self, answers, n_classes=2, sparse=False, **kwargs):
         """Majority voting strategy: most answered label
 
         :param answers: Dictionary of workers answers with format
@@ -27,6 +28,7 @@ class MV(CrowdModel):
 
         super().__init__(answers)
         self.n_classes = n_classes
+        self.sparse = sparse
         self.original_answers = self.answers
         if kwargs.get("path_remove", None):
             to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
@@ -53,13 +55,22 @@ class MV(CrowdModel):
         :return: Most answered labels per task
         :rtype: numpy.ndarray
         """
-        self.compute_baseline()
-        ans = [
-            np.random.choice(
-                np.flatnonzero(self.baseline[i] == self.baseline[i].max())
-            )
-            for i in range(len(self.answers))
-        ]
+        if not self.sparse:
+            self.compute_baseline()
+            ans = [
+                np.random.choice(
+                    np.flatnonzero(self.baseline[i] == self.baseline[i].max())
+                )
+                for i in range(len(self.answers))
+            ]
+        else:  # sparse problem
+            ans = -np.ones(len(self.answers))
+            for task_id in tqdm(self.answers.keys()):
+                task = self.answers[task_id]
+                count = np.bincount(np.array(list(task.values())))
+                ans[int(task_id)] = np.random.choice(
+                    np.flatnonzero(count == count.max())
+                )
         self.ans = ans
         return np.vectorize(self.converter.inv_labels.get)(np.array(ans))
 
@@ -69,12 +80,4 @@ class MV(CrowdModel):
         :return: Most answered labels per task
         :rtype: numpy.ndarray
         """
-        self.compute_baseline()
-        ans = [
-            np.random.choice(
-                np.flatnonzero(self.baseline[i] == self.baseline[i].max())
-            )
-            for i in range(len(self.answers))
-        ]
-        self.ans = ans
-        return np.vectorize(self.converter.inv_labels.get)(np.array(ans))
+        return self.get_answers()
