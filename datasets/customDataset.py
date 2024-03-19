@@ -82,15 +82,15 @@ class CustomDataset:
     def setfolders(
         self,
         no_task,
+        answers_format,
+        answers,
         metadata,
         label_names,
         files_path,
         train_path,
-        answers_format,
-        answers,
-        test_path,
         test_ground_truth_format,
         test_ground_truth,
+        test_path,
         val_path,
     ):
         # Compute the answers.json file from different sources

@@ -50,32 +50,13 @@ def test_custom_creation():
         capture_output=True,
         cwd=dir_temp,
     )
-    nb_files = len(
-        [
-            name
-            for name in os.listdir(dir_temp)
-            # if os.path.isfile(os.path.join(dir_temp, name))
-        ]
-    )
-
+    nb_files = len([name for name in os.listdir(dir_temp)])
     assert nb_files == 6
 
-    nb_labels = len(
-        [
-            name
-            for name in os.listdir(dir_temp / "train")
-            # if os.path.isfile(os.path.join(dir_temp, name))
-        ]
-    )
+    nb_labels = len([name for name in os.listdir(dir_temp / "train")])
     assert nb_labels == 2
 
-    nb_data = len(
-        [
-            name
-            for name in os.listdir(dir_temp / "train" / "smiles")
-            # if os.path.isfile(os.path.join(dir_temp, name))
-        ]
-    )
+    nb_data = len([name for name in os.listdir(dir_temp / "train" / "smiles")])
     assert nb_data == 2
 
     verify_json(dir_temp / "answers.json")
@@ -112,7 +93,6 @@ def test_custom_creation():
         ]
     )
     assert nb_files == 4
-    time.sleep(25)
     verify_json(dir_temp / "answers.json")
     shutil.rmtree(dir_temp)  # cleanup
 

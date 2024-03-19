@@ -113,7 +113,6 @@ def install(
     :type path: click.Path
     """
     pathFilename = Path(path).resolve().as_posix().split("/")[-1].split(".")[0]
-
     if pathFilename == "customDataset":
         if not no_task:
             if train_path == "":
