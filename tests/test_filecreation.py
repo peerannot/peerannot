@@ -149,6 +149,8 @@ def test_custom_creation():
             # if os.path.isfile(os.path.join(dir_temp, name))
         ]
     )
+    print(result.stdout)
+    print(result.stderr)
     assert nb_files == 1
 
     verify_json(dir_temp / "answers.json")
