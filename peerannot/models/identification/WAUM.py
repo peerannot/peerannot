@@ -46,6 +46,7 @@ class WAUM(CrowdModel):
         n_epoch,
         verbose=False,
         use_pleiss=False,
+        topk=False,
         **kwargs
     ):
         """Compute the WAUM score for each task using a stacked version of the dataset (stacked over workers)
@@ -97,6 +98,10 @@ class WAUM(CrowdModel):
             "model": self.model.state_dict(),
             "optimizer": self.optimizer.state_dict(),
         }
+        if topk is False:
+            self.topk = 1
+        else:
+            self.topk = int(topk)
         self.filenames = np.array(
             [
                 Path(samp[0]).name
@@ -237,8 +242,8 @@ class WAUM(CrowdModel):
                 )
 
                 # s[2] ans P[2]
-                second_logit = torch.sort(out, axis=1)[0][:, -2]
-                second_prob = torch.sort(probs, axis=1)[0][:, -2]
+                second_logit = torch.sort(out, axis=1)[0][:, -(self.topk + 1)]
+                second_prob = torch.sort(probs, axis=1)[0][:, -(self.topk + 1)]
                 AUM_recorder["secondlogit"].extend(second_logit.tolist())
                 AUM_recorder["secondprob"].extend(second_prob.tolist())
                 for ll in range(len_):

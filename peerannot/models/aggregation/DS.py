@@ -16,13 +16,15 @@ Estimating:
 from ..template import CrowdModel
 import numpy as np
 from tqdm.auto import tqdm
+import warnings
 
 
 class Dawid_Skene(CrowdModel):
-    def __init__(self, answers, n_classes, **kwargs):
+    def __init__(self, answers, n_classes, sparse=False, **kwargs):
         super().__init__(answers)
         self.n_classes = n_classes
         self.n_workers = kwargs["n_workers"]
+        self.sparse = sparse
         if kwargs.get("path_remove", None):
             to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
             self.answers_modif = {}
@@ -60,9 +62,7 @@ class Dawid_Skene(CrowdModel):
         for q in range(self.n_classes):
             pij = self.T[:, q] @ self.crowd_matrix.transpose((1, 0, 2))
             denom = pij.sum(1)
-            pi[:, q, :] = pij / np.where(denom <= 0, -1e9, denom).reshape(
-                -1, 1
-            )
+            pi[:, q, :] = pij / np.where(denom <= 0, -1e9, denom).reshape(-1, 1)
         self.p, self.pi = p, pi
 
     def e_step(self):
@@ -75,9 +75,7 @@ class Dawid_Skene(CrowdModel):
         for i in range(self.n_task):
             for j in range(self.n_classes):
                 num = (
-                    np.prod(
-                        np.power(self.pi[:, j, :], self.crowd_matrix[i, :, :])
-                    )
+                    np.prod(np.power(self.pi[:, j, :], self.crowd_matrix[i, :, :]))
                     * self.p[j]
                 )
                 T[i, j] = num
@@ -89,32 +87,43 @@ class Dawid_Skene(CrowdModel):
         return np.log(np.sum(self.denom_e_step))
 
     def run(self, epsilon=1e-6, maxiter=50, verbose=False):
-        self.get_crowd_matrix()
-        self.init_T()
-        ll = []
-        k, eps = 0, np.inf
-        pbar = tqdm(total=maxiter, desc="Dawid and Skene")
-        while k < maxiter and eps > epsilon:
-            self.m_step()
-            self.e_step()
-            likeli = self.log_likelihood()
-            ll.append(likeli)
-            if len(ll) >= 2:
-                eps = np.abs(ll[-1] - ll[-2])
-            k += 1
-            pbar.update(1)
+        if not self.sparse:
+            self.get_crowd_matrix()
+            self.init_T()
+            ll = []
+            k, eps = 0, np.inf
+            pbar = tqdm(total=maxiter, desc="Dawid and Skene")
+            while k < maxiter and eps > epsilon:
+                self.m_step()
+                self.e_step()
+                likeli = self.log_likelihood()
+                ll.append(likeli)
+                if len(ll) >= 2:
+                    eps = np.abs(ll[-1] - ll[-2])
+                k += 1
+                pbar.update(1)
+            else:
+                pbar.set_description("Finished")
+            pbar.close()
+            self.c = k
+            if eps > epsilon and verbose:
+                print(f"DS did not converge: err={eps}")
+            return ll, k
         else:
-            pbar.set_description("Finished")
-        pbar.close()
-        self.c = k
-        if eps > epsilon and verbose:
-            print(f"DS did not converge: err={eps}")
-        return ll, k
+            self.run_sparse(epsilon, maxiter, verbose)
 
     def get_answers(self):
+        if self.sparse:
+            return np.vectorize(self.converter.inv_labels.get)(self.T.argmax(axis=1))
         return np.vectorize(self.converter.inv_labels.get)(
             np.argmax(self.get_probas(), axis=1)
         )
 
     def get_probas(self):
+        if self.sparse:
+            warnings.warn("Sparse implementation only returns hard labels")
+            return self.get_answers()
         return self.T
+
+    def run_sparse(self, epsilon=1e-6, maxiter=50, verbose=False):
+        pass
