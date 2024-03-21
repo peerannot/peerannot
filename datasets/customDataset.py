@@ -59,6 +59,7 @@ class CustomDataset:
     def writeSymlink(self, folder, file, currentPath, position):
         parent = file.parent.name
         currentFile = currentPath / folder / parent / f"{file.stem}-{position}.jpg"
+        print(parent, currentFile)
         reversedParents = (currentFile.parents)[1::-1]
 
         for subfolder in reversedParents:
