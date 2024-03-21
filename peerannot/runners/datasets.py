@@ -112,6 +112,7 @@ def install(
     :param path: path to python file including the class with method `setfolders` to install the data
     :type path: click.Path
     """
+    print(train_path)
     pathFilename = Path(path).resolve().as_posix().split("/")[-1].split(".")[0]
     if pathFilename == "customDataset":
         if not no_task:
