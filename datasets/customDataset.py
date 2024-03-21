@@ -60,7 +60,7 @@ class CustomDataset:
         parent = file.parent.name
         currentFile = currentPath / folder / parent / f"{file.stem}-{position}.jpg"
         print(currentFile, currentFile.parents)
-        reversedParents = (currentFile.parents)[1::-1]
+        reversedParents = list(currentFile.parents)[0::-1]
 
         for subfolder in reversedParents:
             os.makedirs(subfolder, exist_ok=True)
