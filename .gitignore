@@ -214,3 +214,5 @@ datasets/krippendorff-data/identification/
 datasets/krippendorff-data/outputs/
 
 datasets/bird_audio/bird_sound_training_data/
+
+doc/_build/
