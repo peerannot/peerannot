@@ -72,9 +72,6 @@ def test_iterative_wawa():
     sparse = [True, False]
     for sparse_ in sparse:
         wawa = IterativeWawa(ANSWERS_MUSIC, n_classes=10, n_workers=44, sparse=sparse_)
-        wawa.run(1)
-        y1 = wawa.get_answers()
-        # print(y1)
         wawa.run(20)
         y10 = wawa.get_answers()
         print(y10)
@@ -783,7 +780,6 @@ def test_iterative_wawa():
             ]
         )
         # assert np.isclose((wawa.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(), 0)
-        print([e == y_ for e, y_ in zip(expected, y10)])
         assert all([e == y_ for e, y_ in zip(expected, y10)])
 
 
