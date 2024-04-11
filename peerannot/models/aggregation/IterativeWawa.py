@@ -79,7 +79,6 @@ class IterativeWawa(CrowdModel):
         self.MV(weight=np.ones(self.n_workers))
         self.accuracy_by_mv()
         for _ in range(nb_iter):
-            # print(self.worker_score)
             self.MV(weight=self.worker_score)
             self.accuracy_by_mv()
 
