@@ -64,12 +64,12 @@ def test_wawa():
         # assert True == False
 
 
-def test_iterative_wawa():
-    from peerannot.models import IterativeWawa
+def test_IWMV():
+    from peerannot.models import IWMV
 
     sparse = [True, False]
     for sparse_ in sparse:
-        wawa_it = IterativeWawa(ANSWERS, n_classes=2, n_workers=4, sparse=sparse_)
+        wawa_it = IWMV(ANSWERS, n_classes=2, n_workers=4, sparse=sparse_)
         wawa_it.run(10)
         y = wawa_it.get_answers()
         expected = np.array([1, 0, 1])
