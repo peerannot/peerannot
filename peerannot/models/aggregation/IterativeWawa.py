@@ -40,9 +40,9 @@ class IterativeWawa(CrowdModel):
         if not self.sparse:
             self.compute_baseline(weight)
             ans = [
-                # np.random.choice(
-                np.flatnonzero(self.baseline[i] == self.baseline[i].max())[0]
-                # )
+                np.random.choice(
+                    np.flatnonzero(self.baseline[i] == self.baseline[i].max())
+                )
                 for i in range(len(self.answers))
             ]
         else:  # sparse problem
@@ -53,9 +53,7 @@ class IterativeWawa(CrowdModel):
                 for w, lab in task.items():
                     count[lab] += weight[int(w) - 1]
                 ans[int(task_id)] = int(
-                    # np.random.choice(
-                    np.flatnonzero(count == count.max())[0]
-                    # )
+                    np.random.choice(np.flatnonzero(count == count.max()))
                 )
         self.ans = ans
 
