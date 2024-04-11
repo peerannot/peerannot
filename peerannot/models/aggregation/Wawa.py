@@ -5,9 +5,7 @@ Majority voting
 Most answered label per task
 """
 
-from ..template import CrowdModel
-
-from ..aggregation.IterativeWawa import IterativeWawa
+from ..aggregation.IWMV import IWMV
 import numpy as np
 from tqdm.auto import tqdm
 
@@ -16,7 +14,7 @@ from tqdm.auto import tqdm
 # that takes into account large sparse datasets
 
 
-class Wawa(IterativeWawa):
+class Wawa(IWMV):
     def __init__(self, answers, n_classes=2, sparse=False, **kwargs):
         super().__init__(answers, n_classes, sparse, **kwargs)
 

@@ -10,7 +10,7 @@ import numpy as np
 from tqdm.auto import tqdm
 
 
-class IterativeWawa(CrowdModel):
+class IWMV(CrowdModel):
     def __init__(self, answers, n_classes=2, sparse=False, **kwargs):
         super().__init__(answers)
         self.n_classes = n_classes
