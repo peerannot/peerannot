@@ -63,6 +63,23 @@ In addition to the tutorials, you can find the full API and CLI reference here.
    interface_api/index
    interface_cli/index
 
+Citation
+============
+
+Cite us, join us, and let us collaboratively improve our toolbox!
+
+.. code-block:: bibtex
+
+   @article{lefort2024,
+      author = {Lefort, Tanguy and Charlier, Benjamin and Joly, Alexis and Salmon, Joseph},
+      publisher = {French Statistical Society},
+      title = {Peerannot: Classification for Crowdsourced Image Datasets with {Python}},
+      journal = {Computo},
+      date = {2024-04-04},
+      url = {https://computo.sfds.asso.fr/published-202402-lefort-peerannot/},
+   }
+
+
 .. |Python 3.8+| image:: https://img.shields.io/badge/python-3.8%2B-blue
    :target: https://www.python.org/downloads/release/python-360/
 .. |PyPI version| image:: https://badge.fury.io/py/peerannot.svg
