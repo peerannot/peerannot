@@ -19,7 +19,7 @@ def test_mv():
     from peerannot.models import MV
 
     for sparse_ in sparse:
-        mv = MV(ANSWERS, n_classses=2, sparse=sparse_)
+        mv = MV(ANSWERS, n_classes=2, sparse=sparse_)
         y = mv.get_answers()
         expected = np.array([1, 0, 1])
         assert all([e == y_ for e, y_ in zip(expected, y)])
@@ -55,11 +55,27 @@ def test_wawa():
 
     sparse = [True, False]
     for sparse_ in sparse:
-        wawa = Wawa(ANSWERS, n_classses=2, n_workers=4, sparse=sparse_)
+        wawa = Wawa(ANSWERS, n_classes=2, n_workers=4, sparse=sparse_)
         wawa.run()
         y = wawa.get_answers()
         expected = np.array([1, 0, 1])
         assert np.isclose((wawa.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(), 0)
+        assert all([e == y_ for e, y_ in zip(expected, y)])
+        # assert True == False
+
+
+def test_IWMV():
+    from peerannot.models import IWMV
+
+    sparse = [True, False]
+    for sparse_ in sparse:
+        wawa_it = IWMV(ANSWERS, n_classes=2, n_workers=4, sparse=sparse_)
+        wawa_it.run(10)
+        y = wawa_it.get_answers()
+        expected = np.array([1, 0, 1])
+        assert np.isclose(
+            (wawa_it.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(), 0
+        )
         assert all([e == y_ for e, y_ in zip(expected, y)])
 
 
@@ -68,7 +84,7 @@ def test_twothird():
 
     sparse = [True, False]
     for sparse_ in sparse:
-        two = TwoThird(ANSWERS, n_classses=2, n_workers=4, sparse=sparse_)
+        two = TwoThird(ANSWERS, n_classes=2, n_workers=4, sparse=sparse_)
         y = two.get_answers()
         expected = np.array([1, 0, 1])
         assert all([e == y_ for e, y_ in zip(expected, y)])
