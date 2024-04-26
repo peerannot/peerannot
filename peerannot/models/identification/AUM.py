@@ -6,7 +6,9 @@ AUM (Pleiss et. al, 2020)
 Measures the AUM per task given the ground truth label.
 
 Using:
+
 - Margin estimation
+
 - Trust score per task
 """
 
@@ -148,9 +150,7 @@ class AUM:
                     probs.gather(1, labels.view(-1, 1)).squeeze().tolist()
                 )
                 # (s\y)[1] and (P\y)[1]
-                masked_logits = torch.scatter(
-                    out, 1, labels.view(-1, 1), float("-inf")
-                )
+                masked_logits = torch.scatter(out, 1, labels.view(-1, 1), float("-inf"))
                 masked_probs = torch.scatter(
                     probs, 1, labels.view(-1, 1), float("-inf")
                 )
@@ -165,12 +165,8 @@ class AUM:
                 if len(other_logit_values) > 1:
                     other_logit_values = other_logit_values.squeeze()
                     other_prob_values = other_prob_values.squeeze()
-                AUM_recorder["other_max_logit"].extend(
-                    other_logit_values.tolist()
-                )
-                AUM_recorder["other_max_prob"].extend(
-                    other_prob_values.tolist()
-                )
+                AUM_recorder["other_max_logit"].extend(other_logit_values.tolist())
+                AUM_recorder["other_max_prob"].extend(other_prob_values.tolist())
 
                 # s[2] ans P[2]
                 second_logit = torch.sort(out, axis=1)[0][:, -(self.topk + 1)]
@@ -227,9 +223,7 @@ class AUM:
         self.aums = pd.DataFrame(tasks)
 
     def cut_lowests(self, alpha=0.01):
-        quantile = np.nanquantile(
-            list(self.aums["AUM_pleiss"].to_numpy()), alpha
-        )
+        quantile = np.nanquantile(list(self.aums["AUM_pleiss"].to_numpy()), alpha)
         if self.use_pleiss:
             too_hard = self.aums[self.aums["AUM_pleiss"] <= quantile]
         else:

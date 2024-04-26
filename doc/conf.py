@@ -21,7 +21,7 @@ import sys
 from datetime import datetime
 
 curdir = os.path.dirname(__file__)
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("../.."))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -43,6 +43,7 @@ extensions = [
     "numpydoc",
     "sphinx_design",
     "sphinx_copybutton",
+    "sphinx_click",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -92,7 +93,7 @@ todo_include_todos = False
 
 # generate autosummary even if no references
 autosummary_generate = True
-
+imported_members = True
 # remove warnings: "toctree contains reference to nonexisting document"
 numpydoc_show_class_members = False
 
@@ -199,7 +200,7 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org", None),
 }
 intersphinx_timeout = 5
-
+add_module_names = False
 # -- Options for copybutton ---------------------------------------------
 # complete explanation of the regex expression can be found here
 # https://sphinx-copybutton.readthedocs.io/en/latest/ \

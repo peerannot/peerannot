@@ -19,8 +19,8 @@ Start here to get up and running
 
    get_started
 
-Tutorials
-============
+Tutorials and additional examples
+=====================================
 
 Want to dive deeper into the library? Check out the tutorials
 You will find ressources to add your own datasets, strategy, and run your first label aggregations.
@@ -30,6 +30,38 @@ You will find ressources to add your own datasets, strategy, and run your first 
 
     tutorials/index
 
+* More examples can be found in the `published paper in Computo Journal <https://computo.sfds.asso.fr/published-202402-lefort-peerannot/>`_
+
+
+API and CLI Reference
+=====================
+
+Want to deep dive into the library?
+In addition to the tutorials, you can find the full API and CLI reference here.
+
+.. grid:: 2
+
+   .. grid-item-card:: **API Reference**
+      :link: interface_api
+      :link-type: ref
+
+      :octicon:`book` **Run peerannot from a python script**
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+   .. grid-item-card:: **CLI Reference**
+      :link: interface_cli
+      :link-type: ref
+
+      :octicon:`terminal` **Run peerannot from your terminal**
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :includehidden:
+
+   interface_api/index
+   interface_cli/index
 
 .. |Python 3.8+| image:: https://img.shields.io/badge/python-3.8%2B-blue
    :target: https://www.python.org/downloads/release/python-360/

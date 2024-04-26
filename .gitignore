@@ -216,3 +216,5 @@ datasets/krippendorff-data/outputs/
 datasets/bird_audio/bird_sound_training_data/
 
 doc/_build/
+
+doc/interface_api/generated/

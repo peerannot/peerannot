@@ -42,6 +42,7 @@ clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf auto_examples/
 	rm -rf generated/*
+	rm -rf interface_api/generated/
 
 
 html-noplot:
