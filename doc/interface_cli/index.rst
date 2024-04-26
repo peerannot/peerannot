@@ -13,3 +13,4 @@ Here are the relevant CLI commands and their options for the ``peerannot`` libra
     cli_aggregate_deep
     cli_identify
     cli_simulate
+    cli_train

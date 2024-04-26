@@ -15,6 +15,12 @@ The identification has three levels of exploration:
 * per worker: measure the reliability of the worker
 * per task: measure the reliability of the taks
 
+All strategies are available running:
+
+.. prompt:: bash
+
+    peerannot identificationinfo
+
 Dataset exploration
 ~~~~~~~~~~~~~~~~~~~~~~
 

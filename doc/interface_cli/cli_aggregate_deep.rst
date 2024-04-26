@@ -3,6 +3,10 @@
 CLI aggregate_deep
 ====================
 
+.. prompt:: bash
+
+    peerannot aggregate-deep --help
+
 .. click:: peerannot.runners.run:aggregate_deep
     :prog: peerannot
     :nested: full

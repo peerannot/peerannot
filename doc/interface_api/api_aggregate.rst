@@ -14,6 +14,12 @@ This aggregated label can be either a probability distribution (soft label) or a
 
 All strategies are located at `this direction on GitHub <https://github.com/peerannot/peerannot/tree/main/peerannot/models/aggregation>`.
 
+All aggregation-based strategies are available running:
+
+.. prompt:: bash
+
+    peerannot agginfo
+
 .. autosummary::
    :recursive:
    :toctree: generated/

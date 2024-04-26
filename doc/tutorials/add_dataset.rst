@@ -3,10 +3,10 @@
 Add a dataset to peerannot
 =====================================
 
-This tutorial shows how to add a new dataset in peerannot.
+This tutorial shows how to add a new dataset in ``peerannot``.
 
 .. Hint::
-    If not yet done, please go to :ref:`get started page <get_started>` to install the peerannot library.
+    If not yet done, please go to :ref:`get started page <get_started>` to install the ``peerannot`` library.
 
 
 What is a dataset?
