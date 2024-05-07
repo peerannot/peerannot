@@ -1,17 +1,23 @@
-"""
-=========================
-Majority voting
-=========================
-Most answered label per task
-"""
 from ..template import CrowdModel
 import numpy as np
 from tqdm.auto import tqdm
 
 
 class MV(CrowdModel):
+    """
+    =========================
+    Majority voting
+    =========================
+    Most answered label per task
+    """
+
     def __init__(self, answers, n_classes=2, sparse=False, **kwargs):
         """Majority voting strategy: most answered label
+
+        .. math::
+
+            \mathrm{MV}(i, \mathcal{D}) = \\underset{k\in[K]}{\mathrm{argmax}} \sum_{j\in\mathcal{A}(x_i)}\mathbf{1}(y_i^{(j)} = k)
+
 
         :param answers: Dictionary of workers answers with format
         .. code-block:: javascript
@@ -22,6 +28,8 @@ class MV(CrowdModel):
             }
 
         :type answers: dict
+        :param sparse: If the number of workers/tasks/label is large (:math:`>10^{6}` for at least one), use sparse=True to run per task
+        :type sparse: bool, optional
         :param n_classes: Number of possible classes, defaults to 2
         :type n_classes: int, optional
         """

@@ -209,3 +209,11 @@ copybutton_prompt_text = (
     r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "  # noqa
 )
 copybutton_prompt_is_regexp = True
+
+autodoc_default_options = {
+    "members": "var1, var2",
+    "member-order": "bysource",
+    "special-members": "__init__",
+    "undoc-members": True,
+    "exclude-members": "__weakref__",
+}

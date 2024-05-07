@@ -1,15 +1,21 @@
-"""
-===================================
-Naive soft: Frequency distribution
-===================================
-"""
 from ..template import CrowdModel
 import numpy as np
 
 
 class NaiveSoft(CrowdModel):
+    """
+    ===================================
+    Naive soft: Frequency distribution
+    ===================================
+    """
+
     def __init__(self, answers, n_classes=2, **kwargs):
         """Naive soft: Frequency distribution of labels
+
+        .. math::
+
+            \mathrm{NaiveSoft}(i, \mathcal{D}) = \\left(\sum_{j\in\mathcal{A}(x_i)}\mathbf{1}(y_i^{(j)} = k)\\right)_{k\in[K]}
+
 
         :param answers: Dictionary of workers answers with format
         .. code-block:: javascript
