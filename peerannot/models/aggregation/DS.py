@@ -38,7 +38,8 @@ class Dawid_Skene(CrowdModel):
         where :math:`\\rho` is the class marginals, :math:`\\pi` is the confusion matrix and :math:`T` is the indicator variables of belonging to each class.
 
         :param answers: Dictionary of workers answers with format
-        .. code-block:: javascript
+
+         .. code-block:: javascript
 
             {
                 task0: {worker0: label, worker1: label},

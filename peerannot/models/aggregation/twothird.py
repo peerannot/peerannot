@@ -22,7 +22,8 @@ class TwoThird(CrowdModel):
             \\text{undefined} & \\text{otherwise} \\end{cases}
 
         :param answers: Dictionary of workers answers with format
-        .. code-block:: javascript
+
+         .. code-block:: javascript
 
             {
                 task0: {worker0: label, worker1: label},
@@ -35,6 +36,7 @@ class TwoThird(CrowdModel):
         :param sparse: If the number of workers/tasks/label is large (:math:`>10^{6}` for at least one), use sparse=True to run per task
         :type sparse: bool, optional
         """
+
         super().__init__(answers)
         self.n_classes = n_classes
         self.sparse = sparse

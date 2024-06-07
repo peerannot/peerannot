@@ -18,9 +18,9 @@ class MV(CrowdModel):
 
             \mathrm{MV}(i, \mathcal{D}) = \\underset{k\in[K]}{\mathrm{argmax}} \sum_{j\in\mathcal{A}(x_i)}\mathbf{1}(y_i^{(j)} = k)
 
-
         :param answers: Dictionary of workers answers with format
-        .. code-block:: javascript
+
+         .. code-block:: javascript
 
             {
                 task0: {worker0: label, worker1: label},

@@ -1,15 +1,37 @@
-"""
-===============================================================
-WDS: Weighted Naive Soft Distribution from Dawid and Skene
-===============================================================
-"""
 from ..template import CrowdModel
 import numpy as np
 from peerannot.models.aggregation.DS import Dawid_Skene
 
 
 class WDS(CrowdModel):
+    """
+    ===============================================================
+    WDS: Weighted Distribution from Dawid and Skene
+    ===============================================================
+
+    Use the diagonal of the confusion matrix from DS model to weight the label frequency for each worker.
+    """
+
     def __init__(self, answers, n_classes=2, **kwargs):
+        """Weighted Majority Vote from DS confusion matrices diagonal.
+
+        .. math::
+
+            \\mathrm{WDS}(i, \\mathcal{D}) = \\underset{k\in[K]}{\mathrm{argmax}} \\sum_{j\in\mathcal{A}(x_i)}\\pi_{k,k}^{(j)}\\mathbf{1}(y_i^{(j)} = k)
+
+        :param answers: Dictionary of workers answers with format
+
+         .. code-block:: javascript
+
+            {
+                task0: {worker0: label, worker1: label},
+                task1: {worker1: label}
+            }
+
+        :type answers: dict
+        :param n_classes: Number of possible classes, defaults to 2
+        :type n_classes: int, optional
+        """
         super().__init__(answers)
         self.n_classes = n_classes
         self.n_workers = kwargs["n_workers"]
@@ -24,9 +46,8 @@ class WDS(CrowdModel):
             self.answers = self.answers_modif
 
     def run(self):
-        ds = Dawid_Skene(
-            self.answers, self.n_classes, n_workers=self.n_workers
-        )
+        """Run DS model to get confusion matrices"""
+        ds = Dawid_Skene(self.answers, self.n_classes, n_workers=self.n_workers)
         ds.run()
         self.pi = ds.pi
         self.ds = ds

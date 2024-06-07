@@ -1,18 +1,3 @@
-"""
-=============================
-GLAD (Whitehill et. al 2009)
-=============================
-
-Each worker ability is modeled using one scalar.
-Each task has a difficulty level represented as a positive scalar.
-Knowing these coefficients, the probability to have the right answer is a sigmoid of their product.
-
-Assumption:
-- The errors are uniform over classes
-
-Using:
-- One scalar per task and worker (task difficulty and worker ability)
-"""
 # Adapted from https://github.com/notani/python-glad
 
 from ..template import CrowdModel
@@ -47,27 +32,56 @@ def logsigmoid(x):
 
 
 class GLAD(CrowdModel):
+    """
+    =============================
+    GLAD (Whitehill et. al 2009)
+    =============================
+
+    Each worker ability is modeled using one scalar.
+    Each task has a difficulty level represented as a positive scalar.
+    Knowing these coefficients, the probability to have the right answer is a sigmoid of their product.
+
+    Assumption:
+    - The errors are uniform over classes
+
+    Using:
+    - One scalar per task and worker (task difficulty and worker ability)
+    """
+
     def __init__(
         self,
         answers,
         n_classes,
         **kwargs,
     ):
-        """Aggregate labels with a bilinear trust score using a scalar per task indicating the difficulty and a scalar per worker indicating the worker ability
+        """The probability of a worker to give the right answer is a sigmoid (denoted :math:`\\mathrm{sig}`) of the product of the worker ability :math:`\\alpha_j` and the task difficulty :math:`\\beta_i`. Given a label :math:`k\\in [K]`,
+
+        .. math::
+
+            \\mathbb{P}(y_i^{(j)}=k |y_i^\\star=k, \\alpha_j,\\beta_i) = \\mathrm{sig}(\\alpha_j\\beta_i) = \\frac{1}{1+e^{-\\alpha_j\\beta_i}} \\enspace.
+
+        And the following likelihood is maximized:
+
+        .. math::
+
+            \\prod_{i\\in[n_\\text{task}]} \\prod_{k\\in[K]}\\mathbb{P}(y_i^\\star=k)\\prod_{j\\in [n_\\text{worker}]} \\left(\\frac{1}{K-1}\\left(1-\\mathrm{sig}(\\alpha_j\\beta_i)\\right)\\right)^{1-\\mathbf{1}_{\\{y_i^{(j)}=k\\}}}\\mathrm{sig}(\\alpha_j\\beta_i)^{\\mathbf{1}_{\\{y_i^{(j)}=k\\}}} \\enspace.
 
         :param answers: Dictionary of workers answers with format
-         .. code-block:: javascript
+
+          .. code-block:: javascript
 
              {
                  task0: {worker0: label, worker1: label},
                  task1: {worker1: label}
              }
-         :type answers: dict
-         :param n_classes: Number of possible classes
-         :type n_classes: int
-         :param dataset: path to where model estimated parameters are stores Defaults to the current directory
-         :type dataset: path
+
+        :type answers: dict
+        :param n_classes: Number of possible classes
+        :type n_classes: int
+        :param dataset: path to where model estimated parameters are stores Defaults to the current directory
+        :type dataset: path
         """
+
         super().__init__(answers)
         self.n_classes = n_classes
         self.n_workers = kwargs["n_workers"]
@@ -99,7 +113,6 @@ class GLAD(CrowdModel):
 
     def EM(self, epsilon, maxiter):
         """Infer true labels, tasks' difficulty and workers' ability"""
-        # Initialize parameters to starting values
         print("- Running EM")
         self.alpha = self.priorAlpha.copy()
         self.beta = self.priorBeta.copy()
@@ -122,10 +135,9 @@ class GLAD(CrowdModel):
         else:
             pbar.set_description("Finished")
         pbar.close()
-        # if abs((Q - lastQ) / lastQ) > epsilon:
-        #     print(f"GLAD did not converge: err={abs((Q - lastQ) / lastQ)}")
 
     def calcLogProbL(self, item, *args):
+        """Compute the log probability of a label given the task and worker parameters"""
         j = int(item[0])
         delta = args[0][j]
         # print(delta)
@@ -134,8 +146,7 @@ class GLAD(CrowdModel):
         exponents = item[1:]
         correct = logsigmoid(exponents[delta]).sum()
         wrong = (
-            logsigmoid(-exponents[oneMinusDelta])
-            - np.log(float(self.n_classes - 1))
+            logsigmoid(-exponents[oneMinusDelta]) - np.log(float(self.n_classes - 1))
         ).sum()
         return correct + wrong
 
@@ -167,12 +178,8 @@ class GLAD(CrowdModel):
         self.beta = x[self.n_workers :].copy()
 
     def getBoundsX(self, alpha=(-100, 100), beta=(-100, 100)):
-        alpha_bounds = np.array(
-            [[alpha[0], alpha[1]] for i in range(self.n_workers)]
-        )
-        beta_bounds = np.array(
-            [[beta[0], beta[1]] for i in range(self.n_workers)]
-        )
+        alpha_bounds = np.array([[alpha[0], alpha[1]] for i in range(self.n_workers)])
+        beta_bounds = np.array([[beta[0], beta[1]] for i in range(self.n_workers)])
         return np.r_[alpha_bounds, beta_bounds]
 
     def f(self, x):
@@ -187,6 +194,7 @@ class GLAD(CrowdModel):
         return np.r_[-dQdAlpha, -dQdBeta]
 
     def MStep(self):
+        """Maximization step"""
         initial_params = self.packX()
         params = sp.optimize.minimize(
             fun=self.f,
@@ -224,6 +232,7 @@ class GLAD(CrowdModel):
         return Q
 
     def dAlpha(self, item, *args):
+        """Compute the derivative of the objective function with respect to the worker ability"""
         i = int(item[0])
         sigma_ab = item[1:]
         delta = args[0][:, i]
@@ -232,9 +241,7 @@ class GLAD(CrowdModel):
 
         probZ = args[2]
 
-        correct = (
-            probZ[delta] * np.exp(self.beta[delta]) * (1 - sigma_ab[delta])
-        )
+        correct = probZ[delta] * np.exp(self.beta[delta]) * (1 - sigma_ab[delta])
         wrong = (
             probZ[oneMinusDelta]
             * np.exp(self.beta[oneMinusDelta])
@@ -245,6 +252,7 @@ class GLAD(CrowdModel):
         return correct.sum() + wrong.sum()
 
     def dBeta(self, item, *args):
+        """Compute the derivative of the objective function with respect to the task difficulty"""
         j = int(item[0])
         sigma_ab = item[1:]
         delta = args[0][j]
@@ -326,6 +334,11 @@ class GLAD(CrowdModel):
         )
 
     def save_difficulty(self, path):
+        """Save  task difficulty coefficients
+
+        :param path: path folder
+        :type path: str
+        """
         path_diff = Path(path, exist_ok=True).resolve() / "difficulties.npy"
         difficulties = []
         for tt in self.answers.keys():
@@ -335,6 +348,11 @@ class GLAD(CrowdModel):
         print(f"Task difficulty coefficients saved at {path_diff}")
 
     def save_ability(self, path):
+        """Save  worker ability coefficients
+
+        :param path: path folder
+        :type path: str
+        """
         path_ab = Path(path, exist_ok=True).resolve() / "abilities.npy"
         abilities = []
         for tt in range(self.n_workers):
