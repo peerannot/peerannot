@@ -16,10 +16,10 @@ datasets = click.Group(
     help="Install dataset from `.py` file",
     epilog="""Each dataset is a folder with:
 
-    \b
-- name.py: python file containing how to download and format data
-- answers.json: json file containing each task voted labels
-- metadata.json: all metadata for dataset, at least the name, n_task and n_classes""",
+\b
+- ``name.py``: python file containing how to download and format data
+- ``answers.json``: json file containing each task voted labels
+- ``metadata.json``: all metadata for dataset, at least the name, n_task and n_classes""",
 )
 @click.argument(
     "path",

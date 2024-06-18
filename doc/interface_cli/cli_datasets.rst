@@ -14,7 +14,7 @@ For either case, a Python file describing the installation will be needed.
 Example datasets
 ----------------
 
-To install an example dataset, only the installation file is needed. For example
+To install an example library, only the installation file is needed. For example
 want to install the ``cifar10H`` library, run:
 
 .. prompt:: bash
@@ -38,7 +38,8 @@ If your dataset has no task, then you can add the ``no-task`` flag with the ``an
 
 .. prompt:: bash
 
-    cd datasets/MyDataset & peerannot install ../customDataset.py --no-task --answers answersFile.json --answers-format 1
+    cd datasets/MyDataset & peerannot install ../customDataset.py --no-task \\
+    --answers answersFile.json --answers-format 1
 
 Dataset with tasks
 ^^^^^^^^^^^^^^^^^^
@@ -63,19 +64,27 @@ Creation of a dataset with no task:
 
 .. prompt:: bash
 
-    peerannot install datasets/customDataset.py --answers-format 2 --answers PATH_TO_ANSWERS_FILE/answers.json --no-task
+    peerannot install datasets/customDataset.py --answers-format 2 \\
+    --answers PATH_TO_ANSWERS_FILE/answers.json --no-task
 
 Creation of a dataset with a train, val and test set:
 
 .. prompt:: bash
 
-    peerannot install datasets/customDataset.py --train-path PATH_TO_TRAIN_DIR --test-path PATH_TO_TEST_DIR --val-path PATH_TO_VAL_DIR --answers PATH_TO_ANSWERS_FILE/answers.txt --files-path PATH_TO_FILENAMES_FILE/filenames.txt --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
+    peerannot install datasets/customDataset.py --train-path PATH_TO_TRAIN_DIR \\
+    --test-path PATH_TO_TEST_DIR --val-path PATH_TO_VAL_DIR \\
+    --answers PATH_TO_ANSWERS_FILE/answers.txt \\
+    --files-path PATH_TO_FILENAMES_FILE/filenames.txt \\
+    --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
 
 Creation of a dataset with only a train set:
     
 .. prompt:: bash
 
-    peerannot install datasets/customDataset.py --train-path PATH_TO_TRAIN_DIR --answers-format 1 --files-path PATH_TO_FILENAME_FILE/filenames.txt --answers PATH_TO_ANSWERS_FILE/answers.json --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
+    peerannot install datasets/customDataset.py --train-path PATH_TO_TRAIN_DIR \\
+    --answers-format 1 --files-path PATH_TO_FILENAME_FILE/filenames.txt \\
+    --answers PATH_TO_ANSWERS_FILE/answers.json \\
+    --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
 
 The help documentation is available in the terminal from:
 
