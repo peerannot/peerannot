@@ -1,9 +1,3 @@
-"""
-===================================
-PlantNet consensus
-===================================
-"""
-
 from ..template import CrowdModel
 import numpy as np
 import warnings
@@ -16,6 +10,14 @@ THETAACC = 0.7
 
 
 class PlantNet(CrowdModel):
+    """
+    ===================================
+    PlantNet aggregation strategy
+    ===================================
+
+    Weighted majority vote based on the number of identified classes (species) per worker. Each task if either valid (:math:`s_i=1` or not) if the confidence and accuracy in the estimated label are above the set thresholds.
+    """
+
     def __init__(
         self,
         answers,
@@ -30,10 +32,11 @@ class PlantNet(CrowdModel):
         threshold_scores=None,  # threshold for scores
         **kwargs,
     ):
-        """Two Third agreement: accept label reaching two third consensus
+        """Compute a weighted majority vote based on the number of identified classes (species) per worker
 
         :param answers: Dictionary of workers answers with format
-        .. code-block:: javascript
+
+         .. code-block:: javascript
 
             {
                 task0: {worker0: label, worker1: label},
@@ -41,10 +44,31 @@ class PlantNet(CrowdModel):
             }
 
         :type answers: dict
-        :param n_classes: Number of possible classes, defaults to 2
-        :type n_classes: int, optional
-        :param AI: AI mode, defaults to "ignored" in (ignored, worker, fixed, invalidating or confident)
+        :param n_classes: Number of possible classes (should be high)
+        :type n_classes: int
+        :param AI: How to consider entries with `worker=AI` in the dictionnary of answers, defaults to "ignored". Several options are available:
+
+            - ignored: ignore the AI labels
+            - worker: consider the AI as a worker
+            - fixed: consider the AI as a worker with a fixed weight=`AIweight`
+            - invalidating: consider the AI as a worker with a weight=`AIweight` that can only invalidate the tasks
+            - confident: consider the AI as a worker with a weight=`AIweight` if the predicted score is above the threshold `threshold_scores`
+
         :type AI: str, optional
+        :param parrots: How to deal with parrot answers, defaults to "ignored" (not implemented yet)
+        :type parrots: str, optional
+        :param alpha: Value of :math:`\\alpha` parameter in weight function, defaults to 1
+        :type alpha: float, optional
+        :param beta: Value of :math:`\\beta` parameter in weight function, defaults to 1
+        :type beta: float, optional
+        :param AIweight: Weight of the AI if not ignored, defaults to 1
+        :type AIweight: float, optional
+        :param authors: Path to txt file containing authors id for each task
+        :type authors: str, optional
+        :param scores: Path to json file containing AI prediction scores for each task
+        :type scores: str, optional
+        :param threshold_scores: Threshold for AI prediction scores if AI strategy is set to `confident`
+        :type threshold_scores: float between 0 and 1, optional
         """
         self.AI = AI
         super().__init__(answers)
@@ -127,13 +151,30 @@ class PlantNet(CrowdModel):
         return self.get_answers()
 
     def get_wmv(self, weights):
+        """Compute weighted majority vote
+
+        :param weights: Weights of each worker
+        :type weights: np.ndarray of size n_workers
+        :return: Most weighted labels
+        :rtype: np.ndarray of size n_task
+        """
+
         def calculate_init():
+            """WMV by task"""
             init = np.zeros(self.n_classes)
             for worker, label in self.answers[i].items():
                 init[label] += weights[int(worker)]
             return init
 
         def calculate_yhat(i):
+            """Run WMV by task and add AI vote depending on the strategy
+
+            :param i: Task index
+            :type i: int
+            :return: Most weighted label
+            :rtype: int
+            """
+
             init = calculate_init()
             if (
                 self.AI == "fixed"
@@ -148,7 +189,30 @@ class PlantNet(CrowdModel):
         return yhat
 
     def get_conf_acc(self, yhat, weights):
+        """Compute confidence and accuracy scores for each task
+
+        :param yhat: Estimated labels
+        :type yhat: np.ndarray of size n_task
+        :param weights: Weights of each worker
+        :type weights: np.ndarray of size n_workers
+        """
+
         def calculate_conf_acc(i):
+            """Compute confidence and accuracy scores
+
+            .. math::
+
+                \\mathrm{conf}_i(\\hat y_i) = \\sum_{j\\in \\mathcal{A}(x_i)} w_j \\mathbf{1}(y_i^{(j)}=\\hat y_i)
+
+            .. math::
+
+                \\mathrm{acc}_i(\\hat y_i) = \\mathrm{conf}_i(\\hat y_i) / \\sum_{k\\in [K]} \\mathrm{conf}_i(k)
+
+            :param i: task index
+            :type i: int
+            :return: (acc, conf) scores
+            :rtype: tuple of float
+            """
             sum_weights = 0
             conf = 0
             for worker, label in self.answers[i].items():
@@ -174,15 +238,39 @@ class PlantNet(CrowdModel):
         return acc, conf
 
     def get_valid_tasks(self, acc, conf):
+        """Compute mask for valid observations (:math:`s_i=1`):
+
+        .. math::
+
+            s_i=1 \\text{ if } \\mathrm{conf}_i > \\theta_{\\text{conf}} \\text{ and } \\mathrm{acc}_i > \\theta_{\\text{acc}}
+
+        """
         valid = np.zeros(self.n_task)
         mask = np.where((conf > THETACONF) & (acc > THETAACC), True, False)
         valid[mask] = 1
         return valid
 
     def get_weights(self):
+        """Compute weight transformation
+
+        :return: Weight of each worker:
+
+         .. math::
+
+            w_j = \\alpha^{n_j} - \\beta^{n_j} + \\log(2.1)
+
+        :rtype: np.ndarray of size n_workers
+        """
         return self.n_j**self.alpha - self.n_j**self.beta + np.log(2.1)
 
     def get_n(self, valid, yhat):
+        """Compute the number of identified classes
+
+        :param valid: Indicator of valid tasks
+        :type valid: np.ndarray of size n_task
+        :param yhat: Estimated labels
+        :type yhat: np.ndarray of size n_task
+        """
         taxa_obs = np.zeros(self.n_workers)
         taxa_votes = np.zeros(self.n_workers)
         dico_labs_workers = {k: {} for k in range(self.n_workers)}
@@ -210,6 +298,13 @@ class PlantNet(CrowdModel):
         )
 
     def run(self, maxiter=100, epsilon=1e-5):  # epsilon = diff in weights
+        """Run the PlantNet aggregation algorithm
+
+        :param maxiter: Maximum number of iterations in the EM, defaults to 100 (at least 5)
+        :type maxiter: int, optional
+        :param epsilon: Stopping criterion if weights are not updated anymore, defaults to 1e-5
+        :type epsilon: float, optional
+        """
         self.n_task = len(self.answers)
         valid = np.ones(self.n_task)
         weights = np.log(2.1) * np.ones(self.n_workers)
@@ -251,6 +346,7 @@ class PlantNet(CrowdModel):
         return np.vectorize(self.converter.inv_labels.get)(np.array(ans))
 
     def get_probas(self):
+        """Not available for this strategy, default to `get_answers()`"""
         warnings.warn(
             """
             PlantNet agreement only returns hard labels.
