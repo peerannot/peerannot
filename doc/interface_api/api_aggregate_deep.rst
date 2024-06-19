@@ -33,3 +33,4 @@ All strategies are located at `this direction on GitHub <https://github.com/peer
    CoNAL.CoNAL
    Crowdlayer.Crowdlayer
 
+For more specifications on the architectures and blocks of the networks, please visit `the strategy file documentation on GitHub <https://github.com/peerannot/peerannot/tree/main/peerannot/models/agg_deep>`.

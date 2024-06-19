@@ -1,17 +1,3 @@
-"""
-===================================
-Crowdlayer (Rodrigues et. al 2018)
-===================================
-
-End-to-end learning strategy with multiple votes per task
-
-Using:
-- Crowd layer added to network
-
-Code:
-- Tensorflow original code available at https://github.com/fmpr/CrowdLayer
-- Code adaptated in Python
-"""
 import torch
 from torch import nn
 import numpy as np
@@ -64,29 +50,58 @@ class DatasetWithIndexAndWorker(Dataset):
 
 
 class Crowdlayer_net(nn.Module):
+    """
+    =====================================================
+    Neural network classifier architecture for CrowdLayer
+    =====================================================
+    """
+
     def __init__(
         self,
         n_class,
         n_annotator,
         classifier,
     ):
+        """Architecture for the CrowdLayer network
+
+        :param n_class: Number of classes
+        :type n_class: int
+        :param n_annotator: Number of workers
+        :type n_annotator: int
+        :param classifier: Neural network classifier backbone
+        :type classifier: nn.Module
+        """
         super().__init__()
 
         self.classifier = classifier
         self.n_worker = n_annotator
         self.n_classes = n_class
         self.workers = [torch.eye(n_class) for _ in range(self.n_worker)]
-        self.confusion = nn.Parameter(
-            torch.stack(self.workers), requires_grad=True
-        )
+        self.confusion = nn.Parameter(torch.stack(self.workers), requires_grad=True)
 
     def forward(self, x):
+        """Computes the backbone prediction and multiplies it with local confusion weights."""
         z_pred = self.classifier(x).softmax(1)
         ann_pred = torch.einsum("ik,jkl->ijl", z_pred, self.confusion)
         return ann_pred
 
 
 class Crowdlayer(CrowdModel):
+    """
+    ===================================
+    Crowdlayer (Rodrigues et. al 2018)
+    ===================================
+
+    End-to-end learning strategy with multiple votes per task
+
+    Using:
+    - Crowd layer added to network
+
+    Code:
+    - Tensorflow original code available at https://github.com/fmpr/CrowdLayer
+    - Code adaptated in Python
+    """
+
     def __init__(
         self,
         tasks_path,
@@ -101,6 +116,53 @@ class Crowdlayer(CrowdModel):
         output_name="crowdlayer",
         **kwargs,
     ):
+        """CrowdLayer deep learning strategy.
+        Learn a classifier with crowdsourced labels by modeling worker-specific confusions.
+
+        During training, given the classifier :math:`\\mathcal{C}` with output scores :math:`z_i`, local confusions :math:`\\pi^{(j)}`,  the model computes the following:
+
+        .. math::
+
+            h_i^{(j)} = \\sigma((\\pi^{(j)})\sigma (z_i )),
+
+        The final loss is the crossentropy between the worker-specific prediction and the given label.
+
+        .. math::
+
+            \\mathcal{L} = \\frac{1}{n_{\\texttt{task}}}\\sum_{i=1}^{n_{\\texttt{task}}}\\sum_{j\\in\\mathcal{A}(x_i)} \\mathrm{CE}(h_i^{(j)}, y_i^{(j)}).
+
+        :param tasks_path: Path to images to train from
+        :type tasks_path: path
+        :param answers: Path to answers (json format)
+
+          .. code-block:: javascript
+
+            {
+                task0: {worker0: label, worker1: label},
+                task1: {worker1: label}
+            }
+
+        :type answers: path
+        :param model: Backbone classifier architecture: should be from `torchvision.models`
+        :type model: string
+        :param n_classes: Number of classes
+        :type n_classes: int
+        :param optimizer: Pytorch optimizer name (either sgd or Adam)
+        :type optimizer: string
+        :param n_epochs: Number of training epochs
+        :type n_epochs: int
+        :param scale: Regularization parameter in the loss, defaults to 1e-5 (Regularization not implemented yet)
+        :type scale: float
+        :param verbose: Verbosity level, defaults to True
+        :type verbose: bool, optional
+        :param pretrained: Use the pretrained version of the backbone classifier, defaults to False
+        :type pretrained: bool, optional
+        :param output_name: Generated file prefix, defaults to "conal"
+        :type output_name: str, optional
+
+        The batch size, learning rate, scheduler and milestones can be specified as keyword arguments.
+        Visit the `computo paper <https://computo.sfds.asso.fr/published-202402-lefort-peerannot/>`__ or the tutorial for examples.
+        """
         from peerannot.runners.train import (
             get_model,
             get_optimizer,
@@ -151,9 +213,7 @@ class Crowdlayer(CrowdModel):
         self.optimizer, self.scheduler = get_optimizer(
             self.crowdlayer_net.classifier, optimizer, **kwargs
         )
-        kwargs[
-            "use_parameters"
-        ] = False  # disable parameters for the optimizer
+        kwargs["use_parameters"] = False  # disable parameters for the optimizer
         self.optimizer2, self.scheduler2 = get_optimizer(
             self.crowdlayer_net.confusion, optimizer, **kwargs
         )
@@ -161,6 +221,7 @@ class Crowdlayer(CrowdModel):
         self.setup(**kwargs)
 
     def setup(self, **kwargs):
+        """Create training, validation and test dataloaders from the dataset."""
         # get correct training labels
         targets, ll = [], []
         print(len(self.answers), len(self.trainset.samples))
@@ -192,6 +253,13 @@ class Crowdlayer(CrowdModel):
         print(f"Validation set: {len(self.valloader.dataset)} tasks")
 
     def run(self, **kwargs):
+        """Train the CrowdLayer model and evaluate on the test set.
+
+        Uses a gpu by default is `torch.cuda.is_available() is True`.
+
+        Results are stored in `<tasks_path>/results/<output_name>.json` and the best model in `<tasks_path>/best_models/<output_name>.pth`. Results contain the train, validation and test loss as well as the validation and test accuracy.
+        """
+
         from peerannot.runners.train import evaluate
 
         print(f"Running on {DEVICE}")
@@ -254,9 +322,7 @@ class Crowdlayer(CrowdModel):
 
         # load and test self.conal_net
         checkpoint = torch.load(path_best / f"{self.output_name}.pth")
-        self.crowdlayer_net.classifier.load_state_dict(
-            checkpoint["classifier"]
-        )
+        self.crowdlayer_net.classifier.load_state_dict(checkpoint["classifier"])
         logger = evaluate(
             self.crowdlayer_net.classifier,
             self.testloader,
@@ -275,17 +341,14 @@ class Crowdlayer(CrowdModel):
                 vprint = v
             print(f"- {k}: {vprint}")
         (self.tasks_path / "results").mkdir(parents=True, exist_ok=True)
-        with open(
-            self.tasks_path / "results" / f"{self.output_name}.json", "w"
-        ) as f:
+        with open(self.tasks_path / "results" / f"{self.output_name}.json", "w") as f:
             json.dump(logger, f, indent=3, ensure_ascii=False)
         print(
             f"Results stored in {self.tasks_path / 'results' / f'{self.output_name}.json'}"
         )
 
-    def run_epoch(
-        self, model, trainloader, criterion, optimizer, optimizer2, logger
-    ):
+    def run_epoch(self, model, trainloader, criterion, optimizer, optimizer2, logger):
+        """Run one epoch and monitor metrics"""
         model.train()
         total_loss = 0.0
         for inputs, labels in trainloader:
