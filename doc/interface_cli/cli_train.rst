@@ -1,6 +1,6 @@
 .. _cli_train:
 
-CLI simulate
+CLI train
 ===============
 
 The help documentation is available in the terminal from:
