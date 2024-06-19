@@ -14,8 +14,7 @@ For either case, a Python file describing the installation will be needed.
 Example datasets
 ----------------
 
-To install an example dataset, only the installation file is needed. For example
-want to install the ``cifar10H`` library, run:
+To install an example dataset, only the installation file is needed. For example if you want to install the ``cifar10H`` dataset, run:
 
 .. prompt:: bash
 
@@ -43,7 +42,7 @@ If your dataset has no task, then you can add the ``no-task`` flag with the ``an
 Dataset with tasks
 ^^^^^^^^^^^^^^^^^^
 
-In the case your dataset has tasks (if you want to train a model for image classification). 
+In the case your dataset has tasks (if you want to train a model for image classification).
 A ``train-set`` must be included and you will have to specify its path.
 A ``files-path`` also has to be given. It should include the path to the file with the same
 order as the one in the ``answers`` file.
@@ -72,7 +71,7 @@ Creation of a dataset with a train, val and test set:
     peerannot install datasets/customDataset.py --train-path PATH_TO_TRAIN_DIR --test-path PATH_TO_TEST_DIR --val-path PATH_TO_VAL_DIR --answers PATH_TO_ANSWERS_FILE/answers.txt --files-path PATH_TO_FILENAMES_FILE/filenames.txt --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
 
 Creation of a dataset with only a train set:
-    
+
 .. prompt:: bash
 
     peerannot install datasets/customDataset.py --train-path PATH_TO_TRAIN_DIR --answers-format 1 --files-path PATH_TO_FILENAME_FILE/filenames.txt --answers PATH_TO_ANSWERS_FILE/answers.json --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt

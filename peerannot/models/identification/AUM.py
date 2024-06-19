@@ -1,17 +1,3 @@
-"""
-=============================
-AUM (Pleiss et. al, 2020)
-=============================
-
-Measures the AUM per task given the ground truth label.
-
-Using:
-
-- Margin estimation
-
-- Trust score per task
-"""
-
 import pandas as pd
 import torch
 from pathlib import Path
@@ -27,6 +13,20 @@ sample_identifier = Union[int, str]
 
 
 class AUM:
+    """
+    =============================
+    AUM (Pleiss et. al, 2020)
+    =============================
+
+    Measures the AUM per task given the ground truth label.
+
+    Using:
+
+    - Margin estimation
+
+    - Trust score per task
+    """
+
     def __init__(
         self,
         tasks,
@@ -40,10 +40,13 @@ class AUM:
         use_pleiss=False,
         **kwargs,
     ):
-        """Compute the AUM score for each task
+        """Compute the AUM score for each task. Given a classifier :math:`\\mathcal{C}` and tasks :math:`x_i` with hard labels from an aggregation :math:`y_i^\\text{agg}`, the AUM writes
 
-        :param tasks: Dataset of tasks as
-            (x_i, _, y_i^*, i)_(i,j)
+        .. math::
+
+            \\mathrm{AUM}(x_i)=\\frac{1}{T}\\sum_{t=1}^T \\left(\\sigma(\\mathcal{C}(x_i)){y_i^{\\text{agg}}} - \\sigma(\\mathcal{C}(x_i))_{[2]}\\right)
+
+        :param tasks: Dataset of tasks as :math:`(x_i, _, y_i^{\\text{agg}}, i)_{(i,j)}`
         :type tasks: torch Dataset
         :param n_classes: Number of possible classes, defaults to 2
         :type n_classes: int
@@ -53,7 +56,7 @@ class AUM:
         :type criterion: torch loss
         :param optimizer: Optimization strategy for the minimization
         :type optimizer: torch optimizer
-        :param n_epoch: Number of epochs
+        :param n_epoch: Number of epochs (should be the first learning rate scheduler step drop or lower than half the training epochs)
         :type n_epoch: int
         :param verbose: Print details in log, defaults to False
         :type verbose: bool, optional
@@ -91,11 +94,13 @@ class AUM:
         """One optimization step
 
         :param batch: Batch of tasks
+
             Batch:
-                - index 0: tasks (x_i)_i
-                - index 1: whatever
+                - index 0: tasks :math:`(x_i)_i`
+                - index 1: placeholder
                 - index 2: labels
-                - index 3: tasks index (i)_i
+                - index 3: tasks index :math:`(i)_i`
+
         :type batch: batch
         :return: Tuple with length, logits, targets, ground turths and index
         :rtype: tuple
@@ -112,6 +117,7 @@ class AUM:
         return out, labels, idx
 
     def get_aum(self):
+        """Records prediction scores of interest for the AUM during n_epoch training epochs"""
         AUM_recorder = {
             "index": [],
             "task": [],
@@ -178,6 +184,7 @@ class AUM:
         self.AUM_recorder = pd.DataFrame(AUM_recorder)
 
     def compute_aum(self):
+        """Compute the AUM for each task"""
         data = self.AUM_recorder
         tasks = {
             "sample_id": [],
@@ -223,6 +230,12 @@ class AUM:
         self.aums = pd.DataFrame(tasks)
 
     def cut_lowests(self, alpha=0.01):
+        """Computes the tasks with the lowest AUM scores.
+        The index of such tasks are stored in the `.too_hard` attribute.
+
+        :param alpha: quantile order to identify as ambiguous, defaults to 0.01
+        :type alpha: float, optional
+        """
         quantile = np.nanquantile(list(self.aums["AUM_pleiss"].to_numpy()), alpha)
         if self.use_pleiss:
             too_hard = self.aums[self.aums["AUM_pleiss"] <= quantile]
