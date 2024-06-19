@@ -115,7 +115,7 @@ jobs:
             if [[ "${CIRCLE_BRANCH}" != "main" ]]; then
               echo "No deployment (build: ${CIRCLE_BRANCH}).";
             else
-              git config --global user.email "circle@peerannot.com";
+              git config --global user.email "tanguy_l@outlook.fr";
               git config --global user.name "Circle CI";
               cd ~/peerannot.github.io;
               git checkout main
