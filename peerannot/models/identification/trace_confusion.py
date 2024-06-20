@@ -48,7 +48,7 @@ class Trace_confusion(CrowdModel):
     def run(self, path):
         """From workers confusion matrices, compute the trace and save it.
 
-        :param path: path to save the results <path>/trace_confusion.npy
+        :param path: path to save the results <path>/identification/trace_confusion.npy
         :type path: str
         """
         trace = np.trace(self.matrices, axis1=1, axis2=2)

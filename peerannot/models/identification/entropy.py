@@ -15,7 +15,7 @@ class Entropy(CrowdModel):
 
         .. math::
 
-            \\mathrm{H}(i, \{y_i^{(j)}\}_j) = -\\sum_{k=1}^{K} p_k \\log(p_k) \\ŧext{with} p=\\mathrm{NS}(\{y_i^{(j)}\}_j)
+            \\mathrm{H}(i, \{y_i^{(j)}\}_j) = -\\sum_{k=1}^{K} p_k \\log(p_k)\\ \\mathrm{with}\\ p=\\mathrm{NS}(\{y_i^{(j)}\}_j)
 
         :param answers: Dictionary of workers answers with format
 
