@@ -8,5 +8,5 @@ CLI aggregate_deep
     peerannot aggregate-deep --help
 
 .. click:: peerannot.runners.run:aggregate_deep
-    :prog: peerannot
+    :prog: peerannot aggregate-deep
     :nested: full

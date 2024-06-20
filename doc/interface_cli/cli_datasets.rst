@@ -84,5 +84,5 @@ The help documentation is available in the terminal from:
 
 
 .. click:: peerannot.runners.datasets:install
-    :prog: peerannot
+    :prog: peerannot install
     :nested: full

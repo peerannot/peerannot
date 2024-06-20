@@ -16,5 +16,5 @@ All computer vision models that can be used for training are available through t
     peerannot modelinfo --help
 
 .. click:: peerannot.runners.train:train
-    :prog: peerannot
+    :prog: peerannot train
     :nested: full
