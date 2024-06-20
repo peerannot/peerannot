@@ -15,7 +15,7 @@ Simulate independent mistakes
 
 The independent mistakes setting considers that each worker :math:`w_j` answers following a multinomial distribution with weights given at the row :math:`y_i^{\star}` of their confusion matrix :math:`\pi^{(j)}`. Each confusion row in the confusion matrix is generated uniformly in the simplex. Then, we make the matrix diagonally dominant (to represent non-adversarial workers) by switching the diagonal term with the maximum value by row. Answers are independent of one another as each matrix is generated independently and each worker answers independently of other workers. In this setting, the DS model is expected to perform better with enough data as we are simulating data from its assumed noise model.
 
-.. code-block:: bash
+.. prompt:: bash
 
     peerannot simulate --n-worker=30 --n-task=200  --n-classes=5 \
                      --strategy independent-confusion \
@@ -34,7 +34,7 @@ Simulate correlated mistakes
 The correlated mistakes are also known as the student-teacher or junior-expert setting (Cao et al. (2019)). Consider that the crowd of workers is divided into two categories: teachers and students (with :math:`n_{teacher}+n_{student}=n_{worker}`). Each student is randomly assigned to one teacher at the beginning of the experiment. We generate the (diagonally dominant) confusion matrices of each teacher and the students share the same confusion matrix as their associated teacher. Hence, clustering strategies are expected to perform best in this context. Then, they all answer independently, following a multinomial distribution with weights given at the row :math:`y_i^{\star}` of their confusion matrix :math:`\pi^{(j)}`.
 
 
-.. code-block:: bash
+.. prompt:: bash
 
     peerannot simulate --n-worker=30 --n-task=200  --n-classes=5 \
                      --strategy student-teacher \
@@ -53,7 +53,7 @@ Introduced in Whitehill et al. (2009), workers are either good or bad. Tasks are
 
     \texttt{ratio-diff} = \frac{\mathbb{P}(\texttt{easy})}{\mathbb{P}(\texttt{hard})}, \mathbb{P}(\texttt{easy})+\mathbb{P}(\texttt{hard})=1
 
-.. code-block:: bash
+.. prompt:: bash
 
     peerannot simulate --n-worker=100 --n-task=200  --n-classes=5 \
                      --strategy discrete-difficulty \
