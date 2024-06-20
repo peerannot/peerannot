@@ -7,3 +7,6 @@ Tutorials
     add_dataset
     add_strategy
     run_aggregation
+
+A practical example
+------------------------

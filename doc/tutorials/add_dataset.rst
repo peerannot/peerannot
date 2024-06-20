@@ -46,7 +46,7 @@ If the task images are also available, they can be installed in the `mydataset.p
 
 The dataset folder should look like this:
 
-.. prompt:: bash
+.. code-block:: bash
 
     mydataset/
     ├── mydataset.py     # install file

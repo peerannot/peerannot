@@ -11,4 +11,3 @@ Here are the relevant API calls for the ``peerannot`` library.
     api_aggregate
     api_aggregate_deep
     api_identify
-    api_simulate
