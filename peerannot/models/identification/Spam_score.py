@@ -8,7 +8,7 @@ class Spam_Score(CrowdModel):
     """
     ======================================
     Spammer score (Raykar and Yu, 2011)
-    =====================================
+    ======================================
 
     Compute the distance between the confusion matrix of each worker and the closest rank-1 matrix. The closer to 0, it is likely the worker is a spammer.
     """

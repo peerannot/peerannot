@@ -22,7 +22,7 @@ def convert_json_to_pd(crowd_data):
 
 class WAUM(CrowdModel):
     """
-    ===================================
+    ====================================
     WAUM (Lefort et al., 2024 in TMLR)
     ====================================
 

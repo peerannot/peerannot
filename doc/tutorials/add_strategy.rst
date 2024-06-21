@@ -53,7 +53,7 @@ There is an initialization and then an optimization-like process to update the l
         def get_answers(self):
             ... # return hard labels
 
-If the aggregation is not able to return label distributions per task, raise a warning and redirect to the ``ŋet_answers`` method.
+If the aggregation is not able to return label distributions per task, raise a warning and redirect to the ``get_answers`` method.
 For example:
 
 .. code-block:: python

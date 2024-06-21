@@ -43,6 +43,7 @@ extensions = [
     "numpydoc",
     "sphinx_design",
     "sphinx_copybutton",
+    "nbsphinx",
     "sphinx_click",
 ]
 

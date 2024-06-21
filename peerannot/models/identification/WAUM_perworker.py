@@ -24,7 +24,7 @@ def convert_json_to_pd(crowd_data):
 
 class WAUM_perworker(CrowdModel):
     """
-    =============================================
+    ==============================================
     WAUM per worker (Lefort et al. 2024 in TMLR)
     ==============================================
 
