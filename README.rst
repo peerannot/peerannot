@@ -11,14 +11,14 @@ Install
 
 To install ``peerannot``, simply run
 
-.. code-block:: bash
+.. prompt:: bash
 
     pip install peerannot
 
 Otherwise, a ``setup.cfg`` file is located at the root directory.
 Installing the library gives access to the Command Line Interface using the keyword ``peerannot`` in a bash terminal. Try it out using:
 
-.. code-block:: bash
+.. prompt:: bash
 
     peerannot --help
 
@@ -28,7 +28,7 @@ Quick start
 
 Our library comes with files to download and install standard datasets from the crowdsourcing community. Those are located in the `datasets` folder
 
-.. code-block:: bash
+.. prompt:: bash
 
     peerannot install ./datasets/cifar10H/cifar10h.py
 
@@ -65,7 +65,7 @@ End-to-end strategies
 
 Finally, for the end-to-end strategies using deep learning (as CoNAL or CrowdLayer), the command line is:
 
-.. code-block:: bash
+.. prompt:: bash
 
     peerannot aggregate-deep . -o cifar10h_crowdlayer \
                          --answers ./answers.json \
@@ -85,7 +85,7 @@ In ``peerannot``, one of our goals is to make crowdsourced datasets under the sa
 
 So, what is a crowdsourced dataset? We define each dataset as:
 
-.. code-block:: bash
+.. prompt:: bash
 
     dataset
     ├── train
@@ -101,7 +101,7 @@ So, what is a crowdsourced dataset? We define each dataset as:
 
 The crowdsourced labels for each training task are contained in the ``anwers.json`` file. They are formatted as follows:
 
-.. code-block:: bash
+.. prompt:: bash
 
     {
         0: {<worker_id>: <label>, <another_worker_id>: <label>},
@@ -113,7 +113,7 @@ The number of tasks in the ``train`` folder must match the number of entry keys 
 
 The ``metadata.json`` file contains general information about the dataset. A minimal example would be:
 
-.. code-block:: bash
+.. prompt:: bash
 
     {
         "name": <dataset>,
@@ -165,5 +165,5 @@ The ``dataset.py`` is not mandatory but is here to facilitate the dataset's inst
    :target: https://github.com/peerannot/peerannot/actions/workflows/pytest.yml
 .. |Documentation| image:: https://github.com/peerannot/peerannot.github.io/actions/workflows/deploy-jekyll.yml/badge.svg
    :target: https://peerannot.github.io
-.. |Codecov| image:: https://codecov.io/gh/peerannot/peerannot/graph/badge.svg?token=3U77QPSODB 
+.. |Codecov| image:: https://codecov.io/gh/peerannot/peerannot/graph/badge.svg?token=3U77QPSODB
    :target: https://codecov.io/gh/peerannot/peerannot

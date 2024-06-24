@@ -11,5 +11,5 @@ The help documentation is available in the terminal from:
 
 
 .. click:: peerannot.runners.run:aggregate
-    :prog: peerannot
+    :prog: peerannot aggregate
     :nested: full

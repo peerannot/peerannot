@@ -1,10 +1,3 @@
-"""
-=====================================================
-CoNAL (Common Noise Adaptation Layer), Chu et.al 2021
-=====================================================
-Implementation based from the unofficial repository
-https://github.com/seunghyukcho/CoNAL-pytorch
-"""
 import torch
 from torch import nn
 import numpy as np
@@ -25,6 +18,15 @@ DEVICE = "cpu" if not torch.cuda.is_available() else "cuda"
 
 
 def reformat_labels(votes, n_workers):
+    """Convert votes to numpy array of shape (n_tasks, n_workers)
+
+    :param votes: Json dictionary with votes
+    :type votes: dict
+    :param n_workers: Number of workers
+    :type n_workers: int
+    :return: Numpy array of shape (n_tasks, n_workers), -1 when no vote
+    :rtype: np.ndarray
+    """
     answers = []
     for task, ans in votes.items():
         answers.append([-1] * n_workers)
@@ -34,7 +36,22 @@ def reformat_labels(votes, n_workers):
 
 
 class AuxiliaryNetwork(nn.Module):
+    """
+    =====================================================
+    Auxiliary Network in CoNAL architecture
+    =====================================================
+    """
+
     def __init__(self, x_dim, e_dim, w_dim):
+        """Parameter structure of the Auxiliary Network
+
+        :param x_dim: Input dimension
+        :type x_dim: int
+        :param e_dim: Worker metadata input dimension
+        :type e_dim: int
+        :param w_dim: Dimension of the embedding space
+        :type w_dim: int
+        """
         super().__init__()
 
         self.weight_v1 = nn.Linear(x_dim, 128)
@@ -55,36 +72,46 @@ class AuxiliaryNetwork(nn.Module):
 
 
 class NoiseAdaptationLayer(nn.Module):
+    """
+    =====================================================
+    Model global and local confusions in the architecture
+    =====================================================
+    """
+
     def __init__(self, n_class, n_annotator):
+        """Instantiate the local and global confusion matrices
+
+        :param n_class: Number of classes
+        :type n_class: int
+        :param n_annotator: Number of workers
+        :type n_annotator: int
+        """
         super().__init__()
 
         self.global_confusion_matrix = nn.Parameter(
             torch.eye(n_class, n_class) * 2, requires_grad=True
         )
         self.local_confusion_matrices = nn.Parameter(
-            torch.stack(
-                [torch.eye(n_class, n_class) * 2 for _ in range(n_annotator)]
-            ),
+            torch.stack([torch.eye(n_class, n_class) * 2 for _ in range(n_annotator)]),
             requires_grad=True,
         )
 
     def forward(self, f, w):
-        global_prob = torch.einsum(
-            "ij,jk->ik", f, self.global_confusion_matrix
-        )
-        local_probs = torch.einsum(
-            "ik,jkl->ijl", f, self.local_confusion_matrices
-        )
+        global_prob = torch.einsum("ij,jk->ik", f, self.global_confusion_matrix)
+        local_probs = torch.einsum("ik,jkl->ijl", f, self.local_confusion_matrices)
 
-        h = (
-            w[:, :, None] * global_prob[:, None, :]
-            + (1 - w[:, :, None]) * local_probs
-        )
+        h = w[:, :, None] * global_prob[:, None, :] + (1 - w[:, :, None]) * local_probs
 
         return h
 
 
 class CoNAL_net(nn.Module):
+    """
+    =====================================================
+    Neural network classifier architecture for CoNAL
+    =====================================================
+    """
+
     def __init__(
         self,
         input_dim,
@@ -94,17 +121,47 @@ class CoNAL_net(nn.Module):
         annotator_dim,
         embedding_dim,
     ):
+        """Architecture for the CoNAL network
+
+        :param input_dim: Image input dimension
+        :type input_dim: int
+        :param n_class: Number of classes
+        :type n_class: int
+        :param n_annotator: Number of workers
+        :type n_annotator: int
+        :param classifier: Neural network classifier backbone
+        :type classifier: nn.Module
+        :param annotator_dim: Worker metadata input dimension
+        :type annotator_dim: int
+        :param embedding_dim: Dimension of the embedding space
+        :type embedding_dim: int
+        """
         super().__init__()
 
         self.auxiliary_network = AuxiliaryNetwork(
             input_dim, annotator_dim, embedding_dim
         )
         self.classifier = classifier
-        self.noise_adaptation_layer = NoiseAdaptationLayer(
-            n_class, n_annotator
-        )
+        self.noise_adaptation_layer = NoiseAdaptationLayer(n_class, n_annotator)
 
     def forward(self, x, annotator=None):
+        """If no worker is associated (test phase), returns the backbone prediction.
+
+        During training, given the classifier :math:`\\mathcal{C}` with output scores :math:`z_i`, local confusions :math:`\\pi^{(j)}` and global confusion :math:`\\pi^g`, the model computes the following:
+
+        .. math::
+
+            h_i^{(j)} = \\sigma((\\omega_{i}^{(j)}\\pi^g + (1-\\omega_i^{(j)})\\pi^{(j)} ) z_i ),
+
+        with :math:`\\omega_i^{(j)}=(1+\\exp(-u_j^\\top v_i))^{-1}` where :math:`u_j` is the worker-related embedding and :math:`v_i` the task-related embedding.
+
+        :param x: Image input
+        :type x: torch.Tensor
+        :param annotator: Annotator metadata, defaults to None
+        :type annotator: torch.Tensor, optional
+        :return: Model prediction and backbone prediction
+        :rtype: tuple(torch.Tensor, torch.Tensor) or torch.Tensor (test)
+        """
         f = self.classifier(x)
         if annotator is None:
             return f
@@ -117,6 +174,14 @@ class CoNAL_net(nn.Module):
 
 
 class CoNAL(CrowdModel):
+    """
+    =====================================================
+    CoNAL (Common Noise Adaptation Layer), Chu et.al 2021
+    =====================================================
+    Implementation based from the unofficial repository
+    https://github.com/seunghyukcho/CoNAL-pytorch
+    """
+
     def __init__(
         self,
         tasks_path,
@@ -131,11 +196,61 @@ class CoNAL(CrowdModel):
         output_name="conal",
         **kwargs,
     ):
+        """CoNAL deep learning strategy.
+        Learn a classifier with crowdsourced labels by modeling worker-specific and global confusions.
+
+        During training, given the classifier :math:`\\mathcal{C}` with output scores :math:`z_i`, local confusions :math:`\\pi^{(j)}` and global confusion :math:`\\pi^g`, the model computes the following:
+
+        .. math::
+
+            h_i^{(j)} = \\sigma((\\omega_{i}^{(j)}\\pi^g + (1-\\omega_i^{(j)})\\pi^{(j)} ) z_i ),
+
+        with :math:`\\omega_i^{(j)}=(1+\\exp(-u_j^\\top v_i))^{-1}` where :math:`u_j` is the worker-related embedding and :math:`v_i` the task-related embedding. This is computed in the `AuxiliaryNetwork`.
+        Then, the `NoiseAdaptationLayer` computes the final prediction :math:`h_i^{(j)}`.
+
+        The final loss is the crossentropy between the worker-specific prediction and the given label with a regularization term of penalty scale :math:`\\lambda>0` on the difference between the local and global confusions.
+
+        .. math::
+
+            \\mathcal{L} = \\frac{1}{n_{\\texttt{task}}}\\sum_{i=1}^{n_{\\texttt{task}}}\\sum_{j\\in\\mathcal{A}(x_i)} \\mathrm{CE}(h_i^{(j)}, y_i^{(j)}) - \\lambda \\sum_{j=1}^{n_{\\texttt{worker}}} \\|\\pi^{(j)} - \\pi^g\\|_2.
+
+        :param tasks_path: Path to images to train from
+        :type tasks_path: path
+        :param answers: Path to answers (json format)
+
+          .. code-block:: javascript
+
+            {
+                task0: {worker0: label, worker1: label},
+                task1: {worker1: label}
+            }
+
+        :type answers: path
+        :param model: Backbone classifier architecture: should be from `torchvision.models`
+        :type model: string
+        :param n_classes: Number of classes
+        :type n_classes: int
+        :param optimizer: Pytorch optimizer name (either sgd or Adam)
+        :type optimizer: string
+        :param n_epochs: Number of training epochs
+        :type n_epochs: int
+        :param scale: Regularization parameter in the loss, defaults to 1e-5
+        :type scale: float
+        :param verbose: Verbosity level, defaults to True
+        :type verbose: bool, optional
+        :param pretrained: Use the pretrained version of the backbone classifier, defaults to False
+        :type pretrained: bool, optional
+        :param output_name: Generated file prefix, defaults to "conal"
+        :type output_name: str, optional
+
+        The batch size, learning rate, scheduler and milestones can be specified as keyword arguments.
+        Visit the `computo paper <https://computo.sfds.asso.fr/published-202402-lefort-peerannot/>`__ or the tutorial for examples.
+        """
         from peerannot.runners.train import (
             get_model,
             get_optimizer,
             load_all_data,
-        )  # avoid circular imports
+        )
 
         self.scale = scale
         self.tasks_path = Path(tasks_path).resolve()
@@ -185,7 +300,7 @@ class CoNAL(CrowdModel):
         self.setup(**kwargs)
 
     def setup(self, **kwargs):
-        # get correct training labels
+        """Create training, validation and test dataloaders from the dataset."""
         targets, ll = [], []
         print(len(self.answers), len(self.trainset.samples))
         self.numpyans = reformat_labels(self.answers_orig, self.n_workers)
@@ -216,6 +331,12 @@ class CoNAL(CrowdModel):
         print(f"Validation set: {len(self.valloader.dataset)} tasks")
 
     def run(self, **kwargs):
+        """Train the CoNAL model and evaluate on the test set.
+
+        Uses a gpu by default is `torch.cuda.is_available() is True`.
+
+        Results are stored in `<tasks_path>/results/<output_name>.json` and the best model in `<tasks_path>/best_models/<output_name>.pth`. Results contain the train, validation and test loss as well as the validation and test accuracy.
+        """
         from peerannot.runners.train import evaluate
 
         print(f"Running on {DEVICE}")
@@ -295,15 +416,14 @@ class CoNAL(CrowdModel):
                 vprint = v
             print(f"- {k}: {vprint}")
         (self.tasks_path / "results").mkdir(parents=True, exist_ok=True)
-        with open(
-            self.tasks_path / "results" / f"{self.output_name}.json", "w"
-        ) as f:
+        with open(self.tasks_path / "results" / f"{self.output_name}.json", "w") as f:
             json.dump(logger, f, indent=3, ensure_ascii=False)
         print(
             f"Results stored in {self.tasks_path / 'results' / f'{self.output_name}.json'}"
         )
 
     def run_epoch(self, model, trainloader, criterion, optimizer, logger):
+        """Run one epoch and monitor metrics"""
         model.train()
         total_loss = 0.0
         for inputs, labels in trainloader:

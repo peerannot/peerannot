@@ -1,17 +1,3 @@
-"""
-=============================
-WAUM (2022)
-=============================
-
-Measures the WAUM per worker and task by duplicating each task by the number
-of workers that responded.
-Once too prone to confusion tasks are removed, the final label is a
-weighted distribution by the diagonal of the estimated confusion matrix.
-
-Using:
-- Margin estimation
-- Trust score per worker and task
-"""
 from ..template import CrowdModel
 import pandas as pd
 from peerannot.models.aggregation.DS import Dawid_Skene as DS
@@ -35,6 +21,22 @@ def convert_json_to_pd(crowd_data):
 
 
 class WAUM(CrowdModel):
+    """
+    ====================================
+    WAUM (Lefort et al., 2024 in TMLR)
+    ====================================
+
+    Measures the WAUM (Weighted Area Under the Margin) per worker and task by duplicating each task by the number of workers that responded.
+    Ones too prone to confusion tasks are removed, the final label is a
+    weighted distribution by the diagonal of the estimated confusion matrix.
+
+    Using:
+
+    - Margin estimation
+
+    - Trust score per worker and task
+    """
+
     def __init__(
         self,
         tasks,
@@ -51,16 +53,20 @@ class WAUM(CrowdModel):
     ):
         """Compute the WAUM score for each task using a stacked version of the dataset (stacked over workers)
 
-        :param tasks: Loader for dataset of tasks as
-            (x_i, y_i^(j), w^(j), y_i^*, i)_(i,j)
+        .. math::
+
+            \\mathrm{WAUM}(x_i)= \\frac{1}{\\displaystyle\\sum_{j'\\in\\mathcal{A}(x_i)} s^{(j')}(x_i)}\\sum_{j\\in\\mathcal{A}(x_i)} s^{(j)}(x_i) \\mathrm{AUM}\\big(x_i, y_i^{(j)}\\big)
+
+        :param tasks: Loader for dataset of tasks as :math:`(x_i, y_i^{(j)}, w^{(j)}, y_i^\\star, i)_{(i,j)}`
         :type tasks: torch Dataset
         :param answers: Dictionary of workers answers with format
-        .. code-block:: javascript
 
-            {
-                task0: {worker0: label, worker1: label},
-                task1: {worker1: label}
-            }
+            .. code-block:: javascript
+
+                {
+                    task0: {worker0: label, worker1: label},
+                    task1: {worker1: label}
+                }
 
         :type answers: dict
         :param n_classes: Number of possible classes, defaults to 2
@@ -103,20 +109,20 @@ class WAUM(CrowdModel):
         else:
             self.topk = int(topk)
         self.filenames = np.array(
-            [
-                Path(samp[0]).name
-                for samp in self.tasks.dataset.dataset.base_samples
-            ]
+            [Path(samp[0]).name for samp in self.tasks.dataset.dataset.base_samples]
         )
 
         self.path = Path("./temp/").mkdir(parents=True, exist_ok=True)
         torch.save(self.checkpoint, "./temp/checkpoint_waum.pth")
 
     def run_DS(self, cut=False):
+        """Run Dawid and Skene aggregation model. It ``cut=True``, runs it on the pruned dataset.
+
+        :param cut: Run on full dataset or dataset pruned from lower WAUM tasks, defaults to False
+        :type cut: bool, optional
+        """
         if not cut:
-            self.ds = DS(
-                self.answers, self.n_classes, n_workers=self.n_workers
-            )
+            self.ds = DS(self.answers, self.n_classes, n_workers=self.n_workers)
             self.ds.run(maxiter=self.maxiterDS)
         else:
             self.answers_waum = {}
@@ -125,9 +131,7 @@ class WAUM(CrowdModel):
                 if int(key) not in self.too_hard[:, 1]:
                     self.answers_waum[i] = val
                     i += 1
-            self.ds = DS(
-                self.answers_waum, self.n_classes, n_workers=self.n_workers
-            )
+            self.ds = DS(self.answers_waum, self.n_classes, n_workers=self.n_workers)
             self.ds.run(maxiter=self.maxiterDS)
 
         self.pi = self.ds.pi
@@ -136,12 +140,14 @@ class WAUM(CrowdModel):
         """One optimization step
 
         :param batch: Batch of tasks
+
             Batch:
-                - index 0: tasks (x_i)_i
+                - index 0: tasks :math:`(x_i)_i`
                 - index 1: labels
                 - index 2: worker
                 - index 3: true index (witout redundancy)
-                - index 4: tasks index (i)_i
+                - index 4: tasks index :math:`(i)_i`
+
         :type batch: batch
         :return: Tuple with length, logits, targets, workers, ground turths and index
         :rtype: tuple
@@ -166,6 +172,7 @@ class WAUM(CrowdModel):
         return len_, out, y, ww, dd, idx
 
     def get_aum(self):
+        """Records prediction scores of interest for the AUM during n_epoch training epochs"""
         AUM_recorder = {
             "index": [],
             "task": [],
@@ -217,12 +224,8 @@ class WAUM(CrowdModel):
                     )
 
                 # (s\y)[1] and (P\y)[1]
-                masked_logits = torch.scatter(
-                    out, 1, y.view(-1, 1), float("-inf")
-                )
-                masked_probs = torch.scatter(
-                    probs, 1, y.view(-1, 1), float("-inf")
-                )
+                masked_logits = torch.scatter(out, 1, y.view(-1, 1), float("-inf"))
+                masked_probs = torch.scatter(probs, 1, y.view(-1, 1), float("-inf"))
                 (
                     other_logit_values,
                     other_logit_index,
@@ -234,12 +237,8 @@ class WAUM(CrowdModel):
                 if len(other_logit_values) > 1:
                     other_logit_values = other_logit_values.squeeze()
                     other_prob_values = other_prob_values.squeeze()
-                AUM_recorder["other_max_logit"].extend(
-                    other_logit_values.tolist()
-                )
-                AUM_recorder["other_max_prob"].extend(
-                    other_prob_values.tolist()
-                )
+                AUM_recorder["other_max_logit"].extend(other_logit_values.tolist())
+                AUM_recorder["other_max_prob"].extend(other_prob_values.tolist())
 
                 # s[2] ans P[2]
                 second_logit = torch.sort(out, axis=1)[0][:, -(self.topk + 1)]
@@ -248,16 +247,12 @@ class WAUM(CrowdModel):
                 AUM_recorder["secondprob"].extend(second_prob.tolist())
                 for ll in range(len_):
                     AUM_recorder["score"].append(
-                        self.get_psuccess(probs[ll], pij[int(ww[ll])])
-                        .cpu()
-                        .numpy()
+                        self.get_psuccess(probs[ll], pij[int(ww[ll])]).cpu().numpy()
                     )
         self.AUM_recorder = pd.DataFrame(AUM_recorder)
         uni_ = self.AUM_recorder["index"].unique()
         for task in (
-            tqdm(uni_, total=len(uni_), desc="Scores")
-            if self.verbose
-            else uni_
+            tqdm(uni_, total=len(uni_), desc="Scores") if self.verbose else uni_
         ):
             workers = self.AUM_recorder.loc[
                 self.AUM_recorder["index"] == task, "worker"
@@ -278,6 +273,7 @@ class WAUM(CrowdModel):
         self.AUM_recorder
 
     def reset(self):
+        """Reload the model and optimizer from the last checkpoint. The checkpoint path is ``./temp/checkpoint_waum.pth``."""
         check_ = torch.load("./temp/checkpoint_waum.pth")
         self.n_epoch = check_["epoch"]
         self.model.load_state_dict(self.checkpoint["model"])
@@ -285,10 +281,32 @@ class WAUM(CrowdModel):
         self.optimizer.param_groups[0]["lr"] = self.initial_lr
 
     def get_psuccess(self, probas, pij):
+        """Compute weights as:
+
+        .. math::
+
+            s_i^{(j)}=\\sum_{k=1}^K \\sigma(\\mathcal{C}(x_i))_k \\pi^{(j)}_{k,k}
+
+        If one wishes to modify the weight, they only need to modify this function.
+
+        :param probas: Output predictions of neural network classifier
+        :type probas: torch.Tensor
+        :param pij: Confusion matrix of worker j
+        :type pij: torch.tensor
+        :return: Weight in the WAUM
+        :rtype: torch.tensor
+        """
         with torch.no_grad():
             return probas @ torch.diag(pij)
 
     def get_psi1_waum(self):
+        """To use the original margin from Pleiss et al. (2020):
+
+        .. math::
+
+            \\sigma(\\mathcal{C}(x_i))_{y_i^{(j)}} - \\max_{k\\neq y_i^{(j)}} \\sigma(\\mathcal{C}(x_i))_{k}
+
+        """
         aum_df = self.AUM_recorder
         dico_cpt_aum = {"index": [], "task": [], "waum": []}
         aum_df["margin"] = np.array(aum_df["label_prob"]) - np.array(
@@ -325,6 +343,13 @@ class WAUM(CrowdModel):
         self.aum_per_worker = aum_per_worker
 
     def get_psi5_waum(self):
+        """To use the margin for top-2 (or top-k):
+
+        .. math::
+
+            \\sigma(\\mathcal{C}(x_i))_{y_i^{(j)}} - \\sigma(\\mathcal{C}(x_i))_{[2]}
+
+        """
         aum_df = self.AUM_recorder
         dico_cpt_aum = {"index": [], "task": [], "waum": []}
         aum_df["margin"] = np.array(aum_df["label_prob"]) - np.array(
@@ -361,6 +386,11 @@ class WAUM(CrowdModel):
         self.aum_per_worker = aum_per_worker
 
     def cut_lowests(self, alpha=0.01):
+        """Identify tasks with lowest WAUM
+
+        :param alpha: quantile for identification, defaults to 0.01
+        :type alpha: float, optional
+        """
         quantile = np.nanquantile(list(self.waum["waum"].to_numpy()), alpha)
         too_hard = self.waum[self.waum["waum"] <= quantile]
         self.index_too_hard = too_hard["index"].to_numpy()

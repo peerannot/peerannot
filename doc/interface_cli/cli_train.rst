@@ -1,6 +1,6 @@
 .. _cli_train:
 
-CLI simulate
+CLI train
 ===============
 
 The help documentation is available in the terminal from:
@@ -14,3 +14,7 @@ All computer vision models that can be used for training are available through t
 .. prompt:: bash
 
     peerannot modelinfo --help
+
+.. click:: peerannot.runners.train:train
+    :prog: peerannot train
+    :nested: full
