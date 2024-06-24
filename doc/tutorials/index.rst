@@ -17,5 +17,8 @@ These tutorials follows part of the `paper published paper in Computo Journal <h
 
    run_aggregation_notebook
 
-Full pipeline on a practical example
-----------------------------------------
+.. toctree::
+   :maxdepth: 1
+   :caption: Full pipeline on a practical example:
+
+   run_pipeline_notebook

@@ -26,7 +26,7 @@ Want to dive deeper into the library? Check out the tutorials
 You will find ressources to add your own datasets, strategy, and run your first label aggregations.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     tutorials/index
 
