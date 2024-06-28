@@ -31,7 +31,7 @@ and add multiple arguments depending on the structure of your dataset.
 Only the ``answers`` file and the ``answers-format`` arguments must always be included.
 The ``answers-format`` is an integer option that represents how your answers file is encoded. for now here are the format supported:
 
-* ``0``: A text file that represents the answers in a :math:`|task| * |worker|` matrix where each entry is either the id value of a label or -1 in case of the absence of answer. For the toy-dataset of peerannot, we have the following matrix answers file (3 tasks, 4 workers):
+* ``0``: A text file that represents the answers in a :math:`(n_{task} \\times n_{worker})` matrix where each entry is either the value of a label or -1 in case of the absence of answer. For the toy-dataset of peerannot, we have the following matrix answers file (3 tasks, 4 workers):
 
 .. centered::
     :math:`\begin{bmatrix}
@@ -91,12 +91,12 @@ A JSON file where the main keys are the worker's ids. Each worker has a list wit
 Taskless dataset
 ^^^^^^^^^^^^^^^^
 
-If your dataset has no task, then you can add the ``no-task`` flag with the ``answers`` and ``answers-format`` argument.
+If the tasks related to your answer's file are not available, then you can add the ``--no-task`` flag with the ``--answers`` and ``--answers-format`` arguments.
 
 .. prompt:: bash
 
     cd datasets/MyDataset & peerannot install ../customDataset.py --no-task \\
-    --answers answersFile.json --answers-format 1
+        --answers answersFile.json --answers-format 1
 
 Dataset with tasks
 ^^^^^^^^^^^^^^^^^^
@@ -122,26 +122,26 @@ Creation of a dataset with no task:
 .. prompt:: bash
 
     peerannot install datasets/customDataset.py --answers-format 2 \\
-    --answers PATH_TO_ANSWERS_FILE/answers.json --no-task
+        --answers PATH_TO_ANSWERS_FILE/answers.json --no-task
 
 Creation of a dataset with a train, val and test set:
 
 .. prompt:: bash
 
     peerannot install datasets/customDataset.py --train-path PATH_TO_TRAIN_DIR \\
-    --test-path PATH_TO_TEST_DIR --val-path PATH_TO_VAL_DIR \\
-    --answers PATH_TO_ANSWERS_FILE/answers.txt \\
-    --files-path PATH_TO_FILENAMES_FILE/filenames.txt \\
-    --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
+        --test-path PATH_TO_TEST_DIR --val-path PATH_TO_VAL_DIR \\
+        --answers PATH_TO_ANSWERS_FILE/answers.txt \\
+        --files-path PATH_TO_FILENAMES_FILE/filenames.txt \\
+        --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
 
 Creation of a dataset with only a train set:
     
 .. prompt:: bash
 
     peerannot install datasets/customDataset.py --train-path PATH_TO_TRAIN_DIR \\
-    --answers-format 1 --files-path PATH_TO_FILENAME_FILE/filenames.txt \\
-    --answers PATH_TO_ANSWERS_FILE/answers.json \\
-    --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
+        --answers-format 1 --files-path PATH_TO_FILENAME_FILE/filenames.txt \\
+        --answers PATH_TO_ANSWERS_FILE/answers.json \\
+        --label-names PATH_TO_LABELNAMES_FILE/labelNames.txt
 
 The help documentation is available in the terminal from:
 
