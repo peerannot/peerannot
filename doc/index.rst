@@ -23,7 +23,7 @@ Tutorials and additional examples
 =====================================
 
 Want to dive deeper into the library? Check out the tutorials
-You will find ressources to add your own datasets, strategy, and run your first label aggregations.
+You will find resources to add your own datasets, strategy, and run your first label aggregations.
 
 .. toctree::
     :maxdepth: 1
@@ -31,6 +31,7 @@ You will find ressources to add your own datasets, strategy, and run your first 
     tutorials/index
 
 * More examples can be found in the `published paper in Computo Journal <https://computo.sfds.asso.fr/published-202402-lefort-peerannot/>`_
+* An interactive tool to compare the AUM and WAUM identification scores is available `here <https://waum-viz-peerannot-viz.apps.math.cnrs.fr/bokeh_c10H>`_
 
 
 API and CLI Reference
@@ -65,12 +66,6 @@ In addition to the tutorials, you can find the full API and CLI reference here.
 
 
 .. include:: glossary.rst
-
-
-.. toctree::
-   :maxdepth: 1
-
-   glossary
 
 
 Citation

@@ -21,6 +21,8 @@ All strategies are available running:
 
     peerannot identificationinfo
 
+We created an interactive tool to compare the WAUM and AUM identifications on the CIFAR-10H dataset. Check it out `by clicking this link <https://waum-viz-peerannot-viz.apps.math.cnrs.fr/bokeh_c10H>`_!
+
 Dataset exploration
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -56,3 +58,4 @@ Per task exploration
    entropy.Entropy
    WAUM_perworker.WAUM_perworker
    WAUM.WAUM
+
