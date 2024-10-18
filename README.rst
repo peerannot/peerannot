@@ -2,7 +2,7 @@
 
 ----
 
-|Pypi Status| |Python 3.8+| |Documentation| |Codecov|
+|Pypi Status| |Python 3.8+| |Codecov|
 
 The ``peerannot`` library was created to handle crowdsourced labels in classification problems.
 
@@ -163,7 +163,5 @@ The ``dataset.py`` is not mandatory but is here to facilitate the dataset's inst
    :target: https://github.com/peerannot/peerannot/actions/workflows/python-publish.yml
 .. |Python 3.8+| image:: https://github.com/peerannot/peerannot/actions/workflows/pytest.yml/badge.svg
    :target: https://github.com/peerannot/peerannot/actions/workflows/pytest.yml
-.. |Documentation| image:: https://github.com/peerannot/peerannot.github.io/actions/workflows/deploy-jekyll.yml/badge.svg
-   :target: https://peerannot.github.io
 .. |Codecov| image:: https://codecov.io/gh/peerannot/peerannot/graph/badge.svg?token=3U77QPSODB
    :target: https://codecov.io/gh/peerannot/peerannot
