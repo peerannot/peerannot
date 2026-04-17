@@ -9,9 +9,6 @@ from tqdm.auto import tqdm
 
 from peerannot.models.template import CrowdModel
 
-THETACONF = 2
-THETAACC = 0.7
-
 
 class PlantNet(CrowdModel):
     """
@@ -31,10 +28,10 @@ class PlantNet(CrowdModel):
         n_classes,
         AI="ignored",
         parrots="ignored",
-        alpha=1,
-        beta=1,
-        theta_conf: float = THETACONF,
-        theta_acc: float = THETAACC,
+        alpha=0.5,
+        beta=0.2,
+        theta_conf: float = 2,
+        theta_acc: float = 0.7,
         taxa_obs_weight=1,
         taxa_votes_weight=0.1,
         AIweight=1,  # if AI is fixed or invalidating
