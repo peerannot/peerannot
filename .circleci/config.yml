@@ -37,26 +37,38 @@ jobs:
           name: Spin up Xvfb
           command: |
             /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render -noreset;
-
+            
       - run:
           name: Get conda running
           command: |
-
-            wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh -O ~/miniconda.sh;
-            chmod +x ~/miniconda.sh;
-            rm ~/miniconda/_conda || echo "does not exist";
-            ~/miniconda.sh -u -b -p ~/miniconda;
-            echo "export PATH=~/miniconda/bin:$PATH" >> $BASH_ENV;
-
-            # update conda pkgs cache
-            mkdir ~/conda_pkgs 2>/dev/null || echo 'already exists'
-            cp -r ~/miniconda/pkgs/* ~/conda_pkgs/
+            set -x  # Enable debug mode
+      
+            # Install Miniforge
+            wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh -O ~/miniconda.sh
+            chmod +x ~/miniconda.sh
+            ~/miniconda.sh -b -p ~/miniconda || { echo "Conda installation failed"; exit 1; }
+      
+            # Update PATH and source
+            echo "export PATH=~/miniconda/bin:$PATH" >> $BASH_ENV
+            source $BASH_ENV
+      
+            # Configure package cache
+            mkdir -p ~/conda_pkgs
+            cp -rn ~/miniconda/pkgs/* ~/conda_pkgs/ 2>/dev/null || echo "No packages to copy"
             rm -rf ~/miniconda/pkgs
-            ln -s ~/conda_pkgs ~/miniconda/pkgs
-
+            ln -sf ~/conda_pkgs ~/miniconda/pkgs || { echo "Failed to symlink"; exit 1; }
+      
+            # Initialize conda
+            ~/miniconda/bin/conda init bash
+            source ~/.bashrc
+      
+            # Verify conda
+            conda --version || { echo "Conda not found"; exit 1; }
+      
       - run:
           name: Get Python running
           command: |
+            source ~/miniconda/etc/profile.d/conda.sh
             # remove the cache index
             mamba clean -i -y
             mamba install python=3.10 numpy pip -yq
@@ -69,7 +81,7 @@ jobs:
           key: pkgs-cache
           paths:
             - ~/.cache/pip
-            - ~/conda_pkgs
+            - ~/miniconda
 
       # Look at what we have and fail early if there is some library conflict
       - run:
