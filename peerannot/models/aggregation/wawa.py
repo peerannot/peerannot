@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 
-from ..aggregation.IWMV import IWMV
+from ..aggregation.iwmv import IWMV
 
 
 class Wawa(IWMV):

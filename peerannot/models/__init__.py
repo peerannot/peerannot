@@ -1,15 +1,15 @@
 from .agg_deep.CoNAL import CoNAL
 from .agg_deep.Crowdlayer import Crowdlayer
 from .aggregation.dawid_skene import DawidSkene
-from .aggregation.DS_clust import DawidSkeneClust
-from .aggregation.GLAD import GLAD
-from .aggregation.IWMV import IWMV
+from .aggregation.dawid_skene_clust import DawidSkeneClust
+from .aggregation.glad import GLAD
+from .aggregation.iwmv import IWMV
 from .aggregation.majority_voting import MajorityVoting
-from .aggregation.NaiveSoft import NaiveSoft
+from .aggregation.naive_soft import NaiveSoft
 from .aggregation.plantnet import PlantNet
 from .aggregation.twothird import TwoThird
-from .aggregation.Wawa import Wawa
-from .aggregation.WDS import WDS
+from .aggregation.wawa import Wawa
+from .aggregation.wds import WDS
 from .identification.AUM import AUM
 from .identification.entropy import Entropy
 from .identification.krippendorff_alpha import Krippendorff_Alpha
@@ -20,15 +20,15 @@ from .identification.WAUM_perworker import WAUM_perworker
 
 agg_strategies = {
     "majority_voting": MajorityVoting,
-    "NaiveSoft": NaiveSoft,
+    "naive_soft": NaiveSoft,
     "dawid_skene": DawidSkene,
-    "DSWC": DawidSkeneClust,
-    "GLAD": GLAD,
-    "WDS": WDS,
-    "PlantNet": PlantNet,
-    "TwoThird": TwoThird,
-    "IWMV": IWMV,
-    "Wawa": Wawa,
+    "dawid_skene_clust": DawidSkeneClust,
+    "glad": GLAD,
+    "wds": WDS,
+    "plantnet": PlantNet,
+    "twothird": TwoThird,
+    "iwmv": IWMV,
+    "wawa": Wawa,
 }
 
 agg_deep_strategies = {

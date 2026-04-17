@@ -39,7 +39,7 @@ In python, we can run classical aggregation strategies from the current dataset 
 
 .. code-block:: python
 
-    for strat in ["MV", "NaiveSoft", "DS", "GLAD", "WDS"]:
+    for strat in ["majority_voting", "naive_soft", "dawid_skene", "glad", "wds"]:
         ! peerannot aggregate . -s {strat}
 
 This will create a new folder names `labels` containing the labels in the `labels_cifar10H_${strat}.npy` file.
@@ -50,7 +50,7 @@ Once the labels are available, we can train a neural network with ``PyTorch`` as
 
 .. code-block:: python
 
-    for strat in ["MV", "NaiveSoft", "DS", "GLAD", "WDS"]:
+    for strat in ["majority_voting", "naive_soft", "dawid_skene", "glad", "wds"]:
         ! peerannot train . -o cifar10H_${strat} \
                     -K 10 \
                     --labels=./labels/labels_cifar-10h_${strat}.npy \

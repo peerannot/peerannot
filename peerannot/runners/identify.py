@@ -214,7 +214,7 @@ def dump(js, file, level=1):
     "--img-size", type=int, default=224, help="Size of image (square)"
 )
 @click.option(
-    "--maxiter-DS",
+    "--maxiter-dawid-skene",
     type=int,
     default=50,
     help="Maximum number of iterations for the Dawid and Skene algorithm",
@@ -244,7 +244,7 @@ def dump(js, file, level=1):
     "--matrix-file",
     type=click.Path(),
     default=None,
-    help="Path to confusion matrices saved with an aggregation method like DS. If not provided, run DS model",
+    help="Path to confusion matrices saved with an aggregation method like Dawid-Skene. If not provided, run the Dawid-Skene model",
 )
 @click.option(
     "--hard-labels",
@@ -378,7 +378,7 @@ def identify(folderpath, n_classes, method, **kwargs):
             optimizer,
             n_epochs,
             verbose=True,
-            maxiterDS=kwargs["maxiter_ds"],
+            maxiterDS=kwargs["maxiter_dawid_skene"],
             n_workers=kwargs["n_workers"],
         )
         who = "pleiss" if kwargs["use_pleiss"] else "yang"
@@ -423,7 +423,7 @@ def identify(folderpath, n_classes, method, **kwargs):
             n_epochs,
             verbose=True,
             topk=kwargs["topk"],
-            maxiterDS=kwargs["maxiter_ds"],
+            maxiterDS=kwargs["maxiter_dawid_skene"],
             use_pleiss=kwargs["use_pleiss"],
             n_workers=kwargs["n_workers"],
         )

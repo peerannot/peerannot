@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from scipy.special import entr
 
-from peerannot.models.aggregation.NaiveSoft import NaiveSoft as NS
+from peerannot.models.aggregation.naive_soft import NaiveSoft as NS
 
 from ..template import CrowdModel
 
