@@ -219,13 +219,7 @@ class DawidSkeneClust(CrowdModel):
         :param maxiter: Maximum number of iterations, defaults to 100
         :type maxiter: int, optional
         :return: hard labels, (confusion matrices, prevalence), number of iterations
-        :rtype: tuple(
-            np.ndarray(n_task, n_classes),
-            tuple(
-                np.ndarray(n_worker, n_task, n_task),
-                np.ndarray(n_classes)
-                ),
-            int)
+        :rtype: tuple(np.ndarray(n_task, n_classes), tuple(np.ndarray(n_worker, n_task, n_task), np.ndarray(n_classes)), int)
         """
         self.get_crowd_matrix()
         x = self.crowd_matrix

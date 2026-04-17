@@ -1,6 +1,6 @@
 import numpy as np
 
-from peerannot.models.aggregation.dawid_skene import DawidSkene
+from ..aggregation.dawid_skene import DawidSkene
 
 from ..template import CrowdModel
 

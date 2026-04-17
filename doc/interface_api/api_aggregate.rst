@@ -25,13 +25,13 @@ All aggregation-based strategies are available running:
    :toctree: generated/
    :nosignatures:
 
-    MV.MV
-    NaiveSoft.NaiveSoft
-    Wawa.Wawa
-    IWMV.IWMV
-    DS.Dawid_Skene
-    GLAD.GLAD
+    majority_voting.MajorityVoting
+    naive_soft.NaiveSoft
+    wawa.Wawa
+    iwmv.IWMV
+    dawid_skene.DawidSkene
+    glad.GLAD
     plantnet.PlantNet
     twothird.TwoThird
-    DS_clust.Dawid_Skene_clust
-    WDS.WDS
+    dawid_skene_clust.DawidSkeneClust
+    wds.WDS

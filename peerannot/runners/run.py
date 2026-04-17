@@ -217,7 +217,7 @@ def aggregate_deep(**kwargs):
 @click.option(
     "--strategy",
     "-s",
-    default="MV",
+    default="majority_voting",
     type=str,
     help="Aggregation strategy to compute estimated labels from",
 )
