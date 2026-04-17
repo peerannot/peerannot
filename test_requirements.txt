@@ -1,20 +1,4 @@
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch
---find-links https://download.pytorch.org/whl/torch_stable.html
-torchvision
-torchmetrics
-click>=8.0.0
-numpy>=1.22.1
-pandas>=1.5.2
-Pillow~=11.1.0
-plotly>=5.10.0
-scikit-learn>=1.2.1
-scipy>=1.7.3
-tqdm>=4.64.0
-cffi >=1.17.1
-pydantic >=2.10.6
-sparse>=0.15.5
-
+-r requirements.txt
 #test-env
 pytest>=8.3.5
 pytest-cov>=6.0.0
