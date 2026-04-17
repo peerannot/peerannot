@@ -13,6 +13,11 @@ scipy>=1.7.3
 tqdm>=4.64.0
 cffi >=1.17.1
 pydantic >=2.10.6
-sparse==0.15.5
-line_profiler
-loguru
+sparse>=0.15.5
+
+#test-env
+pytest>=8.3.5
+pytest-cov>=6.0.0
+pytest-timeout>=2.3.1
+coverage >= 7.6.12
+testcontainers

@@ -1,30 +1,28 @@
-from .aggregation.MV import MV
-from .aggregation.NaiveSoft import NaiveSoft
-from .aggregation.DS import Dawid_Skene
-from .aggregation.DS_clust import Dawid_Skene_clust
-from .aggregation.GLAD import GLAD
-from .aggregation.WDS import WDS
-from .aggregation.twothird import TwoThird
-from .aggregation.plantnet import PlantNet
-
-from .aggregation.Wawa import Wawa
-from .aggregation.IWMV import IWMV
-
-from .identification.WAUM_perworker import WAUM_perworker
-from .identification.WAUM import WAUM
-from .identification.AUM import AUM
-from .identification.trace_confusion import Trace_confusion
-from .identification.Spam_score import Spam_Score
-from .identification.entropy import Entropy
-from .identification.krippendorff_alpha import Krippendorff_Alpha
 from .agg_deep.CoNAL import CoNAL
 from .agg_deep.Crowdlayer import Crowdlayer
+from .aggregation.dawid_skene import DawidSkene
+from .aggregation.DS_clust import DawidSkeneClust
+from .aggregation.GLAD import GLAD
+from .aggregation.IWMV import IWMV
+from .aggregation.majority_voting import MajorityVoting
+from .aggregation.NaiveSoft import NaiveSoft
+from .aggregation.plantnet import PlantNet
+from .aggregation.twothird import TwoThird
+from .aggregation.Wawa import Wawa
+from .aggregation.WDS import WDS
+from .identification.AUM import AUM
+from .identification.entropy import Entropy
+from .identification.krippendorff_alpha import Krippendorff_Alpha
+from .identification.Spam_score import Spam_Score
+from .identification.trace_confusion import Trace_confusion
+from .identification.WAUM import WAUM
+from .identification.WAUM_perworker import WAUM_perworker
 
 agg_strategies = {
-    "MV": MV,
+    "majority_voting": MajorityVoting,
     "NaiveSoft": NaiveSoft,
-    "DS": Dawid_Skene,
-    "DSWC": Dawid_Skene_clust,
+    "dawid_skene": DawidSkene,
+    "DSWC": DawidSkeneClust,
     "GLAD": GLAD,
     "WDS": WDS,
     "PlantNet": PlantNet,

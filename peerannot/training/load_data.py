@@ -1,6 +1,7 @@
-from torchvision import datasets, transforms
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+from torchvision import datasets, transforms
 
 
 def load_data(path, path_labels=None, path_remove=None, **kwargs):
@@ -16,7 +17,7 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
                 transforms.RandomAffine(degrees=0, shear=15),
                 transforms.RandomHorizontalFlip(0.5),
                 transforms.RandomResizedCrop(img_size),
-            ]
+            ],
         )
         data_transforms.insert(0, augmentations)
     data_transforms = transforms.Compose(data_transforms)
@@ -34,9 +35,7 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
             "ship": 8,
             "truck": 9,
         }
-    elif "labelme" in str(path).lower():
-        dataset.real_class_to_idx = dataset.class_to_idx
-    elif "music" in str(path).lower():
+    elif "labelme" in str(path).lower() or "music" in str(path).lower():
         dataset.real_class_to_idx = dataset.class_to_idx
 
     dataset.inv_class_to_idx = {v: k for k, v in dataset.class_to_idx.items()}
@@ -114,7 +113,7 @@ def load_data(path, path_labels=None, path_remove=None, **kwargs):
             if np.array(dataset.targets).ndim == 1
             else np.mean(
                 np.argmax(np.array(dataset.targets), axis=1)
-                == np.array(dataset.true_labels)
+                == np.array(dataset.true_labels),
             )
         )
         print(f"Accuracy on aggregation: {acc * 100:.3f}%")

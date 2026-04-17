@@ -1,7 +1,10 @@
-import numpy as np
-from peerannot.models.aggregation.DS import Dawid_Skene as DS
-from ..template import CrowdModel
 from pathlib import Path
+
+import numpy as np
+
+from peerannot.models.aggregation.dawid_skene import DawidSkene as DS
+
+from ..template import CrowdModel
 
 
 class Spam_Score(CrowdModel):
@@ -20,14 +23,14 @@ class Spam_Score(CrowdModel):
 
         .. math::
 
-            \\forall j\\in [n_\\texttt{worker}],\\ s_j = \\|\\pi^{(j)}- \\mathbf{e}u_j^\\top\|_F^2\enspace
-             \\text{with } u_j = \\underset{u\\in\\mathbb{R}^K, u_j\\top \\mathbf{e}=1}{\\mathrm{argmin}} \\|\\pi^{(j)}- \\mathbf{e}u^\\top\|_F^2 \\enspace.
+            \\forall j\\in [n_\\texttt{worker}],\\ s_j = \\|\\pi^{(j)}- \\mathbf{e}u_j^\\top\\|_F^2\\enspace
+             \\text{with } u_j = \\underset{u\\in\\mathbb{R}^K, u_j\\top \\mathbf{e}=1}{\\mathrm{argmin}} \\|\\pi^{(j)}- \\mathbf{e}u^\\top\\|_F^2 \\enspace.
 
         Solving this problem and standardizing the result in :math:`[0,1]` gives the spammer score:
 
         .. math::
 
-            \\forall j \in [n_\\texttt{worker}],\\ s_j = \\frac{1}{K(K-1)}\\sum_{1\\leq k<k'\\leq K}\\sum_{\\ell\\in[k]} (\\pi^{(j)}_{k,\\ell} - \\pi^{(j)}_{k',\\ell})^2 \\enspace.
+            \\forall j \\in [n_\\texttt{worker}],\\ s_j = \\frac{1}{K(K-1)}\\sum_{1\\leq k<k'\\leq K}\\sum_{\\ell\\in[k]} (\\pi^{(j)}_{k,\\ell} - \\pi^{(j)}_{k',\\ell})^2 \\enspace.
 
 
         :param answers: Dictionary of workers answers with format
@@ -57,7 +60,11 @@ class Spam_Score(CrowdModel):
                 self.matrices = torch.load(mf).numpy()
         else:
             print("Running DS model")
-            ds = DS(self.answers, self.n_classes, n_workers=self.n_workers)
+            ds = DS(
+                self.answers,
+                n_classes=self.n_classes,
+                n_workers=self.n_workers,
+            )
             ds.run()
             self.matrices = ds.pi
 
@@ -73,8 +80,8 @@ class Spam_Score(CrowdModel):
             spam.append(
                 1
                 / (self.n_classes * (self.n_classes - 1))
-                * np.sum(((A[np.newaxis, :, :] - A[:, np.newaxis, :]) ** 2))
-                / 2
+                * np.sum((A[np.newaxis, :, :] - A[:, np.newaxis, :]) ** 2)
+                / 2,
             )
 
         filesave = Path(path).resolve() / "identification"

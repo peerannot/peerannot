@@ -1,6 +1,8 @@
-from ..template import CrowdModel
 import numpy as np
-from peerannot.models.aggregation.DS import Dawid_Skene
+
+from peerannot.models.aggregation.dawid_skene import DawidSkene
+
+from ..template import CrowdModel
 
 
 class WDS(CrowdModel):
@@ -17,7 +19,7 @@ class WDS(CrowdModel):
 
         .. math::
 
-            \\mathrm{WDS}(i, \\mathcal{D}) = \\underset{k\in[K]}{\mathrm{argmax}} \\sum_{j\in\mathcal{A}(x_i)}\\pi_{k,k}^{(j)}\\mathbf{1}(y_i^{(j)} = k)
+            \\mathrm{WDS}(i, \\mathcal{D}) = \\underset{k\\in[K]}{\\mathrm{argmax}} \\sum_{j\\in\\mathcal{A}(x_i)}\\pi_{k,k}^{(j)}\\mathbf{1}(y_i^{(j)} = k)
 
         :param answers: Dictionary of workers answers with format
 
@@ -35,19 +37,10 @@ class WDS(CrowdModel):
         super().__init__(answers)
         self.n_classes = n_classes
         self.n_workers = kwargs["n_workers"]
-        if kwargs.get("path_remove", None):
-            to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
-            self.answers_modif = {}
-            i = 0
-            for key, val in self.answers.items():
-                if int(key) not in to_remove[:, 1]:
-                    self.answers_modif[i] = val
-                    i += 1
-            self.answers = self.answers_modif
 
     def run(self):
         """Run DS model to get confusion matrices"""
-        ds = Dawid_Skene(self.answers, self.n_classes, n_workers=self.n_workers)
+        ds = DawidSkene(self.answers, self.n_classes, n_workers=self.n_workers)
         ds.run()
         self.pi = ds.pi
         self.ds = ds
@@ -64,7 +57,7 @@ class WDS(CrowdModel):
             task = self.answers[tt]
             for worker, vote in task.items():
                 baseline[task_id, int(vote)] += self.pi[
-                    self.ds.converter.table_worker[int(worker)]
+                    self.ds.table_worker[int(worker)]
                 ][int(vote), int(vote)]
         self.baseline = baseline
         return np.where(
@@ -79,6 +72,6 @@ class WDS(CrowdModel):
         :return: Hard labels (majority vote)
         :rtype: numpy.ndarray
         """
-        return np.vectorize(self.converter.inv_labels.get)(
-            np.argmax(self.get_probas(), axis=1)
+        return np.vectorize(self.inv_labels.get)(
+            np.argmax(self.get_probas(), axis=1),
         )

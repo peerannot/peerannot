@@ -1,8 +1,10 @@
-from ..template import CrowdModel
-import numpy as np
 import warnings
 from pathlib import Path
+
+import numpy as np
 from tqdm.auto import tqdm
+
+from ..template import CrowdModel
 
 
 class TwoThird(CrowdModel):
@@ -18,7 +20,7 @@ class TwoThird(CrowdModel):
 
         .. math::
 
-            \mathrm{TwoThird}(i, \{y_i^{(j)}\}_j) = \\begin{cases} \mathrm{MV}(i, \{y_i^{(j)}\}_j) & \\text{if} s_i=1 \\\\
+            \\mathrm{TwoThird}(i, \\{y_i^{(j)}\\}_j) = \\begin{cases} \\mathrm{MV}(i, \\{y_i^{(j)}\\}_j) & \\text{if} s_i=1 \\\\
             \\text{undefined} & \\text{otherwise} \\end{cases}
 
         :param answers: Dictionary of workers answers with format
@@ -40,19 +42,12 @@ class TwoThird(CrowdModel):
         super().__init__(answers)
         self.n_classes = n_classes
         self.sparse = sparse
-        if kwargs.get("dataset", None):
-            self.path_save = Path(kwargs["dataset"]) / "identification" / "twothird"
+        if kwargs.get("dataset"):
+            self.path_save = (
+                Path(kwargs["dataset"]) / "identification" / "twothird"
+            )
         else:
             self.path_save = None
-        if kwargs.get("path_remove", None):
-            to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
-            self.answers_modif = {}
-            i = 0
-            for key, val in self.answers.items():
-                if int(key) not in to_remove[:, 1]:
-                    self.answers_modif[i] = val
-                    i += 1
-            self.answers = self.answers_modif
 
     def get_probas(self):
         """Two third strategy does not return soft labels. Defaults to ``get_answers()``
@@ -63,7 +58,7 @@ class TwoThird(CrowdModel):
             """
             TwoThird agreement only returns hard labels.
             Defaulting to ``get_answers()``.
-            """
+            """,
         )
         return self.get_answers()
 
@@ -93,7 +88,9 @@ class TwoThird(CrowdModel):
             ans = [
                 (
                     np.random.choice(
-                        np.flatnonzero(self.baseline[i] == self.baseline[i].max())
+                        np.flatnonzero(
+                            self.baseline[i] == self.baseline[i].max(),
+                        ),
                     )
                     if enough_votes[i] == 1
                     and self.baseline[i].max() / sum_[i] >= 2 / 3
@@ -109,7 +106,9 @@ class TwoThird(CrowdModel):
                 n_votes = len(task)
                 max_ = count.max()
                 if n_votes >= 2 and max_ / n_votes >= 2 / 3:
-                    ans[int(task_id)] = np.random.choice(np.flatnonzero(count == max_))
+                    ans[int(task_id)] = np.random.choice(
+                        np.flatnonzero(count == max_),
+                    )
         self.ans = ans
         if self.path_save:
             noconsensus = np.where(np.array(ans) == -1)[0]
@@ -119,4 +118,4 @@ class TwoThird(CrowdModel):
             if not self.path_save.exists():
                 self.path_save.mkdir(parents=True, exist_ok=True)
             np.savetxt(self.path_save / "too_hard.txt", tab, fmt="%1i")
-        return np.vectorize(self.converter.inv_labels.get)(np.array(ans))
+        return np.vectorize(self.inv_labels.get)(np.array(ans))

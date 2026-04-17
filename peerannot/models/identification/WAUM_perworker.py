@@ -1,12 +1,14 @@
-from ..template import CrowdModel
-import pandas as pd
-from peerannot.models.aggregation.DS import Dawid_Skene as DS
-import torch
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import torch
 from torch.utils.data import Subset
 from tqdm.auto import tqdm
-from torchvision import transforms
-import numpy as np
+
+from peerannot.models.aggregation.dawid_skene import DawidSkene as DS
+
+from ..template import CrowdModel
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -50,7 +52,7 @@ class WAUM_perworker(CrowdModel):
         n_epoch,
         verbose=False,
         use_pleiss=False,
-        **kwargs
+        **kwargs,
     ):
         """Compute the WAUM score for each task using a stacked version of the dataset (stacked over workers). Each classifier is trained on :math:`(x_i, y_i^{(j)})_i` for a given worker :math:`j`. THE WAUM per worker writes:
 
@@ -109,7 +111,10 @@ class WAUM_perworker(CrowdModel):
             "optimizer": self.optimizer.state_dict(),
         }
         self.filenames = np.array(
-            [Path(samp[0]).name for samp in self.tasks.dataset.dataset.samples]
+            [
+                Path(samp[0]).name
+                for samp in self.tasks.dataset.dataset.samples
+            ],
         )
 
         self.path = Path("./temp/").mkdir(parents=True, exist_ok=True)
@@ -122,7 +127,11 @@ class WAUM_perworker(CrowdModel):
         :type cut: bool, optional
         """
         if not cut:
-            self.ds = DS(self.answers, self.n_classes, n_workers=self.n_workers)
+            self.ds = DS(
+                self.answers,
+                self.n_classes,
+                n_workers=self.n_workers,
+            )
             self.ds.run(maxiter=self.maxiterDS)
         else:
             self.answers_waum = {}
@@ -131,7 +140,11 @@ class WAUM_perworker(CrowdModel):
                 if int(key) not in self.too_hard[:, 1]:
                     self.answers_waum[i] = val
                     i += 1
-            self.ds = DS(self.answers_waum, self.n_classes, n_workers=self.n_workers)
+            self.ds = DS(
+                self.answers_waum,
+                self.n_classes,
+                n_workers=self.n_workers,
+            )
             self.ds.run(maxiter=self.maxiterDS)
 
         self.pi = self.ds.pi
@@ -208,9 +221,16 @@ class WAUM_perworker(CrowdModel):
                 [int(i) for i in list(data_j["task"].values)],
             )
             dl = torch.utils.data.DataLoader(
-                sub, batch_size=50, worker_init_fn=0, shuffle=True
+                sub,
+                batch_size=50,
+                worker_init_fn=0,
+                shuffle=True,
             )
-            pij = torch.tensor(self.pi[int(j)]).type(torch.FloatTensor).to(self.DEVICE)
+            pij = (
+                torch.tensor(self.pi[int(j)])
+                .type(torch.FloatTensor)
+                .to(self.DEVICE)
+            )
             self.model.to(self.DEVICE)
             self.model.train()
             for epoch in (
@@ -219,7 +239,10 @@ class WAUM_perworker(CrowdModel):
                 else range(self.n_epoch)
             ):
                 for batch in dl:
-                    len_, out, labels, idx, truth = self.make_step(data_j, batch)
+                    len_, out, labels, idx, truth = self.make_step(
+                        data_j,
+                        batch,
+                    )
                     if len_ is None:
                         continue
                     AUM_recorder["task"].extend(self.filenames[idx])
@@ -232,27 +255,41 @@ class WAUM_perworker(CrowdModel):
                     # s_y and P_y
                     if len_ > 1:
                         AUM_recorder["label_logit"].extend(
-                            out.gather(1, labels.view(-1, 1)).squeeze().tolist()
+                            out.gather(1, labels.view(-1, 1))
+                            .squeeze()
+                            .tolist(),
                         )
                         probs = out.softmax(dim=1)
                         AUM_recorder["label_prob"].extend(
-                            probs.gather(1, labels.view(-1, 1)).squeeze().tolist()
+                            probs.gather(1, labels.view(-1, 1))
+                            .squeeze()
+                            .tolist(),
                         )
                     else:
                         AUM_recorder["label_logit"].extend(
-                            out.gather(1, labels.view(-1, 1)).squeeze(0).tolist()
+                            out.gather(1, labels.view(-1, 1))
+                            .squeeze(0)
+                            .tolist(),
                         )
                         probs = out.softmax(dim=1)
                         AUM_recorder["label_prob"].extend(
-                            probs.gather(1, labels.view(-1, 1)).squeeze(0).tolist()
+                            probs.gather(1, labels.view(-1, 1))
+                            .squeeze(0)
+                            .tolist(),
                         )
 
                     # (s\y)[1] and (P\y)[1]
                     masked_logits = torch.scatter(
-                        out, 1, labels.view(-1, 1), float("-inf")
+                        out,
+                        1,
+                        labels.view(-1, 1),
+                        float("-inf"),
                     )
                     masked_probs = torch.scatter(
-                        probs, 1, labels.view(-1, 1), float("-inf")
+                        probs,
+                        1,
+                        labels.view(-1, 1),
+                        float("-inf"),
                     )
                     (
                         other_logit_values,
@@ -265,8 +302,12 @@ class WAUM_perworker(CrowdModel):
                     if len(other_logit_values) > 1:
                         other_logit_values = other_logit_values.squeeze()
                         other_prob_values = other_prob_values.squeeze()
-                    AUM_recorder["other_max_logit"].extend(other_logit_values.tolist())
-                    AUM_recorder["other_max_prob"].extend(other_prob_values.tolist())
+                    AUM_recorder["other_max_logit"].extend(
+                        other_logit_values.tolist(),
+                    )
+                    AUM_recorder["other_max_prob"].extend(
+                        other_prob_values.tolist(),
+                    )
 
                     # s[2] ans P[2]
                     second_logit = torch.sort(out, axis=1)[0][:, -2]
@@ -275,7 +316,7 @@ class WAUM_perworker(CrowdModel):
                     AUM_recorder["secondprob"].extend(second_prob.tolist())
                     for ll in range(len_):
                         AUM_recorder["score"].append(
-                            self.get_psuccess(probs[ll], pij).cpu().numpy()
+                            self.get_psuccess(probs[ll], pij).cpu().numpy(),
                         )
             self.reset()
         self.reset()
@@ -295,9 +336,7 @@ class WAUM_perworker(CrowdModel):
                     "score",
                 ] = tmp[
                     (tmp.worker == j) & (tmp.epoch == self.n_epoch - 1)
-                ].score.values[
-                    0
-                ]
+                ].score.values[0]
         self.AUM_recorder = recorder2
 
     def reset(self):
@@ -310,7 +349,7 @@ class WAUM_perworker(CrowdModel):
         self.optimizer.param_groups[0]["lr"] = self.initial_lr
 
     def get_psuccess(self, probas, pij):
-        """From the classifier associated to worker j :math:`\mathcal{C}^{(j)}`, computes weights as:
+        """From the classifier associated to worker j :math:`\\mathcal{C}^{(j)}`, computes weights as:
 
         .. math::
 
@@ -341,7 +380,7 @@ class WAUM_perworker(CrowdModel):
         aum_df = self.AUM_recorder
         dico_cpt_aum = {"index": [], "task": [], "waum": []}
         aum_df["margin"] = np.array(aum_df["label_prob"]) - np.array(
-            aum_df["other_max_prob"]
+            aum_df["other_max_prob"],
         )
         unique_task = np.unique(np.array(aum_df["index"]))
         aum_per_worker = {}
@@ -384,7 +423,7 @@ class WAUM_perworker(CrowdModel):
         aum_df = self.AUM_recorder
         dico_cpt_aum = {"index": [], "task": [], "waum": []}
         aum_df["margin"] = np.array(aum_df["label_prob"]) - np.array(
-            aum_df["secondprob"]
+            aum_df["secondprob"],
         )
         unique_task = np.unique(np.array(aum_df["index"]))
         aum_per_worker = {}
@@ -433,7 +472,7 @@ class WAUM_perworker(CrowdModel):
         ]
         self.quantile = quantile
         self.too_hard = np.column_stack(
-            (self.index_too_hard, self.tasks_too_hard)
+            (self.index_too_hard, self.tasks_too_hard),
         ).astype(int)
 
     def run(self, alpha=0.01):
@@ -469,7 +508,7 @@ class WAUM_perworker(CrowdModel):
                 task = self.answers[tt]
                 for worker, vote in task.items():
                     baseline[task_id, int(vote)] += self.pi[
-                        self.ds.converter.table_worker[int(worker)]
+                        self.ds.table_worker[int(worker)]
                     ][int(vote), int(vote)]
         self.baseline = baseline
         return np.where(
@@ -484,6 +523,6 @@ class WAUM_perworker(CrowdModel):
         :return: Hard labels
         :rtype: numpy.ndarray
         """
-        return np.vectorize(self.converter.inv_labels.get)(
-            np.argmax(self.get_probas(), axis=1)
+        return np.vectorize(self.inv_labels.get)(
+            np.argmax(self.get_probas(), axis=1),
         )

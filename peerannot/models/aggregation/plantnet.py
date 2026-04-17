@@ -1,9 +1,13 @@
-from ..template import CrowdModel
-import numpy as np
+from __future__ import annotations
+
+import json
 import warnings
 from pathlib import Path
-import json
+
+import numpy as np
 from tqdm.auto import tqdm
+
+from peerannot.models.template import CrowdModel
 
 THETACONF = 2
 THETAACC = 0.7
@@ -15,7 +19,10 @@ class PlantNet(CrowdModel):
     PlantNet aggregation strategy
     ===================================
 
-    Weighted majority vote based on the number of identified classes (species) per worker. Each task if either valid (:math:`s_i=1` or not) if the confidence and accuracy in the estimated label are above the set thresholds.
+    Weighted majority vote based on the number of identified
+    classes (species) per worker. Each task if either valid
+    (:math:`s_i=1` or not) if the confidence and accuracy in the estimated
+    label are above the set thresholds.
     """
 
     def __init__(
@@ -26,15 +33,22 @@ class PlantNet(CrowdModel):
         parrots="ignored",
         alpha=1,
         beta=1,
+        theta_conf: float = THETACONF,
+        theta_acc: float = THETAACC,
+        taxa_obs_weight=1,
+        taxa_votes_weight=0.1,
         AIweight=1,  # if AI is fixed or invalidating
         authors=None,  # path to txt file containing authors id for each task
         scores=None,  # path to txt file containing scores for each task
         threshold_scores=None,  # threshold for scores
+        *,
+        output_unvalidated: bool = False,
         **kwargs,
     ):
-        """Compute a weighted majority vote based on the number of identified classes (species) per worker
+        r"""Compute a weighted majority vote based on the number of identified
+        classes (species) per worker
 
-        :param answers: Dictionary of workers answers with format
+        :param answers: dictionary of workers answers with format
 
          .. code-block:: javascript
 
@@ -76,6 +90,11 @@ class PlantNet(CrowdModel):
         self.parrots = parrots
         self.alpha = alpha
         self.beta = beta
+        self.theta_conf = theta_conf
+        self.theta_acc = theta_acc
+        self.taxa_obs_weight = taxa_obs_weight
+        self.taxa_votes_weight = taxa_votes_weight
+        self.output_unvalidated = output_unvalidated
         if self.AI == "ignored":
             for task in self.answers:
                 self.answers[task] = {
@@ -87,9 +106,9 @@ class PlantNet(CrowdModel):
             for task in self.answers:
                 for worker, label in self.answers[task].items():
                     if worker == "AI":
-                        self.answers[task][self.n_workers] = self.answers[task][
-                            "AI"
-                        ].pop(worker)
+                        self.answers[task][self.n_workers] = self.answers[
+                            task
+                        ]["AI"].pop(worker)
             self.weight_AI = -1
         elif self.AI == "fixed" or self.AI == "invalidating":
             self.weight_AI = AIweight
@@ -113,13 +132,13 @@ class PlantNet(CrowdModel):
                     k: v for k, v in self.answers[task].items() if k != "AI"
                 }
             self.ans_ai = ans_ai
-            with open(scores, "r") as f:
+            with open(scores) as f:
                 self.scores = json.load(f)
             self.scores = np.array(list(self.scores.values()))
             self.scores_threshold = threshold_scores
         else:
             raise ValueError(
-                f"Option {self.AI} should be one of worker, fixed, invalidating, confident or ignored"
+                f"Option {self.AI} should be one of worker, fixed, invalidating, confident or ignored",
             )
         self.n_classes = n_classes
         self.authors = authors
@@ -127,28 +146,12 @@ class PlantNet(CrowdModel):
             self.authors = -np.ones(len(self.answers), dtype=int)
         else:
             self.authors = np.loadtxt(self.authors, dtype=int)
-        if kwargs.get("dataset", None):
-            self.path_save = Path(kwargs["dataset"]) / "identification" / "plantnet"
+        if kwargs.get("dataset"):
+            self.path_save = (
+                Path(kwargs["dataset"]) / "identification" / "plantnet"
+            )
         else:
             self.path_save = None
-        if kwargs.get("path_remove", None):
-            to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
-            self.answers_modif = {}
-            i = 0
-            for key, val in self.answers.items():
-                if int(key) not in to_remove[:, 1]:
-                    self.answers_modif[i] = val
-                    i += 1
-            self.answers = self.answers_modif
-
-    def get_probas(self):
-        warnings.warn(
-            """
-            PlantNet agreement only returns hard labels.
-            Defaulting to `get_answers()`.
-            """
-        )
-        return self.get_answers()
 
     def get_wmv(self, weights):
         """Compute weighted majority vote
@@ -174,11 +177,13 @@ class PlantNet(CrowdModel):
             :return: Most weighted label
             :rtype: int
             """
-
             init = calculate_init()
             if (
                 self.AI == "fixed"
-                or (self.AI == "confident" and self.scores[i] >= self.scores_threshold)
+                or (
+                    self.AI == "confident"
+                    and self.scores[i] >= self.scores_threshold
+                )
             ) and self.ans_ai[i] != -1:
                 init[self.ans_ai[i]] += self.weight_AI
             return np.argmax(init)
@@ -225,7 +230,10 @@ class PlantNet(CrowdModel):
                 if self.AI == "invalidating":
                     if conf / (sum_weights + self.weight_AI) < THETAACC:
                         sum_weights += self.weight_AI
-                if self.AI == "confident" and self.scores[i] >= self.scores_threshold:
+                if (
+                    self.AI == "confident"
+                    and self.scores[i] >= self.scores_threshold
+                ):
                     sum_weights += self.weight_AI
                     conf += self.weight_AI * (self.ans_ai[i] == yhat[i])
             acc = conf / sum_weights
@@ -246,7 +254,11 @@ class PlantNet(CrowdModel):
 
         """
         valid = np.zeros(self.n_task)
-        mask = np.where((conf > THETACONF) & (acc > THETAACC), True, False)
+        mask = np.where(
+            (conf > self.theta_conf) & (acc > self.theta_acc),
+            True,
+            False,
+        )
         valid[mask] = 1
         return valid
 
@@ -281,20 +293,36 @@ class PlantNet(CrowdModel):
                         if self.authors[int(task_id)] == int(worker):
                             if valid[int(task_id)] == 1:
                                 if (
-                                    dico_labs_workers[int(worker)].get(lab_worker, None)
+                                    dico_labs_workers[int(worker)].get(
+                                        lab_worker,
+                                        None,
+                                    )
                                     is None
                                 ):
                                     taxa_obs[int(worker)] += 1
-                                    dico_labs_workers[int(worker)][lab_worker] = 1
+                                    dico_labs_workers[int(worker)][
+                                        lab_worker
+                                    ] = 1
         for task_id, label_task in zip(self.answers.keys(), yhat):
             for worker, lab_worker in self.answers[task_id].items():
                 if worker != "AI":
                     if lab_worker == label_task:
-                        if dico_labs_workers[int(worker)].get(lab_worker, None) is None:
-                            taxa_votes[int(worker)] += 1 / 10
-                            dico_labs_workers[int(worker)][lab_worker] = 1
+                        if (
+                            dico_labs_workers[int(worker)].get(
+                                lab_worker,
+                                None,
+                            )
+                            is None
+                        ):
+                            taxa_votes[int(worker)] += self.taxa_votes_weight
+                            dico_labs_workers[int(worker)][lab_worker] = (
+                                self.taxa_obs_weight
+                            )
         self.n_j = np.array(
-            [taxa_obs[w] + np.round(taxa_votes[w]) for w in range(self.n_workers)]
+            [
+                taxa_obs[w] + np.round(taxa_votes[w])
+                for w in range(self.n_workers)
+            ],
         )
 
     def run(self, maxiter=100, epsilon=1e-5):  # epsilon = diff in weights
@@ -321,7 +349,10 @@ class PlantNet(CrowdModel):
             acc, conf = self.get_conf_acc(init_yhat, weights)
             valid = self.get_valid_tasks(acc, conf)
             self.get_n(valid, init_yhat)
-            if np.sum(np.abs(self.n_j - n_j)) / self.n_task <= epsilon and step > 5:
+            if (
+                np.sum(np.abs(self.n_j - n_j)) / self.n_task <= epsilon
+                and step > 5
+            ):
                 break
         self.labels_hat = yhat if maxiter > 1 else init_yhat
         self.valid = valid
@@ -329,12 +360,20 @@ class PlantNet(CrowdModel):
         self.conf = conf
         self.acc = acc
 
-    def get_answers(self):
-        """
-        :return: Hard labels and None when no consensus is reached
+    def get_answers(self) -> np.array:
+        """:return: Hard labels and None when no consensus is reached
         :rtype: numpy.ndarray
         """
         ans = self.labels_hat
+        if self.output_unvalidated:
+            return np.vectorize(self.inv_labels.get)(np.array(ans))
+        return np.where(
+            self.valid,
+            np.vectorize(self.inv_labels.get)(np.array(ans)),
+            -1,
+        )
+
+    def save_too_hard(self) -> None:
         if self.path_save:
             noconsensus = np.where(np.array(self.valid) == 0)[0]
             tab = np.ones((noconsensus.shape[0], 2))
@@ -343,7 +382,6 @@ class PlantNet(CrowdModel):
             if not self.path_save.exists():
                 self.path_save.mkdir(parents=True, exist_ok=True)
             np.savetxt(self.path_save / "too_hard.txt", tab, fmt="%1i")
-        return np.vectorize(self.converter.inv_labels.get)(np.array(ans))
 
     def get_probas(self):
         """Not available for this strategy, default to `get_answers()`"""
@@ -351,6 +389,6 @@ class PlantNet(CrowdModel):
             """
             PlantNet agreement only returns hard labels.
             Defaulting to `get_answers()`.
-            """
+            """,
         )
         return self.get_answers()

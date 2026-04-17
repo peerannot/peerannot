@@ -1,20 +1,18 @@
-import numpy as np
-from pathlib import Path
+import json
 import os
 import os.path
-import json
 import shutil
 import subprocess
-
+from pathlib import Path
 
 dir_toydata = Path(__file__).parents[1] / "datasets" / "toy-data"
 
 
 def verify_json(path):
-    with open(path, "r") as f:
+    with open(path) as f:
         answers = json.load(f)
 
-    with open(dir_toydata / "answers.json", "r") as f:
+    with open(dir_toydata / "answers.json") as f:
         answers_sure = json.load(f)
 
     assert answers == answers_sure
@@ -29,11 +27,11 @@ def test_custom_creation():
     # Test the answers txt format (Rodrigues matrix format), with a test set and a val set
     os.makedirs(dir_temp)
     currentPath = Path(__file__).parents[1] / "datasets" / "customDataset.py"
-    result = subprocess.run(
+    subprocess.run(
         [
             "peerannot",
             "install",
-            Path(__file__).parents[1] / "datasets" / "customDataset.py",
+            currentPath,
             "--train-path",
             dir_train,
             "--test-path",
@@ -49,6 +47,7 @@ def test_custom_creation():
         ],
         capture_output=True,
         cwd=dir_temp,
+        check=False,
     )
     nb_files = len([name for name in os.listdir(dir_temp)])
     assert nb_files == 6
@@ -84,13 +83,14 @@ def test_custom_creation():
         ],
         capture_output=True,
         cwd=dir_temp,
+        check=False,
     )
     nb_files = len(
         [
             name
             for name in os.listdir(dir_temp)
             # if os.path.isfile(os.path.join(dir_temp, name))
-        ]
+        ],
     )
     assert nb_files == 4
     verify_json(dir_temp / "answers.json")
@@ -120,6 +120,7 @@ def test_custom_creation():
         ],
         capture_output=True,
         cwd=dir_temp,
+        check=False,
     )
     verify_json(dir_temp / "answers.json")
     shutil.rmtree(dir_temp)  # cleanup
@@ -141,13 +142,14 @@ def test_custom_creation():
         ],
         capture_output=True,
         cwd=dir_temp,
+        check=False,
     )
     nb_files = len(
         [
             name
             for name in os.listdir(dir_temp)
             # if os.path.isfile(os.path.join(dir_temp, name))
-        ]
+        ],
     )
     assert nb_files == 1
 
