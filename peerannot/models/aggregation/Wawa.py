@@ -1,6 +1,8 @@
-from ..aggregation.IWMV import IWMV
-import numpy as np
 import warnings
+
+import numpy as np
+
+from ..aggregation.IWMV import IWMV
 
 
 class Wawa(IWMV):
@@ -15,9 +17,9 @@ class Wawa(IWMV):
 
         .. math::
 
-            \mathrm{WAWA}(i, \mathcal{D}) = \\underset{k\in[K]}{\mathrm{argmax}} \sum_{j\in\mathcal{A}(x_i)}\\beta_j \mathbf{1}(y_i^{(j)} = k)
+            \\mathrm{WAWA}(i, \\mathcal{D}) = \\underset{k\\in[K]}{\\mathrm{argmax}} \\sum_{j\\in\\mathcal{A}(x_i)}\\beta_j \\mathbf{1}(y_i^{(j)} = k)
 
-            \\beta_j = \\frac{1}{|\{y_{i'}^{(j)}\}_{i'}|} \sum_{i'=1}^{n_{\\texttt{task}}} \mathbb{1}(y_{i'}^{(j)} = \mathrm{MV}(i', \{y_{i'}^{(j)}\}_j)
+            \\beta_j = \\frac{1}{|\\{y_{i'}^{(j)}\\}_{i'}|} \\sum_{i'=1}^{n_{\\texttt{task}}} \\mathbb{1}(y_{i'}^{(j)} = \\mathrm{MV}(i', \\{y_{i'}^{(j)}\\}_j)
 
 
         :param answers: Dictionary of workers answers with format
@@ -60,6 +62,6 @@ class Wawa(IWMV):
             """
             Wawa aggregation only returns hard labels.
             Defaulting to ``get_answers()``.
-            """
+            """,
         )
         return self.get_answers()

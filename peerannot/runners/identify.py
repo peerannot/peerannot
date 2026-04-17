@@ -1,15 +1,16 @@
-import click
-import torch
-import peerannot.training.load_data as ptrain
-from pathlib import Path
-from .train import get_model, get_optimizer, run_epoch, evaluate
-from torch.utils.data import DataLoader
-import torch.nn as nn
-from torch.utils.data import Dataset
-import numpy as np
-import pandas as pd
 import json
+from pathlib import Path
+
+import click
+import numpy as np
+import torch
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
+
 import peerannot.models as pmod
+import peerannot.training.load_data as ptrain
+
+from .train import evaluate, get_model, get_optimizer
 
 identification_strategies = pmod.identification_strategies
 identification_strategies = {
@@ -112,7 +113,6 @@ def identificationinfo():
     for meth in identification_strategies.keys():
         print(f"- {meth}")
     print("-" * 10)
-    return
 
 
 def dump(js, file, level=1):
@@ -133,7 +133,7 @@ def dump(js, file, level=1):
 
 
 @identification.command(
-    help="Identify ambiguous tasks using different methods available in `peerannot identificationinfo`"
+    help="Identify ambiguous tasks using different methods available in `peerannot identificationinfo`",
 )
 @click.argument(
     "folderpath",
@@ -184,7 +184,7 @@ def dump(js, file, level=1):
 @click.option(
     "--n-params",
     type=int,
-    default=int(32 * 32 * 3),
+    default=(32 * 32 * 3),
     help="Number of parameters for the logistic regression only",
 )
 @click.option("--lr", type=float, default=0.1, help="Learning rate")
@@ -205,7 +205,10 @@ def dump(js, file, level=1):
     help="Path to the metadata of the dataset if different than default",
 )
 @click.option(
-    "--decay", type=float, default=5e-4, help="Weight decay for the optimizer"
+    "--decay",
+    type=float,
+    default=5e-4,
+    help="Weight decay for the optimizer",
 )
 @click.option(
     "--img-size", type=int, default=224, help="Size of image (square)"
@@ -265,19 +268,19 @@ def identify(folderpath, n_classes, method, **kwargs):
         kwargs["metadata_path"] = Path(folderpath) / "metadata.json"
     else:
         kwargs["metadata_path"] = Path(["metadata_path"]).resolve()
-    with open(kwargs["metadata_path"], "r") as metadata:
+    with open(kwargs["metadata_path"]) as metadata:
         metadata = json.load(metadata)
     kwargs["n_workers"] = metadata["n_workers"]
     if method.lower() != "AUM".lower():
         votes = Path(kwargs["labels"]).resolve() if kwargs["labels"] else None
         if votes:
-            with open(votes, "r") as f:
+            with open(votes) as f:
                 votes = json.load(f)
             votes = dict(sorted({int(k): v for k, v in votes.items()}.items()))
         labels_to_load = None
     else:
         votes = None
-        labels_to_load = kwargs.get("hard_labels", None)
+        labels_to_load = kwargs.get("hard_labels")
         if labels_to_load:
             labels_to_load = Path(labels_to_load).resolve()
     path_folders = Path(folderpath).resolve()
@@ -455,7 +458,7 @@ def identify(folderpath, n_classes, method, **kwargs):
     if method.startswith("WAUM"):
         path_results = path_folders / "labels"
         path_results.mkdir(parents=True, exist_ok=True)
-        path_file = path_results / f"labels_{method.lower()}_{str(alpha)}.npy"
+        path_file = path_results / f"labels_{method.lower()}_{alpha!s}.npy"
         yhat = waum.get_probas()
         np.save(path_file, yhat)
         print(

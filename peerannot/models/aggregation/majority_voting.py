@@ -1,9 +1,10 @@
-from ..template import CrowdModel
 import numpy as np
 from tqdm.auto import tqdm
 
+from ..template import CrowdModel
 
-class MV(CrowdModel):
+
+class MajorityVoting(CrowdModel):
     """
     =========================
     Majority voting
@@ -16,7 +17,7 @@ class MV(CrowdModel):
 
         .. math::
 
-            \mathrm{MV}(i, \mathcal{D}) = \\underset{k\in[K]}{\mathrm{argmax}} \sum_{j\in\mathcal{A}(x_i)}\mathbf{1}(y_i^{(j)} = k)
+            \\mathrm{MV}(i, \\mathcal{D}) = \\underset{k\\in[K]}{\\mathrm{argmax}} \\sum_{j\\in\\mathcal{A}(x_i)}\\mathbf{1}(y_i^{(j)} = k)
 
         :param answers: Dictionary of workers answers with format
 
@@ -38,15 +39,6 @@ class MV(CrowdModel):
         self.n_classes = n_classes
         self.sparse = sparse
         self.original_answers = self.answers
-        if kwargs.get("path_remove", None):
-            to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
-            self.answers_modif = {}
-            i = 0
-            for key, val in self.answers.items():
-                if int(key) not in to_remove[:, 1]:
-                    self.answers_modif[i] = val
-                    i += 1
-            self.answers = self.answers_modif
 
     def compute_baseline(self):
         """Compute label frequency per task"""
@@ -67,7 +59,7 @@ class MV(CrowdModel):
             self.compute_baseline()
             ans = [
                 np.random.choice(
-                    np.flatnonzero(self.baseline[i] == self.baseline[i].max())
+                    np.flatnonzero(self.baseline[i] == self.baseline[i].max()),
                 )
                 for i in range(len(self.answers))
             ]
@@ -77,10 +69,10 @@ class MV(CrowdModel):
                 task = self.answers[task_id]
                 count = np.bincount(np.array(list(task.values())))
                 ans[int(task_id)] = np.random.choice(
-                    np.flatnonzero(count == count.max())
+                    np.flatnonzero(count == count.max()),
                 )
         self.ans = ans
-        return np.vectorize(self.converter.inv_labels.get)(np.array(ans))
+        return np.vectorize(self.inv_labels.get)(np.array(ans))
 
     def get_probas(self):
         """Get labels obtained with majority voting aggregation

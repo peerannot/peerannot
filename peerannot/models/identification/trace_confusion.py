@@ -1,7 +1,10 @@
-import numpy as np
-from peerannot.models.aggregation.DS import Dawid_Skene as DS
-from ..template import CrowdModel
 from pathlib import Path
+
+import numpy as np
+
+from peerannot.models.aggregation.dawid_skene import DawidSkene as DS
+
+from ..template import CrowdModel
 
 
 class Trace_confusion(CrowdModel):

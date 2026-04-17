@@ -1,12 +1,10 @@
+from pathlib import Path
+from typing import Union
+
+import numpy as np
 import pandas as pd
 import torch
-from pathlib import Path
-from torch.utils.data import Subset
 from tqdm.auto import tqdm
-from dataclasses import dataclass
-import numpy as np
-from typing import Union
-import torch.nn as nn
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 sample_identifier = Union[int, str]
@@ -85,7 +83,10 @@ class AUM:
             self.topk = int(topk)
 
         self.filenames = np.array(
-            [Path(samp[0]).name for samp in self.tasks.dataset.dataset.samples]
+            [
+                Path(samp[0]).name
+                for samp in self.tasks.dataset.dataset.samples
+            ],
         )
         self.path = Path("./temp/").mkdir(parents=True, exist_ok=True)
         torch.save(self.checkpoint, "./temp/checkpoint_aum.pth")
@@ -149,16 +150,21 @@ class AUM:
                 # AUM_recorder["all_logits"].extend(out.tolist())
                 # s_y and P_y
                 AUM_recorder["label_logit"].extend(
-                    out.gather(1, labels.view(-1, 1)).squeeze().tolist()
+                    out.gather(1, labels.view(-1, 1)).squeeze().tolist(),
                 )
                 probs = out.softmax(dim=1)
                 AUM_recorder["label_prob"].extend(
-                    probs.gather(1, labels.view(-1, 1)).squeeze().tolist()
+                    probs.gather(1, labels.view(-1, 1)).squeeze().tolist(),
                 )
                 # (s\y)[1] and (P\y)[1]
-                masked_logits = torch.scatter(out, 1, labels.view(-1, 1), float("-inf"))
+                masked_logits = torch.scatter(
+                    out, 1, labels.view(-1, 1), float("-inf")
+                )
                 masked_probs = torch.scatter(
-                    probs, 1, labels.view(-1, 1), float("-inf")
+                    probs,
+                    1,
+                    labels.view(-1, 1),
+                    float("-inf"),
                 )
                 (
                     other_logit_values,
@@ -171,8 +177,12 @@ class AUM:
                 if len(other_logit_values) > 1:
                     other_logit_values = other_logit_values.squeeze()
                     other_prob_values = other_prob_values.squeeze()
-                AUM_recorder["other_max_logit"].extend(other_logit_values.tolist())
-                AUM_recorder["other_max_prob"].extend(other_prob_values.tolist())
+                AUM_recorder["other_max_logit"].extend(
+                    other_logit_values.tolist()
+                )
+                AUM_recorder["other_max_prob"].extend(
+                    other_prob_values.tolist()
+                )
 
                 # s[2] ans P[2]
                 second_logit = torch.sort(out, axis=1)[0][:, -(self.topk + 1)]
@@ -201,12 +211,18 @@ class AUM:
             logits = tmp.values[burn:, -self.n_classes :]
             llogits = np.copy(logits)
             _ = np.put_along_axis(
-                logits, logits.argmax(1).reshape(-1, 1), float("-inf"), 1
+                logits,
+                logits.argmax(1).reshape(-1, 1),
+                float("-inf"),
+                1,
             )
             masked_logits = logits
-            other_logit_values, other_logit_index = masked_logits.max(
-                1
-            ), masked_logits.argmax(1)
+            other_logit_values, other_logit_index = (
+                masked_logits.max(
+                    1,
+                ),
+                masked_logits.argmax(1),
+            )
             other_logit_values = other_logit_values.squeeze()
             other_logit_index = other_logit_index.squeeze()
             margin_values_yang = (target_values - other_logit_values).tolist()
@@ -217,9 +233,12 @@ class AUM:
                 1,
             )
             masked_logits = llogits
-            other_logit_values, other_logit_index = masked_logits.max(
-                1
-            ), masked_logits.argmax(1)
+            other_logit_values, other_logit_index = (
+                masked_logits.max(
+                    1,
+                ),
+                masked_logits.argmax(1),
+            )
             other_logit_values = other_logit_values.squeeze()
             other_logit_index = other_logit_index.squeeze()
             margin_values_pleiss = (target_values - other_logit_values).mean()
@@ -236,7 +255,9 @@ class AUM:
         :param alpha: quantile order to identify as ambiguous, defaults to 0.01
         :type alpha: float, optional
         """
-        quantile = np.nanquantile(list(self.aums["AUM_pleiss"].to_numpy()), alpha)
+        quantile = np.nanquantile(
+            list(self.aums["AUM_pleiss"].to_numpy()), alpha
+        )
         if self.use_pleiss:
             too_hard = self.aums[self.aums["AUM_pleiss"] <= quantile]
         else:
@@ -248,7 +269,7 @@ class AUM:
         ]
         self.quantile = quantile
         self.too_hard = np.column_stack(
-            (self.index_too_hard, self.tasks_too_hard)
+            (self.index_too_hard, self.tasks_too_hard),
         ).astype(int)
 
     def run(self, alpha=0.01):

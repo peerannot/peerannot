@@ -1,11 +1,11 @@
 import click
 
 from peerannot import __version__
-from peerannot.runners.run import run
 from peerannot.runners.datasets import datasets
-from peerannot.runners.train import trainmod
 from peerannot.runners.identify import identification
+from peerannot.runners.run import run
 from peerannot.runners.simulate import simulation
+from peerannot.runners.train import trainmod
 
 SOURCES = [run, datasets, trainmod, identification, simulation]
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"], show_default=True)

@@ -5,9 +5,12 @@ Krippendorff Alpha
 
 Python implementation from Thomas Grill (https://github.com/grrrr/krippendorff-alpha)
 """
-import numpy as np
-from ..template import CrowdModel
+
 from pathlib import Path
+
+import numpy as np
+
+from ..template import CrowdModel
 
 
 class Krippendorff_Alpha(CrowdModel):

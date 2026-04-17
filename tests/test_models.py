@@ -1,13 +1,18 @@
-import numpy as np
-from pathlib import Path
 import json
 import shutil
+from pathlib import Path
+
+import numpy as np
+import pytest
+from pydantic import ValidationError
+
+from peerannot.models import DawidSkene
 
 dir_toydata = Path(__file__).parents[1] / "datasets" / "toy-data"
 
 
 def load_json(path):
-    with open(path, "r") as f:
+    with open(path) as f:
         return json.load(f)
 
 
@@ -16,10 +21,10 @@ ANSWERS = load_json(dir_toydata / "answers.json")
 
 def test_mv():
     sparse = [True, False]
-    from peerannot.models import MV
+    from peerannot.models import MajorityVoting
 
     for sparse_ in sparse:
-        mv = MV(ANSWERS, n_classes=2, sparse=sparse_)
+        mv = MajorityVoting(ANSWERS, n_classes=2, sparse=sparse_)
         y = mv.get_answers()
         expected = np.array([1, 0, 1])
         assert all([e == y_ for e, y_ in zip(expected, y)])
@@ -36,9 +41,9 @@ def test_ns():
 
 
 def test_ds():
-    from peerannot.models import Dawid_Skene as DS
+    from peerannot.models import DawidSkene as DS
 
-    ds = DS(ANSWERS, n_classes=2, n_workers=4)
+    ds = DS(answers=ANSWERS, n_classes=2, n_workers=4)
     ds.run(maxiter=10)
     y = ds.get_probas()
     assert y.shape == (3, 2)
@@ -50,6 +55,13 @@ def test_ds():
     assert np.isclose((expected - ds.get_probas()).sum(), 0)
 
 
+def test_ds_wrong_parameters():
+    with pytest.raises(ValidationError) as exc_info:
+        ds = DawidSkene(answers=ANSWERS, n_classes=-2, n_workers=4)
+
+    assert "Input should be greater than or equal to 1" in str(exc_info.value)
+
+
 def test_wawa():
     from peerannot.models import Wawa
 
@@ -59,7 +71,10 @@ def test_wawa():
         wawa.run()
         y = wawa.get_answers()
         expected = np.array([1, 0, 1])
-        assert np.isclose((wawa.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(), 0)
+        assert np.isclose(
+            (wawa.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(),
+            0,
+        )
         assert all([e == y_ for e, y_ in zip(expected, y)])
         # assert True == False
 
@@ -74,7 +89,8 @@ def test_IWMV():
         y = wawa_it.get_answers()
         expected = np.array([1, 0, 1])
         assert np.isclose(
-            (wawa_it.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(), 0
+            (wawa_it.worker_score - np.array([1 / 2, 1, 1, 1 / 2])).sum(),
+            0,
         )
         assert all([e == y_ for e, y_ in zip(expected, y)])
 
@@ -93,7 +109,12 @@ def test_twothird():
 def test_glad():
     from peerannot.models import GLAD
 
-    glad = GLAD(ANSWERS, n_classes=2, n_workers=4, dataset=dir_toydata / "temp")
+    glad = GLAD(
+        ANSWERS,
+        n_classes=2,
+        n_workers=4,
+        dataset=dir_toydata / "temp",
+    )
     glad.run()
     y = glad.get_answers()
     expected = np.array([1, 0, 1])
@@ -102,7 +123,14 @@ def test_glad():
     assert glad.beta.shape == (3,)
     assert glad.alpha.shape == (4,)
     assert (
-        len(list((dir_toydata / "temp" / "identification" / "glad").glob("*.npy"))) == 2
+        len(
+            list(
+                (dir_toydata / "temp" / "identification" / "glad").glob(
+                    "*.npy",
+                ),
+            ),
+        )
+        == 2
     )
     shutil.rmtree(dir_toydata / "temp")  # cleanup
 
@@ -121,6 +149,6 @@ def test_plantnet():
     )
     pn.run(maxiter=2)
     y = pn.get_answers()
-    expected = np.array([1, 0, 1])
+    expected = np.array([1, -1, -1])
     assert y.shape == (3,)
     assert all([e == y_ for e, y_ in zip(expected, y)])

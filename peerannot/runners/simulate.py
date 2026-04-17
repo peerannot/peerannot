@@ -1,6 +1,7 @@
-import click
-from pathlib import Path
 import json
+from pathlib import Path
+
+import click
 import numpy as np
 
 from peerannot.helpers.simulations_strategies import simulation_strategies
@@ -90,9 +91,9 @@ def simulate(**kwargs):
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
     rng = np.random.default_rng(kwargs["seed"])
     strat = kwargs["strategy"]
-    assert (
-        strat.lower() in simulation_strategies.keys()
-    ), f"Strategy should be one of {list(simulation_strategies.keys())}"
+    assert strat.lower() in simulation_strategies.keys(), (
+        f"Strategy should be one of {list(simulation_strategies.keys())}"
+    )
 
     path_ = Path(path_)
     path_.mkdir(parents=True, exist_ok=True)
@@ -113,7 +114,7 @@ def simulate(**kwargs):
     np.save(path_ / "ground_truth.npy", true_labels)
     print(
         f"""
-    Saved answers at {path_ / 'answers.json'} \n
-    Saved ground truth at {path_ / 'ground_truth.npy'}
-    """
+    Saved answers at {path_ / "answers.json"} \n
+    Saved ground truth at {path_ / "ground_truth.npy"}
+    """,
     )

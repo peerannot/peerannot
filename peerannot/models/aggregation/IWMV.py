@@ -1,6 +1,7 @@
-from ..template import CrowdModel
 import numpy as np
 from tqdm.auto import tqdm
+
+from ..template import CrowdModel
 
 
 class IWMV(CrowdModel):
@@ -17,13 +18,13 @@ class IWMV(CrowdModel):
 
         .. math::
 
-            \\mathrm{IWMV}(i, \mathcal{D})^t = \\underset{k\\in[K]}{\\mathrm{argmax}} \\sum_{j\\in\\mathcal{A}(x_i)}\\beta_j^t\\mathbf{1}(y_i^{(j)} = k)
+            \\mathrm{IWMV}(i, \\mathcal{D})^t = \\underset{k\\in[K]}{\\mathrm{argmax}} \\sum_{j\\in\\mathcal{A}(x_i)}\\beta_j^t\\mathbf{1}(y_i^{(j)} = k)
 
         with
 
         .. math::
 
-            \\beta_j^{t} = \\frac{1}{|\{y_{i'}^{(j)}\}_{i'}|} \sum_{i'=1}^{n_{\\texttt{task}}} \mathbf{1}\\left(y_{i'}^{(j)} = \mathrm{IWMV}(i', \{y_{i'}^{(j)}\}_j)^{t-1}\\right).
+            \\beta_j^{t} = \\frac{1}{|\\{y_{i'}^{(j)}\\}_{i'}|} \\sum_{i'=1}^{n_{\\texttt{task}}} \\mathbf{1}\\left(y_{i'}^{(j)} = \\mathrm{IWMV}(i', \\{y_{i'}^{(j)}\\}_j)^{t-1}\\right).
 
         :param answers: Dictionary of workers answers with format
 
@@ -46,15 +47,6 @@ class IWMV(CrowdModel):
         self.sparse = sparse
         self.original_answers = self.answers
         self.n_workers = kwargs["n_workers"]
-        if kwargs.get("path_remove", None):
-            to_remove = np.loadtxt(kwargs["path_remove"], dtype=int)
-            self.answers_modif = {}
-            i = 0
-            for key, val in self.answers.items():
-                if int(key) not in to_remove[:, 1]:
-                    self.answers_modif[i] = val
-                    i += 1
-            self.answers = self.answers_modif
 
     def compute_baseline(self, weight=None):
         """Compute label frequency per task"""
@@ -71,7 +63,7 @@ class IWMV(CrowdModel):
             self.compute_baseline(weight)
             ans = [
                 np.random.choice(
-                    np.flatnonzero(self.baseline[i] == self.baseline[i].max())
+                    np.flatnonzero(self.baseline[i] == self.baseline[i].max()),
                 )
                 for i in range(len(self.answers))
             ]
@@ -83,7 +75,7 @@ class IWMV(CrowdModel):
                 for w, lab in task.items():
                     count[lab] += weight[int(w) - 1]
                 ans[int(task_id)] = int(
-                    np.random.choice(np.flatnonzero(count == count.max()))
+                    np.random.choice(np.flatnonzero(count == count.max())),
                 )
         self.ans = ans
 
