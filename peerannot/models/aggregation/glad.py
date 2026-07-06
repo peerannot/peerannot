@@ -337,7 +337,7 @@ class GLAD(CrowdModel):
         :param path: path folder
         :type path: str
         """
-        path_diff = Path(path, exist_ok=True).resolve() / "difficulties.npy"
+        path_diff = Path(path).resolve() / "difficulties.npy"
         difficulties = []
         for tt in self.answers.keys():
             difficulties.append([tt, self.beta[tt]])
@@ -351,7 +351,7 @@ class GLAD(CrowdModel):
         :param path: path folder
         :type path: str
         """
-        path_ab = Path(path, exist_ok=True).resolve() / "abilities.npy"
+        path_ab = Path(path).resolve() / "abilities.npy"
         abilities = []
         for tt in range(self.n_workers):
             abilities.append([tt, self.alpha[tt]])
