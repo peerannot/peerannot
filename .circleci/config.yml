@@ -59,7 +59,6 @@ jobs:
             ln -sf ~/conda_pkgs ~/miniconda/pkgs || { echo "Failed to symlink"; exit 1; }
       
             # Initialize conda
-            ~/miniconda/bin/conda init bash
             source ~/.bashrc
       
             # Verify conda
